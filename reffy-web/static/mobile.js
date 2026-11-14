@@ -48,7 +48,7 @@ if (isM()) {
   setFilterOpen(false);
   qEl.placeholder = "찾고 싶은 레퍼런스, 유저를 검색해보세요";
   $("#tabTag").textContent = "키워드"; $("#tabColor").textContent = "무드";
-  document.querySelector(".tabs [disabled]").textContent = "3D Pose";
+  $("#tabPose").textContent = "3D Pose";
   $("#apply").textContent = "적용하기";
   mobileBar(false);
 }
@@ -113,7 +113,7 @@ function drawDetailM(d, edit = false) {
     { ic: "save", label: "북에 추가", fn: bookAct },
     { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: keepAct },
     ...(so.editable
-      ? [{ ic: "edit", label: edit ? "수정 완료" : "수정하기", fn: () => drawDetail(d, !edit) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
+      ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
       : [{ ic: "share", label: "공유하기", fn: () => sharePost(d) }, { ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]);
   const comment = h("input", { class: "cin", maxlength: "500", placeholder: ME ? "댓글을 남겨보세요" : "로그인하고 댓글을 남겨보세요", "aria-label": "댓글 입력" });
   const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
@@ -127,22 +127,23 @@ function drawDetailM(d, edit = false) {
       h("h1", {}, ""), h("div", { class: "mbar-r" }, h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: closeDetail }, icon("close", 24)))),
     h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
       h("div", { class: "imgtop" }, circ("share", "공유하기", () => sharePost(d)), h("span", { class: "vdots" }, circ("more", "더보기", menu))),
-      h("div", { class: "imgact" }, circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id))),
+      h("div", { class: "imgact" }, circ("person", "이 이미지의 구도로 3D 포즈 찾기", () => pullPose()), circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id))),
       o ? h("a", { class: "imgwho", href: "#/u/" + o.uid }, avatarEl(o, 20), "@" + o.uid) : null),
     h("div", { class: "pbody" },
       h("div", { class: "who" }, o ? avatarEl(o, 40, "av") : h("span", { class: "av" }, (d.author || "?").slice(0, 1)),
         h("div", {}, o ? h("a", { class: "pname", href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
         o && !o.me ? h("button", { class: "btn" + (o.following ? "" : " primary"), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
-      h("h2", { class: "ptitle" }, d.title || "제목 없음"),
+      h("h2", { class: "ptitle" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
       h("div", { class: "prow" },
         h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 22), String(so.likes)),
         h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => commentsSheet(d, edit) }, icon("comment", 22), String(so.comments.length))),
       h("div", { class: "sec" },
-        h("div", { class: "sec-h" }, h("h3", {}, "태그"), so.editable && edit ? h("button", { class: "btn sm", type: "button", onclick: () => drawDetail(d, false) }, "수정 완료") : null),
+        h("div", { class: "sec-h" }, h("h3", {}, "태그"), so.editable ? h("button", { class: "btn sm", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
         h("div", { class: "tags" }, on.length ? on.map(tagEl) : h("span", { class: "hint" }, "아직 태그가 없어요.")),
         edit ? h("div", { class: "tags", style: "margin-top:10px" }, pickButton(h("div", { class: "pick" }), (t) => save(d, { add: [t.ikey] }, t), () => new Set(d.tags.filter((x) => x.active).map((x) => x.ikey))),
           off.map((t) => h("button", { class: "tag off", type: "button", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null,
         edit ? h("p", { class: "hint" }, "태그를 눌러 지우거나, 흐린 태그를 눌러 되살릴 수 있어요.") : null),
+      materialsSec(d),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, `댓글 ${so.comments.length}`)),
         h("div", { class: "cform" }, comment, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")),
@@ -298,4 +299,62 @@ async function settingsPage(sub) {
     }
     location.hash = "#/settings";
   } catch (e) { show("설정", notice("불러오지 못했어요", e.message)); }
+}
+
+/* ---------------------------------------------------------------- 킵 스페이스 크게 보기 (KEP_0100) · 순서 변경 */
+function keepViewer(items, start, onDone) {
+  const picked = new Set(); let idx = start || 0;
+  const ov = h("div", { class: "kview", role: "dialog", "aria-modal": "true", "aria-label": "레퍼런스 크게 보기" });
+  const close = () => { ov.remove(); onDone && onDone(); };
+  const track = h("div", { class: "kv-track" });
+  const title = h("h1", {}, "");
+  const strip = h("button", { class: "kv-strip", type: "button", "aria-label": "담은 레퍼런스 순서 변경", onclick: () => reorderSheet(items, () => drawTrack(true)) });
+  const selBtn = h("button", { class: "kv-sel", type: "button", "aria-label": "선택" }, icon("check", 24));
+  const drawTitle = () => { title.textContent = `${picked.size}개 선택됨`; const cur = items[idx]; selBtn.classList.toggle("on", !!cur && picked.has(cur.id)); selBtn.setAttribute("aria-pressed", String(!!cur && picked.has(cur.id)));
+    const sel = items.filter((x) => picked.has(x.id));
+    const n = sel.length ? sel.length : items.length;
+    strip.replaceChildren(h("span", { class: "th" }, (sel.length ? sel : items).slice(0, 5).map((x) => h("img", { src: x.thumb, alt: "" }))), ...(n > 5 ? [h("b", {}, `+${n - 5}`)] : [])); };
+  const drawTrack = (keep) => {
+    track.replaceChildren(...items.map((it) => h("div", { class: "kv-card" + (picked.has(it.id) ? " on" : ""), "data-id": it.id }, h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지" }))));
+    if (!items.length) return close();
+    idx = Math.min(idx, items.length - 1);
+    requestAnimationFrame(() => track.children[idx]?.scrollIntoView({ inline: "center", block: "nearest", behavior: keep ? "auto" : "instant" }));
+    drawTitle();
+  };
+  track.addEventListener("scroll", () => { const w = track.clientWidth; const n = Math.round(track.scrollLeft / (w * 0.72)); if (n !== idx && n >= 0 && n < items.length) { idx = n; drawTitle(); } }, { passive: true });
+  selBtn.onclick = () => { const it = items[idx]; if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); track.children[idx]?.classList.toggle("on", picked.has(it.id)); drawTitle(); };
+  const del = async () => {
+    const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
+    if (!ids.length) return;
+    if (!(await confirmDialog(ids.length > 1 ? `${ids.length}개의 레퍼런스를 삭제할까요?` : "이 레퍼런스를 삭제할까요?", "킵 스페이스에서 삭제돼요. 게시물 자체는 지워지지 않아요.", { ok: "삭제", danger: true }))) return;
+    try { await api("/api/me/keeps/remove", jsonOpt("POST", { ids })); ids.forEach((i) => picked.delete(i)); for (let k = items.length - 1; k >= 0; k--) if (ids.includes(items[k].id)) items.splice(k, 1); toast("킵 스페이스에서 삭제했어요"); drawTrack(true); } catch (e) { toast(e.message); }
+  };
+  ov.append(h("div", { class: "mbar" }, h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: close }, icon("back", 24)), title, h("div", { class: "mbar-r" })),
+    track,
+    h("div", { class: "kv-act" }, h("span", {}, h("button", { class: "kv-del", type: "button", "aria-label": "삭제", onclick: del }, icon("trash", 24)), h("small", {}, "삭제")),
+      h("span", {}, selBtn, h("small", {}, "선택"))),
+    h("div", { class: "kv-foot" }, strip, h("button", { class: "btn primary", type: "button", onclick: () => {
+      const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
+      if (ids.length) saveToBook(ids, { after: () => { picked.clear(); drawTitle(); } });
+    } }, "북에 저장")));
+  document.body.append(ov);
+  drawTrack(false);
+}
+function reorderSheet(items, after) {
+  const grid = h("div", { class: "ro-grid" });
+  let drag = null;
+  const draw = () => grid.replaceChildren(...items.map((it, i) => h("div", { class: "ro-it", draggable: "true", "data-i": i,
+    ondragstart: (e) => { drag = i; e.currentTarget.classList.add("drag"); }, ondragend: (e) => e.currentTarget.classList.remove("drag"),
+    ondragover: (e) => e.preventDefault(), ondrop: (e) => { e.preventDefault(); move(drag, i); } }, h("img", { src: it.thumb, alt: it.title || "" }))));
+  const move = (a, b) => { if (a == null || a === b) return; const [x] = items.splice(a, 1); items.splice(b, 0, x); draw(); save_(); };
+  // 터치: 길게 누른 뒤 끌어서 놓기
+  let tStart = null, tTimer = null;
+  grid.addEventListener("touchstart", (e) => { const el = e.target.closest(".ro-it"); if (!el) return; tStart = +el.dataset.i; tTimer = setTimeout(() => { drag = tStart; el.classList.add("drag"); }, 300); }, { passive: true });
+  grid.addEventListener("touchmove", (e) => { if (drag == null) { clearTimeout(tTimer); return; } e.preventDefault(); }, { passive: false });
+  grid.addEventListener("touchend", (e) => { clearTimeout(tTimer); if (drag == null) return; const t = e.changedTouches[0]; const el = document.elementFromPoint(t.clientX, t.clientY)?.closest(".ro-it"); grid.querySelectorAll(".drag").forEach((x) => x.classList.remove("drag")); const d = drag; drag = null; if (el) move(d, +el.dataset.i); });
+  const save_ = async () => { try { await api("/api/me/keeps/order", jsonOpt("PUT", { ids: items.map((x) => x.id) })); } catch (e) { toast(e.message); } };
+  draw();
+  const s = sheet(`담은 레퍼런스 ${items.length}`, [h("p", { class: "sheet-p" }, "길게 눌러 드래그하면 순서를 바꿀 수 있어요"), grid], null, "tall");
+  const origClose = s.close; s.close = () => { origClose(); after && after(); };
+  s.el.querySelector(".m-sheet-h .icon-btn").onclick = s.close;
 }

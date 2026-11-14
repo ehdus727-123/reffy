@@ -792,3 +792,148 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 .pf-more .icon-btn{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;background:#fff}
 .pf-more svg{transform:none}
 .dlg.confirm.wf .cft .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ================================================================ spacing-guide v0.1 · PC · Tablet (이 아래가 최종 값)
+   GNB 88 · 화면 Margin 24 · 필터 300(Padding 24) · 피드 Padding 29/24/·/20 · 카드 Gutter 14 · 모달 520(24·28) · 버튼 S32/M40/L48 */
+:root{--err:#c43a49;--ov:rgba(24,23,26,.4);--t1:#18171a;--t2:#5b595f;--t3:#6f6d72}
+/* A1 GNB */
+.top{height:88px;padding:0 24px;gap:70px;box-sizing:border-box}
+.brand{gap:28px}
+.nav{gap:24px}
+.nav a,.nav a.on{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;text-decoration:none!important}
+.nav a{color:var(--t3)}
+.nav a.on{color:var(--t1)}
+.search{height:44px;padding:0 16px;gap:10px;border-radius:10px}
+.search input{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+.actions{gap:20px}
+.layout,#page,.drawer{min-height:calc(100vh - 88px)}
+.side,.panel{top:88px;height:calc(100vh - 88px)}
+.modal.upl{inset:88px 0 0 0}
+/* A2 필터 패널: 300 · Padding 24 사방 · 콘텐츠 252 · 블록 20 */
+.side{width:300px;padding:24px;gap:20px;box-sizing:border-box}
+.tabs{gap:14px;margin:0}
+.tabs button{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:var(--t3);padding:0 0 10px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{font-weight:600;color:var(--t1);border-bottom-color:var(--t1);padding-bottom:10px}
+.tabs .reset{font:500 12px/16px Pretendard,sans-serif;color:var(--t2);text-decoration:underline;text-underline-position:from-font;border:0;padding:0 0 12px}
+.groups{gap:16px;padding:0}
+.fgroup{gap:16px;padding:0 0 16px}
+.fgroup>button{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;height:24px}
+.chk{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;gap:10px;min-height:20px}
+.chk input{width:18px;height:18px;margin:0}
+.apply{padding:0}
+/* 버튼 S 32 / M 40 / L 48 · 모서리는 높이 기준 6 / 8 / 10 */
+.btn{height:32px;padding:0 12px;border-radius:6px;gap:6px;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+.btn.m{height:40px;padding:0 16px;border-radius:8px}
+.btn.l,.btn.block{height:48px;padding:0 24px;border-radius:10px;font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+.btn.danger{background:var(--err);border-color:var(--err);color:#fff}
+.inp{height:48px;padding:0 14px;border-radius:10px;border:1px solid #c3c2c5;font:400 14px/20px Pretendard,sans-serif;box-sizing:border-box}
+/* A3 피드: Padding 위 29 · 왼쪽 20(필터 열림) / 24 · 오른쪽 24 · 툴바 ↔ 카드 15 · 카드 Gutter 14 */
+.main{padding:29px 24px 80px 20px}
+.layout:not(.f-open) .main{padding-left:24px}
+.bar{min-height:32px;margin-bottom:15px;gap:8px}
+.sortfilter{display:flex;align-items:center;gap:15px;margin-left:auto}
+.sortbtn{height:32px;border-radius:6px;font:500 14px/20px Pretendard,sans-serif}
+.fbtn,.layout.f-open .fbtn{width:24px;height:24px;padding:0;border:0;border-radius:0;background:none!important;color:var(--t3);display:grid;place-items:center;flex:none}
+.layout.f-open .fbtn{color:var(--t1)}
+.fbtn:hover{color:var(--t1)}
+.grid{column-gap:14px;column-count:6}
+.layout.f-open .grid{column-count:5}
+.layout.has-panel .grid{column-count:5}
+.layout.f-open.has-panel .grid{column-count:4}
+.card{margin-bottom:14px;border-radius:8px}
+.card .im{border-radius:8px}
+.card img{max-height:338px;object-fit:cover}
+.card .meta{height:32px;box-sizing:border-box;padding:0 2px;gap:5px}
+.card .meta .av{width:18px;height:18px}
+.card .meta .tx b{font:500 11px/16px Pretendard,sans-serif;letter-spacing:0}
+.card .meta .like{display:inline-flex;align-items:center;gap:3px;color:var(--t3);flex:none}
+.card .meta .like svg{width:16px;height:16px;color:inherit}
+.card .meta .lk{font:500 11px/16px Pretendard,sans-serif;color:inherit}
+.card .meta.liked .like{color:var(--brand)}
+.card .meta.liked .like svg path{fill:currentColor}
+.card .prv,.pf-cell .prv{position:absolute;left:8px;top:8px;z-index:1;height:20px;padding:0 6px;border-radius:4px;background:rgba(24,23,26,.72);color:#fff;font:500 11px/20px Pretendard,sans-serif}
+.pf-cell{position:relative}
+.prv-b{display:inline-block;vertical-align:middle;margin-left:8px;height:20px;padding:0 6px;border-radius:4px;background:var(--ph);color:var(--t2);font:500 11px/20px Pretendard,sans-serif}
+@media (min-width:1600px){
+  .grid{column-count:7}.layout.f-open .grid,.layout.has-panel .grid{column-count:6}.layout.f-open.has-panel .grid{column-count:5}
+}
+@media (min-width:1200px) and (max-width:1359px){ .layout.f-open.has-panel .grid{column-count:3} }
+/* 검색 결과 0개 */
+.zero-res{display:flex;flex-direction:column;gap:15px}
+.zero-res[hidden]{display:none}
+.z-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;padding:72px 0 56px}
+.z-ic{width:80px;height:80px;border-radius:50%;background:var(--bg-sub);display:grid;place-items:center;color:var(--t1)}
+.z-empty .z-ic{margin-bottom:-4px}
+.z-tx h2{margin:0;font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px}
+.z-tx p{margin:8px 0 0;font:400 14px/20px Pretendard,sans-serif;color:var(--t2)}
+.z-kw{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:16px}
+.z-kw:empty{display:none}
+.z-lb{font:500 14px/20px Pretendard,sans-serif;color:var(--t3)}
+.z-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.z-rec h3{margin:0 0 15px;font:600 16px/24px Pretendard,sans-serif}
+/* 상세 패널 389: 정보 Padding 20 · 20 · 24 · 20, 섹션 간격 30, 피드 쪽 테두리만 */
+.panel{width:389px;border:0;border-left:1px solid var(--line)}
+.panel .pbody{padding:20px 20px 24px}
+.panel .pbody>.sec{margin-top:30px}
+.panel .sec-h{margin-bottom:12px}
+.panel .sec-h h3{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+.mat-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.mat-list li{display:flex;align-items:center;gap:8px;font:400 12px/16px Pretendard,sans-serif;color:var(--t2);min-width:0}
+.mat-list li svg{flex:none;color:var(--t3)}
+.mat-list li>span,.mat-list li>a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2);text-decoration:none}
+.mat-list li>a:hover{text-decoration:underline}
+.field.mat .row{display:flex;gap:12px;align-items:flex-end}
+.field.mat .row .inp{flex:1;min-width:0}
+.field.mat .mat-list{margin-top:10px}
+.up-sw{padding:12px 0}
+/* 3D 포즈 탭 (준비 중) */
+.ppanel{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px}
+.pose-vp{position:relative;aspect-ratio:1;border-radius:12px;background:var(--ph);display:grid;place-items:center;color:var(--t2)}
+.pose-ctl{position:absolute;left:12px;bottom:12px;display:flex;gap:6px}
+.pill.sm{height:28px;padding:0 10px;font:500 12px/16px Pretendard,sans-serif}
+.pose-hint{margin:0;font:400 12px/16px Pretendard,sans-serif;color:var(--t3)}
+.pose-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pose-h h3{margin:0;font:600 16px/24px Pretendard,sans-serif}
+.pose-h .linkbtn{font:500 12px/16px Pretendard,sans-serif;color:var(--t2)}
+.pose-parts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pose-parts button{display:flex;flex-direction:column;gap:6px;align-items:center;font:500 12px/16px Pretendard,sans-serif;color:var(--t2)}
+.pose-parts .ph{width:100%;aspect-ratio:1;border-radius:8px;background:var(--ph);display:block}
+/* 모달 520 · Padding 상하 24 · 좌우 28 · 최대 높이 700 · 딤 40% */
+.modal{background:var(--ov)}
+.dlg.confirm,.dlg.confirm.wf,.dlg.bk,.dlg.fol{width:min(520px,100%);padding:24px 28px;border-radius:16px;max-height:700px;box-sizing:border-box}
+.dlg .chd{gap:8px}
+.dlg .chd h2,.dlg.confirm.wf h2{font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px}
+.dlg.bk .chd{margin-bottom:20px}
+.dlg .cft,.dlg.confirm .cft,.dlg.confirm.wf .cft{margin-top:20px;gap:8px}
+.dlg .cft .btn,.dlg.confirm.wf .cft .btn{height:40px;min-width:0;padding:0 16px;border-radius:8px;font:500 14px/20px Pretendard,sans-serif}
+.dlg.confirm.wf .cft .btn.danger{background:var(--err);border-color:var(--err)}
+.dlg.edit{display:flex;flex-direction:column}
+.ed-body{display:flex;flex-direction:column;gap:20px;overflow:auto;min-height:0}
+.ed-img{height:200px;border-radius:12px;background:var(--ph);overflow:hidden;display:grid;place-items:center}
+.ed-img img{max-width:100%;max-height:100%;object-fit:contain}
+.ed-body .field label{display:block;margin-bottom:8px;font:500 14px/20px Pretendard,sans-serif}
+/* 토스트 */
+.toast{min-height:48px;box-sizing:border-box;padding:14px 20px;border-radius:10px;font:500 14px/20px Pretendard,sans-serif}
+/* 서랍: 목록 화면 본문 위 55 · 제목 Display/S · 보조 Body/L 5 · 제목 줄 ↔ 본문 20 · 북 3열 Gutter 14 */
+.dmain{padding:55px 24px 96px 20px}
+.dmain h1{font:700 36px/44px Pretendard,sans-serif;letter-spacing:-.72px}
+.dmain .sub{margin-top:5px;font:400 16px/24px Pretendard,sans-serif;color:var(--t2)}
+.dhead{margin-bottom:20px;align-items:flex-end;gap:8px}
+.books{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 14px}
+/* 킵 스페이스: 칩 줄 높이 44 · 칩 사이 8 · 줄 ↔ 카드 15 */
+.kbar{min-height:44px;gap:8px;margin:0 0 15px}
+.pill{height:32px;padding:0 12px;border-radius:16px;font:500 14px/20px Pretendard,sans-serif}
+
+/* ---- Tablet 768~1199: 필터 · 상세는 피드 위에 겹치는 드로어(뒤 딤), 피드는 항상 4열 */
+@media (min-width:768px) and (max-width:1199px){
+  .grid,.layout.f-open .grid,.layout.has-panel .grid,.layout.f-open.has-panel .grid{column-count:4}
+  .main,.layout:not(.f-open) .main,.layout.f-open .main{padding:29px 24px 80px 24px}
+  .side{position:fixed;left:0;top:88px;z-index:42;box-shadow:8px 0 15px rgba(0,0,0,.08)}
+  .panel,.layout.has-panel .panel{position:fixed;right:0;left:auto;top:88px;bottom:0;width:389px;height:auto;z-index:42;box-shadow:-8px 0 15px rgba(0,0,0,.08)}
+  .layout.f-open::before,.layout.has-panel::before{content:"";position:fixed;inset:88px 0 0 0;background:var(--ov);z-index:41}
+}
+/* 상세 패널을 밀어낼 때: 피드 · 20 · 상세 389 · 24 (Desktop · Wide) */
+@media (min-width:1200px){
+  .layout.has-panel .main{padding-right:20px}
+  .layout.has-panel .panel{margin-right:24px;border-right:1px solid var(--line)}
+}

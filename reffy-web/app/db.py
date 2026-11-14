@@ -23,6 +23,8 @@ images = Table("images", md,
                Column("kind", String(8), default="illust"),  # illust(일러스트) / photo(사진)
                Column("colors", Text),                      # 대표색 [[hex, 비율], ...] (컬러 팔레트 검색)
                Column("wd_json", Text),                     # 검색용 WD 원본 태그 {태그: 확률}
+               Column("private", Integer, default=0),       # 1 이면 비공개 (올린 사람만 봄)
+               Column("materials", Text),                   # 사용 소재 링크 ["https://...", ...]
                Column("created_at", DateTime, default=datetime.now))
 # 태그: AI 예측(ai_prob)과 사용자 수정(user_state)을 따로 보관. 최종 = AI(확률>=임계값) + 사용자 추가 - 사용자 삭제 (PRD 8.2)
 image_tags = Table("image_tags", md,
@@ -56,7 +58,7 @@ comments = Table("comments", md,
 follows = Table("follows", md, Column("follower_id", Integer, primary_key=True), Column("followee_id", Integer, primary_key=True),
                 Column("created_at", DateTime, default=datetime.now))
 keeps = Table("keeps", md, Column("user_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
-              Column("created_at", DateTime, default=datetime.now))
+              Column("created_at", DateTime, default=datetime.now), Column("pos", Integer))   # pos: 사용자가 정한 순서 (없으면 최근 순)
 books = Table("books", md,
               Column("id", Integer, primary_key=True, autoincrement=True),
               Column("user_id", Integer, nullable=False, index=True), Column("name", String(40), nullable=False),
@@ -108,6 +110,13 @@ def init():
             c.execute(text("ALTER TABLE images ADD COLUMN kind VARCHAR(8) DEFAULT 'illust'"))
         if "colors" not in cols:
             c.execute(text("ALTER TABLE images ADD COLUMN colors TEXT"))
+        if "private" not in cols:
+            c.execute(text("ALTER TABLE images ADD COLUMN private INTEGER DEFAULT 0"))
+        if "materials" not in cols:
+            c.execute(text("ALTER TABLE images ADD COLUMN materials TEXT"))
+        kcols = {x["name"] for x in inspect(engine).get_columns("keeps")}
+        if "pos" not in kcols:
+            c.execute(text("ALTER TABLE keeps ADD COLUMN pos INTEGER"))
         ucols = {x["name"] for x in inspect(engine).get_columns("users")}
         for name, ddl in (("bio", "VARCHAR(200) DEFAULT ''"), ("links", "TEXT"), ("avatar", "VARCHAR(40)"), ("notif_off", "VARCHAR(40) DEFAULT ''")):
             if name not in ucols:

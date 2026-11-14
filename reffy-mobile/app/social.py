@@ -151,16 +151,41 @@ def whoami(request: Request):
 
 
 # ------------------------------------------------------------------ 공통
+def with_likes(items: list, viewer: Optional[dict] = None) -> list:
+    """카드에 하트 수(likes)와 내가 눌렀는지(liked)를 붙인다."""
+    ids = [c["id"] for c in items]
+    if not ids:
+        return items
+    ph = ",".join(f":i{n}" for n in range(len(ids)))
+    p = {f"i{n}": i for n, i in enumerate(ids)}
+    lk = {r["image_id"]: r["n"] for r in db.rows(f"SELECT image_id, COUNT(*) AS n FROM likes WHERE image_id IN ({ph}) GROUP BY image_id", **p)}
+    mine = {r["image_id"] for r in db.rows(f"SELECT image_id FROM likes WHERE user_id = :u AND image_id IN ({ph})", u=viewer["id"], **p)} if viewer else set()
+    for c in items:
+        c["likes"] = lk.get(c["id"], 0)
+        c["liked"] = c["id"] in mine
+    return items
+
+
+def visible(ids: List[int], viewer: Optional[dict]) -> List[int]:
+    """비공개 게시물은 올린 사람에게만 보인다."""
+    if not ids:
+        return ids
+    ph = ",".join(f":i{n}" for n in range(len(ids)))
+    hidden = {r["id"] for r in db.rows(f"SELECT id FROM images WHERE id IN ({ph}) AND COALESCE(private,0) = 1 AND (user_id IS NULL OR user_id != :u)",
+                                       u=viewer["id"] if viewer else -1, **{f"i{n}": i for n, i in enumerate(ids)})}
+    return [i for i in ids if i not in hidden]
+
+
 def cards(ids: List[int]) -> list:
     if not ids:
         return []
     ph = ",".join(f":i{n}" for n in range(len(ids)))
-    by = {r["id"]: r for r in db.rows(f"SELECT id, title, author, w, h, views, kind, created_at FROM images WHERE id IN ({ph})", **{f"i{n}": i for n, i in enumerate(ids)})}
+    by = {r["id"]: r for r in db.rows(f"SELECT id, title, author, w, h, views, kind, created_at, COALESCE(private,0) AS private FROM images WHERE id IN ({ph})", **{f"i{n}": i for n, i in enumerate(ids)})}
     out = []
     for i in ids:
         r = by.get(i)
         if r:
-            out.append({"id": r["id"], "title": r["title"], "author": r["author"], "w": r["w"], "h": r["h"], "views": r["views"], "kind": r["kind"] or "illust",
+            out.append({"id": r["id"], "title": r["title"], "author": r["author"], "w": r["w"], "h": r["h"], "views": r["views"], "kind": r["kind"] or "illust", "private": bool(r["private"]),
                         "thumb": f"/img/{r['id']}?s=thumb&v={''.join(ch for ch in str(r['created_at']) if ch.isdigit())}", "created": r["created_at"].isoformat() if hasattr(r["created_at"], "isoformat") else str(r["created_at"])})
     return out
 
@@ -310,8 +335,18 @@ def my_keeps(request: Request, kind: str = ""):
     if kind in ("photo", "illust"):
         sql += " AND COALESCE(i.kind,'illust') = :k"
         p["k"] = kind
-    ids = [r["image_id"] for r in db.rows(sql + " ORDER BY k.created_at DESC", **p)]
-    return {"items": cards(ids), "total": len(ids)}
+    ids = [r["image_id"] for r in db.rows(sql + " ORDER BY CASE WHEN k.pos IS NULL THEN 0 ELSE 1 END, k.pos, k.created_at DESC", **p)]
+    return {"items": with_likes(cards(ids), u), "total": len(ids)}
+
+
+@router.put("/me/keeps/order")
+def keep_order(body: IdsIn, request: Request):
+    """킵 스페이스 순서 변경: 받은 순서대로 pos 를 매긴다."""
+    u = need(request)
+    with db.engine.begin() as c:
+        for n, i in enumerate(body.ids):
+            c.execute(text("UPDATE keeps SET pos = :p WHERE user_id = :u AND image_id = :i"), {"p": n, "u": u["id"], "i": i})
+    return {"ok": True}
 
 
 @router.post("/me/keeps/remove")
@@ -545,7 +580,7 @@ def profile(uid: str, request: Request):
     except Exception:
         links = []
     return {"uid": t["uid"], "nick": t["nick"], "bio": t["bio"] or "", "links": links, "avatar": _avatar_url(t["uid"], t["avatar"]),
-            "posts": _count("SELECT COUNT(*) AS n FROM images WHERE user_id = :i", i=t["id"]),
+            "posts": _count("SELECT COUNT(*) AS n FROM images WHERE user_id = :i" + ("" if (v and v["id"] == t["id"]) else " AND COALESCE(private,0) = 0"), i=t["id"]),
             "books": _count("SELECT COUNT(*) AS n FROM books WHERE user_id = :i", i=t["id"]) if v and v["id"] == t["id"] else None,
             "followers": _count("SELECT COUNT(*) AS n FROM follows WHERE followee_id = :i", i=t["id"]),
             "following": _count("SELECT COUNT(*) AS n FROM follows WHERE follower_id = :i", i=t["id"]),
@@ -555,16 +590,14 @@ def profile(uid: str, request: Request):
 
 
 @router.get("/users/{uid}/posts")
-def user_posts(uid: str, offset: int = 0, limit: int = 60):
+def user_posts(uid: str, request: Request, offset: int = 0, limit: int = 60, scope: str = ""):
+    """scope: '' 전체 / public 공개 / private 비공개 (비공개는 본인에게만)"""
     t = _user_row(uid)
-    ids = [r["id"] for r in db.rows("SELECT id FROM images WHERE user_id = :i ORDER BY id DESC LIMIT :l OFFSET :o", i=t["id"], l=min(limit, 100), o=max(0, offset))]
-    items = cards(ids)
-    if ids:
-        ph = ",".join(f":i{n}" for n in range(len(ids)))
-        lk = {r["image_id"]: r["n"] for r in db.rows(f"SELECT image_id, COUNT(*) AS n FROM likes WHERE image_id IN ({ph}) GROUP BY image_id", **{f"i{n}": i for n, i in enumerate(ids)})}
-        for c in items:
-            c["likes"] = lk.get(c["id"], 0)
-    return {"items": items}
+    v = me(request)
+    own = bool(v and v["id"] == t["id"])
+    cond = "" if own and scope == "" else " AND COALESCE(private,0) = 1" if own and scope == "private" else " AND COALESCE(private,0) = 0"
+    ids = [r["id"] for r in db.rows(f"SELECT id FROM images WHERE user_id = :i{cond} ORDER BY id DESC LIMIT :l OFFSET :o", i=t["id"], l=min(limit, 100), o=max(0, offset))]
+    return {"items": with_likes(cards(ids), v)}
 
 
 @router.get("/users/{uid}/books")

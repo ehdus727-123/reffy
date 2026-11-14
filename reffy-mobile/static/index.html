@@ -35,28 +35,30 @@
   <aside class="side" aria-label="필터">
     <div class="m-sheet-h m-only"><h2>필터</h2><button class="icon-btn" id="mFilterClose" type="button" aria-label="필터 닫기"><i data-ic="close" data-s="24"></i></button></div>
     <div class="tabs" role="tablist">
-      <button role="tab" id="tabTag" aria-selected="true" class="on">상세 필터</button>
-      <button role="tab" disabled title="준비 중이에요">3D 포즈</button>
-      <button role="tab" id="tabColor" aria-selected="false">색상 필터</button>
+      <button role="tab" id="tabTag" aria-selected="true" class="on">키워드</button>
+      <button role="tab" id="tabPose" aria-selected="false">3D 포즈</button>
+      <button role="tab" id="tabColor" aria-selected="false">무드</button>
       <button class="reset" id="reset" type="button">초기화</button>
     </div>
     <div class="groups" id="groups"></div>
     <div class="cpanel" id="cpanel" hidden></div>
+    <div class="ppanel" id="ppanel" hidden></div>
     <div class="apply"><button class="btn block m-only" id="mReset" type="button">초기화</button><button class="btn primary block" id="apply" type="button">필터 적용하기</button></div>
   </aside>
   <main class="main">
     <div class="bar">
-      <button class="fbtn" id="filterBtn" type="button" aria-label="필터 열기/닫기" aria-expanded="true">필터</button>
       <div class="grow"><div class="result"><h1 id="resultTitle">레퍼런스</h1><span class="count" id="count"></span></div><div class="chips" id="chips"></div></div>
       <div class="sortfilter">
         <div class="sortwrap">
           <button class="sortbtn" id="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="sortLabel">최근 순</span><i data-ic="chevronDown" data-s="16"></i></button>
           <div class="menu" id="sortMenu" role="listbox" hidden></div>
         </div>
+        <button class="fbtn" id="filterBtn" type="button" aria-label="필터 열기/닫기" aria-expanded="true"><i data-ic="filter" data-s="24"></i></button>
       </div>
     </div>
     <div class="grid" id="grid" aria-live="polite"></div>
     <div class="empty" id="empty" hidden></div>
+    <section class="zero-res" id="zero" hidden></section>
     <div id="more" aria-hidden="true"></div>
   </main>
   <section class="panel" id="panel" hidden aria-label="레퍼런스 상세"></section>

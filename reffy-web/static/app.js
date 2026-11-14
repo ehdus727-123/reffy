@@ -69,13 +69,18 @@ function drawGroups() {
   });
 }
 $("#apply").onclick = () => {
+  if (curTab === "pose") { toast("3D 포즈 검색은 준비 중이에요"); return; }
   if (CP.dirty && !$("#cpanel").hidden) { const c = hsv2hex(CP.h, CP.s, CP.v); if (!S.pickColors.includes(c)) S.pickColors = [...S.pickColors, c].slice(-5); CP.dirty = false; }   // 저장하지 않아도 지금 고른 색으로 적용
   S.applied = [...S.picked]; S.colors = [...S.pickColors]; if (!$("#cpanel").hidden) drawColorPanel(); reload();
   if (isM()) setFilterOpen(false);
 };
 $("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.colors = []; S.pickColors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
+const isTablet = () => !isM() && LAYOUT !== "pc" && innerWidth >= 768 && innerWidth < 1200;
+/* 태블릿: 딤(빈 곳)을 누르면 드로어를 닫는다 */
+$("#layout").addEventListener("click", (e) => { if (e.target !== e.currentTarget || !isTablet()) return; if (!$("#panel").hidden) closeDetail(); else setFilterOpen(false); });
 function setFilterOpen(o) { $("#layout").classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o)); }
 $("#filterBtn").onclick = () => setFilterOpen(!$("#layout").classList.contains("f-open"));
+if (isTablet()) setFilterOpen(false);
 $("#home").onclick = (e) => { e.preventDefault(); $("#reset").click(); closeDetail(); };
 
 /* ---------------------------------------------------------------- 색상 필터 (컬러 팔레트) */
@@ -126,15 +131,30 @@ async function pullPalette(id) {
     showTab(true); toast(isM() ? "무드에 색을 불러왔어요. ‘적용하기’를 눌러 같은 색을 찾아보세요." : "현재 팔레트에 색을 불러왔어요. ‘색상 적용하기’를 눌러 같은 색을 찾아보세요.");
   } catch (e) { toast(e.message); }
 }
-function showTab(color) {
-  $("#groups").hidden = color; $("#cpanel").hidden = !color;
-  $("#tabTag").classList.toggle("on", !color); $("#tabColor").classList.toggle("on", color);
-  $("#tabTag").setAttribute("aria-selected", String(!color)); $("#tabColor").setAttribute("aria-selected", String(color));
-  $("#apply").textContent = isM() ? "적용하기" : color ? "색상 적용하기" : "필터 적용하기";
-  if (color) drawColorPanel();
+let curTab = "tag";
+function showTab(t) {
+  curTab = t === true ? "color" : t === false ? "tag" : t;
+  const on = { tag: curTab === "tag", pose: curTab === "pose", color: curTab === "color" };
+  $("#groups").hidden = !on.tag; $("#cpanel").hidden = !on.color; $("#ppanel").hidden = !on.pose;
+  [["tabTag", on.tag], ["tabPose", on.pose], ["tabColor", on.color]].forEach(([id, v]) => { $("#" + id).classList.toggle("on", v); $("#" + id).setAttribute("aria-selected", String(v)); });
+  $("#apply").textContent = isM() ? "적용하기" : on.color ? "색상 적용하기" : on.pose ? "포즈 적용하기" : "필터 적용하기";
+  if (on.color) drawColorPanel();
+  if (on.pose) drawPosePanel();
 }
-$("#tabTag").onclick = () => showTab(false);
-$("#tabColor").onclick = () => showTab(true);
+$("#tabTag").onclick = () => showTab("tag");
+$("#tabPose").onclick = () => showTab("pose");
+$("#tabColor").onclick = () => showTab("color");
+/* 3D 포즈 (HOM_0202): 화면만 있고 검색은 아직 준비 중 */
+function drawPosePanel() {
+  const vbtn = (l) => h("button", { class: "pill sm", type: "button", onclick: () => toast("3D 포즈 조작은 준비 중이에요") }, l);
+  $("#ppanel").replaceChildren(
+    h("div", { class: "pose-vp", role: "img", "aria-label": "3D 포즈 뷰포트 (준비 중)" }, icon("person", 72), h("div", { class: "pose-ctl" }, vbtn("회전"), vbtn("확대"), vbtn("시점 초기화"))),
+    h("p", { class: "pose-hint" }, "관절을 드래그하거나 신체 파츠를 눌러 포즈를 만드세요"),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "신체 파츠"), h("button", { class: "linkbtn", type: "button", onclick: () => toast("준비 중이에요") }, "전체 보기")),
+      h("div", { class: "pose-parts" }, ["머리", "몸통", "팔", "다리"].map((p) => h("button", { type: "button", onclick: () => toast("준비 중이에요") }, h("span", { class: "ph" }), p)))),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: () => toast("준비 중이에요") }, "전체 보기")),
+      h("p", { class: "hint" }, "저장한 포즈가 없어요.")));
+}
 
 /* ---------------------------------------------------------------- 검색창 */
 const recent = () => store.get("reffy.recent", []);
@@ -172,12 +192,13 @@ function card(it) {
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => openDetail(it.id) },
     h("span", { class: "im" }, img, h("span", { class: "palbtn", role: "button", tabindex: "0", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로",
       onclick: (e) => { e.stopPropagation(); pullPalette(it.id); }, onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); pullPalette(it.id); } } }, icon("palette", 20))),
-    h("span", { class: "meta" }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), icon("heart", 22), h("span", { class: "lk" }, String(it.likes ?? 0))));
+    it.private ? h("span", { class: "prv" }, "비공개") : null,
+    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
 const moreIc = () => icon("more", 24);
 function skeleton() { const g = $("#grid"); for (let i = 0; i < 10; i++) g.append(h("div", { class: "card skel" }, h("span", { class: "im", style: `aspect-ratio:3/${3 + (i % 3)}` }))); }
 async function reload() {
-  S.items = []; S.total = 0; S.done = false; $("#grid").replaceChildren(); $("#empty").hidden = true;
+  S.items = []; S.total = 0; S.done = false; $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
   await more(true);
 }
 async function more(first) {
@@ -195,10 +216,33 @@ async function more(first) {
     $("#grid").append(...d.items.map(card));
     S.done = d.items.length === 0 || S.items.length >= d.total;
     drawBar(d);
+    if (first && d.total === 0) drawZero();
   } catch (e) {
     if (first) $("#grid").replaceChildren();
     $("#empty").hidden = false; $("#empty").replaceChildren(h("h2", {}, "불러오지 못했어요"), h("p", {}, e.message), h("button", { class: "btn", onclick: () => reload() }, "다시 시도"));
   } finally { S.loading = false; }
+}
+/* 검색 결과 0개 (HOM_0501 빈 상태): 추천 키워드 · 추천 레퍼런스 */
+async function drawZero() {
+  const z = $("#zero"); z.hidden = false;
+  const any = S.q || S.applied.length || S.colors.length;
+  const kw = h("div", { class: "z-kw" }), rec = h("div", { class: "z-rec" });
+  z.replaceChildren(
+    h("div", { class: "z-empty" }, h("span", { class: "z-ic" }, icon("search", 40)),
+      h("div", { class: "z-tx" }, h("h2", {}, any ? "검색 결과가 없어요" : "아직 레퍼런스가 없어요"), h("p", {}, any ? "다른 키워드로 검색하거나 필터를 바꿔 보세요" : "첫 레퍼런스를 올려 보세요")),
+      any ? h("button", { class: "btn m", type: "button", onclick: () => { S.q = ""; qEl.value = ""; S.applied = []; S.picked = new Set(); S.colors = []; S.pickColors = []; drawGroups(); reload(); } }, "피드 둘러보기")
+        : h("button", { class: "btn m", type: "button", onclick: () => openUpload() }, "+ 업로드"), kw),
+    rec);
+  try {
+    const p = await api("/api/popular");
+    const list = (Array.isArray(p) ? p : p.items || []).slice(0, 6);
+    if (list.length) kw.replaceChildren(h("span", { class: "z-lb" }, "추천 키워드"), h("div", { class: "z-chips" }, list.map((t) => h("button", { class: "pill", type: "button", onclick: () => runQuery(t.label || t.keyword || t) }, t.label || t.keyword || t))));
+  } catch { /* 없으면 생략 */ }
+  if (!any) return;
+  try {
+    const r = await api("/api/images?q=&tags=&offset=0");
+    if (r.items.length) rec.replaceChildren(h("h3", {}, "추천 레퍼런스"), h("div", { class: "grid" }, r.items.slice(0, isM() ? 6 : 10).map(card)));
+  } catch { /* 없으면 생략 */ }
 }
 function drawBar(d) {
   const hasQ = !!S.q;
@@ -214,14 +258,7 @@ function drawBar(d) {
   });
   S.colors.forEach((c) => chips.append(h("span", { class: "chip dark" }, h("i", { class: "sw", style: `background:${c}` }), c.toUpperCase(),
     h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); S.pickColors = [...S.colors]; drawColorPanel(); reload(); } }, "✕"))));
-  const e = $("#empty");
-  if (!S.total) {
-    e.hidden = false;
-    const any = hasQ || S.applied.length || S.colors.length;
-    e.replaceChildren(h("h2", {}, any ? "조건에 맞는 레퍼런스가 없어요" : "아직 레퍼런스가 없어요"),
-      h("p", {}, any ? "검색어를 줄이거나 필터를 하나씩 풀어 보세요." : "첫 이미지를 올리면 AI가 태그를 붙여 줘요."),
-      any ? h("button", { class: "btn", onclick: () => $("#reset").click() }, "조건 초기화") : h("button", { class: "btn primary", onclick: openUpload }, "이미지 올리기"));
-  } else e.hidden = true;
+  $("#empty").hidden = true;   // 0개일 때는 drawZero() 가 빈 상태를 그립니다
 }
 new IntersectionObserver((en) => { if (en[0].isIntersecting && S.items.length) more(false); }, { rootMargin: "600px" }).observe($("#more"));
 
@@ -262,6 +299,42 @@ async function act(d, method, url, body, edit) {
   if (!needLogin()) return;
   try { await api(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined }); await refreshSocial(d, edit); if (method === "POST" && url.endsWith("/keep")) toast("킵 스페이스에 담았어요. 나중에 골라서 북에 정리하세요.", ["킵 스페이스 보기", "#/keep"]); } catch (e) { toast(e.message); }
 }
+/* 사용 소재 링크 목록 (있을 때만) */
+function materialsSec(d) {
+  if (!d.materials || !d.materials.length) return null;
+  return h("div", { class: "sec" }, h("div", { class: "sec-h" }, h("h3", {}, "사용 소재")),
+    h("ul", { class: "mat-list" }, d.materials.map((l) => h("li", {}, icon("link", 16), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, l.replace(/^https?:\/\//, ""))))));
+}
+/* 이미지 기반 관절 검색 (COM_0104): 3D 포즈 필터로 이동. 검색 자체는 준비 중 */
+async function pullPose() {
+  if (!(await confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" }))) return;
+  if (isM() && !$("#panel").hidden) closeDetail();
+  setFilterOpen(true); showTab("pose");
+  toast("3D 포즈 검색은 준비 중이에요. 구도를 보고 포즈를 만들어 보세요");
+}
+/* 게시물 수정 (MYP_0200 수정 모드): 제목 · 사용 소재 · 공개 설정. 태그는 상세 화면의 ‘태그 수정’에서 */
+function editPost(d) {
+  const st = { title: d.title || "", materials: [...(d.materials || [])], private: !!d.private };
+  const m = h("div", { class: "modal" + (isM() ? " mfull" : ""), onmousedown: (e) => !isM() && e.target === m && m.remove() });
+  const save_ = async () => {
+    try {
+      await api(`/api/images/${d.id}/meta`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(st) });
+      m.remove(); toast("게시물을 수정했어요");
+      const fresh = await api(`/api/images/${d.id}`); fresh.so = d.so; Object.assign(d, fresh); drawDetail(d); reload();
+    } catch (e) { toast(e.message); }
+  };
+  const draw = () => m.replaceChildren(h("div", { class: "dlg bk edit", role: "dialog", "aria-modal": "true", "aria-label": "게시물 수정" },
+    isM() ? h("div", { class: "mbar" }, h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24)), h("h1", {}, "게시물 수정"), h("div", { class: "mbar-r" }))
+      : h("div", { class: "chd" }, h("h2", {}, "게시물 수정"), h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24))),
+    h("div", { class: "ed-body" },
+      h("div", { class: "ed-img" }, h("img", { src: d.full, alt: "" })),
+      h("div", { class: "field" }, h("label", { for: "edTitle" }, "제목"), h("input", { class: "inp", id: "edTitle", maxlength: "120", value: st.title, placeholder: "게시물 제목을 입력하세요", oninput: (e) => (st.title = e.target.value) })),
+      materialsField(st.materials, draw),
+      privacyField(st.private, (v) => { st.private = v; }),
+      h("p", { class: "hint" }, "태그는 게시물 상세의 ‘태그 수정’에서 고칠 수 있어요.")),
+    h("div", { class: "cft" }, btn("취소", "", () => m.remove()), btn(isM() ? "수정 완료" : "저장", "primary", save_))));
+  draw(); document.body.append(m);
+}
 function drawDetail(d, edit = false) {
   if (isM()) return drawDetailM(d, edit);
   const panel = $("#panel"); const so = d.so || { likes: 0, comments: [], owner: null, editable: false };
@@ -280,7 +353,7 @@ function drawDetail(d, edit = false) {
     h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
       h("button", { class: "back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, icon("arrowLeft", 24)),
       h("button", { class: "close", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, icon("close", 24)),
-      h("div", { class: "imgact" }, palBtn)),
+      h("div", { class: "imgact" }, h("button", { type: "button", class: "palbtn", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, icon("person", 20)), palBtn)),
     h("div", { class: "pbody" },
       h("div", { class: "who" }, o ? avatarEl(o, 36, "av") : h("span", { class: "av" }, (d.author || "?").slice(0, 1)),
         h("div", {}, o ? h("a", { class: "pname", href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid} · 조회 ${d.views.toLocaleString()}` : `조회 ${d.views.toLocaleString()} · ${d.w}×${d.h}`)),
@@ -288,8 +361,8 @@ function drawDetail(d, edit = false) {
         h("button", { class: "icon-btn more-post", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
           { ic: "save", label: "북에 추가", fn: () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) }) },
           { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) },
-          ...(so.editable ? [{ ic: "edit", label: edit ? "수정 완료" : "수정하기", fn: () => drawDetail(d, !edit) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }] : [])]); } }, icon("more", 24))),
-      h("h2", { class: "ptitle" }, d.title || "제목 없음"),
+          ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }] : [])]); } }, icon("more", 24))),
+      h("h2", { class: "ptitle" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
       h("div", { class: "prow" },
         h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 20), String(so.likes)),
         h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, icon("comment", 20), String(so.comments.length)),
@@ -303,6 +376,7 @@ function drawDetail(d, edit = false) {
           off.map((t) => h("button", { class: "tag off", type: "button", title: "눌러서 되돌리기", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null,
         edit ? h("p", { class: "hint" }, "AI가 붙인 태그를 눌러 지우거나, 흐린 태그를 눌러 되살릴 수 있어요. 같은 축의 ‘하나만’ 항목은 하나만 남겨 주세요.") : h("p", { class: "hint" }, "태그를 누르면 같은 태그의 레퍼런스를 모아 볼 수 있어요."),
       ),
+      materialsSec(d),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, `댓글 ${so.comments.length}`)),
         h("div", { class: "cform" }, comment, h("button", { class: "btn primary", type: "button", onclick: send }, "등록")),
@@ -334,7 +408,8 @@ let up = null;
 function closeUpload() { $(".modal")?.remove(); up = null; }
 function openUpload() {
   if (!needLogin()) return;
-  up = { token: null, tags: new Map(), file: null, kind: "illust" };
+  const dr = store.get("reffy.draft", null);
+  up = { token: null, tags: new Map(), file: null, kind: dr?.kind || "illust", title: dr?.title || "", materials: dr?.materials || [], private: !!dr?.private };
   const input = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", hidden: true, onchange: (e) => e.target.files[0] && analyze(e.target.files[0]) });
   const drop = h("div", { class: "drop", tabindex: "0", role: "button", "aria-label": "이미지 선택", onclick: () => input.click(), onkeydown: (e) => (e.key === "Enter" || e.key === " ") && input.click(),
     ondragover: (e) => { e.preventDefault(); drop.classList.add("over"); }, ondragleave: () => drop.classList.remove("over"), ondrop: (e) => { e.preventDefault(); drop.classList.remove("over"); e.dataTransfer.files[0] && analyze(e.dataTransfer.files[0]); } },
@@ -371,21 +446,42 @@ function drawUpload() {
     if (singleAxis(t.axis)) [...up.tags.values()].filter((x) => S.labels[x.ikey]?.axis === t.axis).forEach((x) => up.tags.delete(x.ikey));
     up.tags.set(t.ikey, { ikey: t.ikey, label: t.label, manual: true, group: "" }); drawUpload();
   };
+  up.materials = up.materials || []; up.private = !!up.private;
   const right = h("div", {},
     up.msg ? h("div", { class: "note warn" }, up.msg) : h("div", { class: "note" }, `AI가 ${tags.length}개의 태그를 붙였어요 (${up.sec}초). 틀린 태그는 지우고, 빠진 태그는 추가하세요.`),
     h("div", { class: "field" }, h("label", { for: "upTitle" }, "제목"), title),
     h("div", { class: "field" }, h("label", {}, "종류"), h("div", { class: "seg", role: "radiogroup" }, [["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(up.kind === k), class: up.kind === k ? "on" : "", onclick: () => { up.kind = k; drawUpload(); } }, l)))),
     h("div", { class: "field" }, h("label", {}, "태그"),
       tags.length ? [...byAxis].map(([ax, ts]) => h("div", { class: "axisgrp" }, h("h4", {}, ax), h("div", { class: "tags" }, ts.map(tagBtn)))) : h("p", { class: "hint" }, "붙은 태그가 없어요. 아래에서 직접 추가하세요."),
-      pickButton(h("div", { class: "pick" }), onPick, () => new Set(up.tags.keys()))));
+      pickButton(h("div", { class: "pick" }), onPick, () => new Set(up.tags.keys()))),
+    materialsField(up.materials, drawUpload),
+    privacyField(up.private, (v) => { up.private = v; }));
   body.replaceChildren(h("div", { class: "up" }, h("div", { class: "pv" }, h("img", { src: up.url, alt: "올린 이미지" })), right),
-    h("div", { class: "foot" }, h("button", { class: "btn", type: "button", onclick: closeUpload }, "취소"), h("button", { class: "btn primary", id: "pub", type: "button", onclick: publish }, isM() ? "등록" : "게시하기")));
+    h("div", { class: "foot" }, isM() ? h("button", { class: "btn", type: "button", onclick: saveDraft }, "임시 저장") : h("button", { class: "btn", type: "button", onclick: closeUpload }, "취소"), h("button", { class: "btn primary", id: "pub", type: "button", onclick: publish }, isM() ? "등록" : "게시하기")));
+}
+/* 사용 소재 링크 (MYP_0200): 입력 + 저장, 최대 10개 */
+function materialsField(list, redraw) {
+  const inp = h("input", { class: "inp", type: "url", placeholder: "링크를 입력해주세요", "aria-label": "사용 소재 링크", maxlength: "300" });
+  const add = () => { const v = inp.value.trim(); if (!v) return; if (list.length >= 10) return toast("사용 소재는 10개까지 넣을 수 있어요."); if (!list.includes(v)) list.push(v); redraw(); };
+  inp.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); add(); } };
+  return h("div", { class: "field mat" }, h("label", {}, "사용 소재"), h("div", { class: "row" }, inp, h("button", { class: "btn l", type: "button", onclick: add }, "저장")),
+    list.length ? h("ul", { class: "mat-list" }, list.map((l, i) => h("li", {}, icon("link", 16), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { list.splice(i, 1); redraw(); } }, icon("close", 16))))) : null);
+}
+/* 공개 설정 토글 */
+function privacyField(priv, onChange) {
+  return h("label", { class: "swrow up-sw" }, h("span", {}, h("b", {}, "공개 설정"), h("small", {}, "끄면 나만 볼 수 있어요")),
+    h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: !priv, onchange: (e) => onChange(!e.target.checked) }), h("i", { class: "sw-ui" }));
+}
+/* 임시 저장: 이 브라우저에만 제목 · 사용 소재 · 공개 설정을 보관합니다 (이미지는 다시 골라야 해요) */
+function saveDraft() {
+  store.set("reffy.draft", { title: up.title || "", materials: up.materials || [], private: !!up.private, kind: up.kind });
+  toast("임시 저장했어요. 다음에 이미지를 고르면 이어서 쓸 수 있어요");
 }
 async function publish() {
   const b = $("#pub"); b.disabled = true; b.textContent = "게시하는 중…";
   try {
-    const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: up.token, title: up.title || "", kind: up.kind || "illust", tags: [...up.tags.keys()] }) });
-    closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
+    const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: up.token, title: up.title || "", kind: up.kind || "illust", tags: [...up.tags.keys()], materials: up.materials || [], private: !!up.private }) });
+    store.set("reffy.draft", null); closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
   } catch (e) { b.disabled = false; b.textContent = isM() ? "등록" : "게시하기"; toast(e.message); }
 }
 $("#uploadBtn").onclick = openUpload;

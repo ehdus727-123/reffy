@@ -129,7 +129,9 @@ def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", o
     cl = [("#" + c.lstrip("#")).lower() for c in color.split(",") if colormod.HEX.match(c.strip())][:5]
     sort = sort or ("relevance" if (q.strip() or cl) else "recent")
     offset, limit = max(0, offset), min(max(1, limit), 100)
+    viewer = social.me(request)
     hide = extras.hidden_ids(request)   # 차단한(또는 나를 차단한) 사용자의 게시물은 피드에서 뺀다
+    hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE COALESCE(private,0) = 1 AND (user_id IS NULL OR user_id != :u)", u=viewer["id"] if viewer else -1)}   # 남의 비공개 게시물
     if cl or hide:
         all_ids, _, found = search(q, tl, sort, 0, 100000)
         ids_all = [i for i in all_ids if i not in hide]
@@ -147,10 +149,7 @@ def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", o
     if ids:
         ph = ",".join(f":i{n}" for n in range(len(ids)))
         by = {r["id"]: r for r in db.rows(f"SELECT id, title, author, w, h, views, created_at FROM images WHERE id IN ({ph})", **{f"i{n}": i for n, i in enumerate(ids)})}
-        cards = [_card(by[i]) for i in ids if i in by]
-        lk = {r["image_id"]: r["n"] for r in db.rows(f"SELECT image_id, COUNT(*) AS n FROM likes WHERE image_id IN ({ph}) GROUP BY image_id", **{f"i{n}": i for n, i in enumerate(ids)})}
-        for c in cards:
-            c["likes"] = lk.get(c["id"], 0)
+        cards = social.with_likes([_card(by[i]) for i in ids if i in by], viewer)
     return {"items": cards, "total": total, "sort": sort, "colors": cl,
             "matched": [{"ikey": k, "label": BY_IKEY[k]["keyword"]} for k in found[:8] if k in BY_IKEY] if q.strip() else []}
 
@@ -165,14 +164,16 @@ def image_colors(image_id: int):
 
 @app.get("/api/images/{image_id}")
 def detail(image_id: int, request: Request):
-    r = db.rows("SELECT id, title, author, w, h, views, created_at FROM images WHERE id = :i", i=image_id)
-    if not r:
+    r = db.rows("SELECT id, title, author, w, h, views, created_at, user_id, COALESCE(private,0) AS private, materials FROM images WHERE id = :i", i=image_id)
+    if not r or (r[0]["private"] and not ((v := social.me(request)) and v["id"] == r[0]["user_id"])):
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
     with db.engine.begin() as c:
         c.execute(text("UPDATE images SET views = views + 1 WHERE id = :i"), {"i": image_id})
     social.record_view(request, image_id)
     d = _card(r[0])
     d["views"] += 1
+    d["private"] = bool(r[0]["private"])
+    d["materials"] = _materials(r[0]["materials"])
     d["full"] = f"/img/{image_id}?s=full&v={_ver(r[0])}"
     d["tags"] = _tags_of(image_id)
     d["colors"] = colormod.palette_of(colormod.loads((db.rows("SELECT colors FROM images WHERE id = :i", i=image_id) or [{}])[0].get("colors")))
@@ -180,9 +181,9 @@ def detail(image_id: int, request: Request):
 
 
 @app.get("/img/{image_id}")
-def image_file(image_id: int, s: str = "thumb"):
-    r = db.rows("SELECT file FROM images WHERE id = :i", i=image_id)
-    if not r:
+def image_file(image_id: int, request: Request, s: str = "thumb"):
+    r = db.rows("SELECT file, user_id, COALESCE(private,0) AS private FROM images WHERE id = :i", i=image_id)
+    if not r or (r[0]["private"] and not ((v := social.me(request)) and v["id"] == r[0]["user_id"])):
         raise HTTPException(404)
     f = r[0]["file"]
     p = (config.UPLOADS / ("t_" + f.rsplit(".", 1)[0] + ".jpg")) if s == "thumb" else (config.UPLOADS / f)
@@ -212,6 +213,48 @@ class PublishIn(BaseModel):
     title: str = ""
     kind: str = "illust"           # illust(일러스트) / photo(사진)
     tags: List[str] = []          # 사용자가 최종 확정한 ikey 목록
+    materials: List[str] = []     # 사용 소재 링크 (최대 10개, http(s)만)
+    private: bool = False         # 비공개 게시
+
+
+def _materials(raw) -> list:
+    try:
+        v = json.loads(raw) if raw else []
+        return [x for x in v if isinstance(x, str)]
+    except ValueError:
+        return []
+
+
+def _clean_links(links: List[str]) -> str:
+    out = []
+    for x in links[:10]:
+        x = (x or "").strip()[:300]
+        if x and not x.lower().startswith(("http://", "https://")):
+            x = "https://" + x
+        if x and x not in out:
+            out.append(x)
+    return json.dumps(out, ensure_ascii=False)
+
+
+class MetaIn(BaseModel):
+    title: str = ""
+    materials: List[str] = []
+    private: bool = False
+
+
+@app.put("/api/images/{image_id}/meta")
+def edit_meta(image_id: int, body: MetaIn, request: Request):
+    """게시물 수정: 제목 · 사용 소재 · 공개 설정 (올린 사람만)."""
+    user = social.need(request)
+    r = db.rows("SELECT user_id FROM images WHERE id = :i", i=image_id)
+    if not r:
+        raise HTTPException(404, "이미지를 찾을 수 없어요.")
+    if r[0]["user_id"] not in (None, user["id"]):
+        raise HTTPException(403, "내가 올린 게시물만 수정할 수 있어요.")
+    with db.engine.begin() as c:
+        c.execute(text("UPDATE images SET title = :t, materials = :m, private = :p WHERE id = :i"),
+                  {"t": body.title.strip()[:120], "m": _clean_links(body.materials), "p": 1 if body.private else 0, "i": image_id})
+    return {"ok": True}
 
 
 @app.post("/api/images")
@@ -227,6 +270,7 @@ def publish(body: PublishIn, request: Request):
     im = ImageOps.exif_transpose(im)
     with db.engine.begin() as c:
         rid = c.execute(db.images.insert().values(title=body.title.strip()[:120], author=user["nick"], user_id=user["id"], kind="photo" if body.kind == "photo" else "illust", file="pending",
+                                                  private=1 if body.private else 0, materials=_clean_links(body.materials),
                                                   w=im.width, h=im.height, views=0, wd_json=json.dumps(res.get("wd", {}), ensure_ascii=False)))
         iid = rid.inserted_primary_key[0]
         name = f"{iid}.{img_f.suffix[1:]}"

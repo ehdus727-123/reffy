@@ -69,7 +69,8 @@ function pcard(it, o = {}) {
   const el = h("div", { class: "card" + (o.on ? " on" : ""), "data-id": it.id, role: "button", tabindex: "0", onclick: () => (o.click ? o.click(it, el) : goPost(it.id)),
     onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); } } },
     h("span", { class: "im" }, h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null })), h("span", { class: "ck" }),
-    isM() ? h("span", { class: "meta" }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? [icon("heart", 22), h("span", { class: "lk" }, String(it.likes))] : null)
+    it.private ? h("span", { class: "prv" }, "비공개") : null,
+    isM() ? h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes))) : null)
     : h("span", { class: "meta" }, h("span", { class: "av" }, (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, h("b", {}, it.title || "제목 없음"), h("span", {}, it.author)),
       o.more ? h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); o.more(e.currentTarget, it); } }, moreIc()) : moreIc()));
   return el;
@@ -135,12 +136,13 @@ async function keepPage() {
   function bar() {
     const b = h("div", { class: "selbar", hidden: !sel });
     const n = picked.size;
-    b.append(`${n}개 선택`, btn("북에 저장", "", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요.")),
-      btn("삭제", "primary", async () => {
-        if (!n) return toast("삭제할 이미지를 골라 주세요.");
-        if (!(await confirmDialog(`선택한 레퍼런스 ${n}개를 삭제할까요?`))) return;
-        try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [...picked] }) }); picked.clear(); sel = false; load(); } catch (e) { toast(e.message); }
-      }));
+    const delBtn = btn("삭제", "", async () => {
+      if (!n) return toast("삭제할 이미지를 골라 주세요.");
+      if (!(await confirmDialog(`선택한 레퍼런스 ${n}개를 삭제할까요?`, "킵 스페이스에서 삭제돼요. 게시물 자체는 지워지지 않아요.", { ok: "삭제", danger: true }))) return;
+      try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [...picked] }) }); picked.clear(); sel = false; toast("킵 스페이스에서 삭제했어요"); load(); } catch (e) { toast(e.message); }
+    });
+    const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
+    b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, saveBtn);
     return b;
   }
   function draw() {
@@ -148,7 +150,7 @@ async function keepPage() {
     const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
     const selBtn = data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
     root.replaceChildren(isM() ? mbar("킵 스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? pgrid(data.items, (it) => ({ on: picked.has(it.id), click: (_, el) => { if (!sel) return goPost(it.id); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+      data.items.length ? pgrid(data.items, (it) => ({ on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : goPost(it.id); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
         : notice(kind ? "이 종류의 킵이 없어요" : isM() ? "킵 스페이스가 비어있어요" : "킵 스페이스가 비었어요", isM() ? "피드에서 마음에 드는 레퍼런스를 담아보세요" : "홈에서 마음에 드는 레퍼런스를 ‘킵에 담기’로 모아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))),
       bar());
   }
@@ -325,10 +327,10 @@ function followsDialog(u, kind, after) {
 
 async function profilePage(uid) {
   const root = h("div", { class: "pf" }); page(root);
-  let u, tab = "posts", posts = [], books = [];
+  let u, tab = "posts", posts = [], books = [], scope = "";
   async function loadAll() {
     u = await api("/api/users/" + uid);
-    posts = (await api(`/api/users/${uid}/posts?limit=100`)).items;
+    posts = (await api(`/api/users/${uid}/posts?limit=100` + (u && u.me && scope ? "&scope=" + scope : ""))).items;
     books = u.me ? (await api(`/api/users/${uid}/books`)).items : [];
   }
   function draw() {
@@ -346,10 +348,11 @@ async function profilePage(uid) {
       ? h("div", { class: "pf-acts" }, btn(isM() ? "프로필 수정" : "프로필 편집", "", () => (location.hash = "#/me/edit")), btn("+ 새 게시물 업로드", "primary up", () => openUpload()))
       : u.blocked ? h("div", { class: "pf-acts" }, btn("차단 해제", "", unblock))
       : h("div", { class: "pf-acts" }, btn(u.isFollowing ? "팔로잉" : "팔로우", u.isFollowing ? "" : "primary", async () => { if (!ME) return needLogin(); try { await toggleFollow(u.uid, u.isFollowing); await loadAll(); draw(); } catch (e) { toast(e.message); } }));
-    const tabBtn = (k, l) => h("button", { class: "pf-tab" + (tab === k ? " on" : ""), type: "button", role: "tab", "aria-selected": String(tab === k), onclick: () => { tab = k; draw(); } }, l);
+    const tabBtn = (k, l, sc = "") => { const on = tab === k && (k !== "posts" || scope === sc); return h("button", { class: "pf-tab" + (on ? " on" : ""), type: "button", role: "tab", "aria-selected": String(on), onclick: async () => { tab = k; if (k === "posts" && scope !== sc) { scope = sc; try { await loadAll(); } catch (e) { toast(e.message); } } draw(); } }, l); };
+    const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => goPost(it.id) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
     const grid = u.blocked ? notice("차단한 유저예요", `차단을 해제하면 ${u.nick}님의 게시물을 다시 볼 수 있어요.`) : tab === "posts"
-      ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map((it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => goPost(it.id) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }))))
-        : notice(u.me ? "아직 올린 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
+      ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
+        : notice(scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
       : (books.length ? h("div", { class: "pf-grid" }, books.map((b) => h("button", { class: "pf-cell book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) },
         b.cover ? h("img", { src: b.cover, alt: "" }) : (b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "ph" })), h("span", { class: "bn" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)))))
         : notice("아직 북이 없어요", "서랍에서 새 북을 만들어 보세요.", btn("서랍으로", "primary", () => (location.hash = "#/drawer"))));
@@ -365,7 +368,7 @@ async function profilePage(uid) {
           h("div", { class: "pf-mid" }, u.bio ? h("p", { class: "pf-bio" }, u.bio) : null, acts),
           links),
         h("section", { class: "pf-main" },
-          h("div", { class: "pf-tabs", role: "tablist" }, u.me ? tabBtn("posts", "전체") : tabBtn("posts", isM() ? `게시물 ${u.posts}` : "게시물"), u.me ? tabBtn("books", `북 ${u.books}`) : null),
+          h("div", { class: "pf-tabs", role: "tablist" }, u.me ? [tabBtn("posts", "전체", ""), tabBtn("posts", isM() ? "공개" : "공개 게시물", "public"), tabBtn("posts", isM() ? "비공개" : "비공개 게시물", "private"), tabBtn("books", `북 ${u.books}`)] : tabBtn("posts", isM() ? `게시물 ${u.posts}` : "게시물")),
           grid)));
   }
   const refresh = async () => { try { await loadAll(); draw(); } catch { /* 유지 */ } };

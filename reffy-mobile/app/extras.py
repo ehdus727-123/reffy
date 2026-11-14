@@ -196,7 +196,7 @@ def my_reacted(request: Request, kind: str = ""):
     like = [r["image_id"] for r in db.rows("SELECT image_id FROM likes WHERE user_id = :u ORDER BY created_at DESC", u=u["id"])]
     com = [r["image_id"] for r in db.rows("SELECT image_id, MAX(created_at) AS t FROM comments WHERE user_id = :u GROUP BY image_id ORDER BY t DESC", u=u["id"])]
     ids = like if kind == "like" else com if kind == "comment" else like + [i for i in com if i not in set(like)]
-    items = _likes(S.cards(ids))
+    items = S.with_likes(S.cards(S.visible(ids, u)), u)
     ls = set(like)
     for it in items:
         it["re"] = "like" if it["id"] in ls and kind != "comment" else "comment"
@@ -215,5 +215,6 @@ def related(image_id: int, request: Request, limit: int = 10):
             f"GROUP BY t.image_id ORDER BY n DESC, t.image_id DESC LIMIT 40",
             i=image_id, thr=config.TAG_THRESHOLD, **{f"k{n}": k for n, k in enumerate(tags)})]
     hide = hidden_ids(request)
-    ids = [i for i in ids if i not in hide][:max(1, min(limit, 20))]
-    return {"items": _likes(S.cards(ids))}
+    v = S.me(request)
+    ids = S.visible([i for i in ids if i not in hide], v)[:max(1, min(limit, 20))]
+    return {"items": S.with_likes(S.cards(ids), v)}
