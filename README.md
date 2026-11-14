@@ -1,30 +1,60 @@
 # REFFY — 레퍼런스 검색 서비스 (MVP)
 
 이미지를 올리면 **WD tagger + 우리 팀이 라벨링해서 학습시킨 분류기**가 태그를 붙이고,
-검색어·태그 필터로 레퍼런스를 찾는 서비스입니다. 화면은 와이어프레임(홈 피드 · 상세 필터 · 검색 결과 · 카드 상세 · 업로드)과
-Design System 토큰을 따릅니다. 라벨링 앱(라이트테이블)과는 **별도 프로그램**이며 라벨링 앱은 수정하지 않습니다.
+검색어·태그 필터·색상으로 레퍼런스를 찾는 서비스입니다. 라벨링 앱(라이트테이블)과는 별도 프로그램입니다.
 
-## 실행
+## 폴더 구조
+```
+reffy/
+├─ reffy-web/       웹(PC) 화면 서버   → http://127.0.0.1:8100
+│  ├─ app/          서버 (FastAPI)
+│  ├─ static/       화면 (HTML · CSS · JS)
+│  ├─ tools/        분류기 내보내기 · 재태깅 · 이미지 한꺼번에 넣기
+│  ├─ data/         ia.json(태그 사전)만 올라가 있음. DB · 업로드 이미지는 실행하면 생김
+│  └─ run.py
+└─ reffy-mobile/    모바일 화면 서버   → http://127.0.0.1:8200  (코드는 reffy-web 과 같고 .env 만 다름)
+```
+- 두 폴더의 코드는 같습니다. 화면 틀은 `.env` 의 `LAYOUT` 으로 정해집니다(`pc` / `mobile` / `auto`).
+- 모바일 서버는 기본으로 **reffy-web 의 data 와 models 를 같이 씁니다**(`DATA_DIR=../reffy-web/data`). 웹에서 올린 게시물이 모바일에도 보입니다.
+- 코드를 고치면 두 폴더 모두 고쳐야 합니다.
+
+## 실행 (Windows cmd)
+처음 한 번:
 ```
 cd reffy
-python -m venv .venv && .venv\Scripts\activate        # Mac/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-copy .env.example .env                                 # (선택) 설정
-python run.py                                          # http://127.0.0.1:8100
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r reffy-web\requirements.txt
+copy reffy-web\.env.example reffy-web\.env
+copy reffy-mobile\.env.example reffy-mobile\.env
 ```
-처음 켜면 WD tagger 모델(`SmilingWolf/wd-vit-tagger-v3`, 수백 MB)을 `models/` 로 내려받습니다(라벨링 앱 models 폴더의 것을 복사해 넣어도 됩니다:
-`models/wd-vit-tagger-v3/model.onnx`, `selected_tags.csv`). 준비되는 동안에는 업로드 화면에서 직접 태그를 고를 수 있습니다.
+웹 서버 (cmd 창 1):
+```
+cd reffy\reffy-web
+..\.venv\Scripts\activate
+python run.py
+```
+모바일 서버 (cmd 창 2):
+```
+cd reffy\reffy-mobile
+..\.venv\Scripts\activate
+python run.py
+```
+- 처음 켜면 WD tagger 모델(수백 MB)을 `reffy-web/models/` 로 내려받습니다. 라벨링 앱의 `models/wd-vit-tagger-v3/` 를 복사해 넣어도 됩니다.
+- 모바일 주소를 PC 브라우저에서 열면 가운데 휴대폰 폭으로 보입니다. 휴대폰에서 열려면 `.env` 에 `HOST=0.0.0.0` 을 넣고, 같은 와이파이에서 `http://<PC의 IPv4 주소>:8200`.
+- `.venv`, `.env`, `data/` 의 DB · 업로드 이미지, `models/` 는 GitHub 에 올리지 않습니다(`.gitignore`).
 
 ## 팀 분류기 연결 (라벨링 → 서비스)
 ```
-python tools/export_classifier.py ../labeling-app      # models/team_classifier.joblib 생성
+cd reffy-web
+python tools/export_classifier.py ../../labeling-app   # models/team_classifier.joblib 생성
 python run.py                                          # 다음 실행부터 자동 적용
 python -m tools.retag                                  # 이미 올라온 이미지를 새 분류기로 다시 태깅(사용자 수정은 유지)
 ```
-라벨이 쌓여 분류기가 새로 학습되면 위 두 줄을 다시 실행하세요. 파일이 없으면 WD tagger → 기준표 매핑만 사용합니다.
 
 ## 이미지 한꺼번에 넣기
 ```
+cd reffy-web
 python -m tools.seed 이미지폴더 [작성자]
 ```
 
@@ -41,16 +71,9 @@ python -m tools.seed 이미지폴더 [작성자]
 - 필터: 같은 축은 OR, 축끼리는 AND. 정렬: 최근 / 인기(조회수) / 관련도.
 - 태그 사전은 라벨링 기준표(`data/ia.json`, 일러스트용 223개)입니다. 기준표가 바뀌면 라벨링 앱의 `app/ia.json` 을 `data/ia.json` 으로 복사하세요.
 
-## 이번 MVP에 없는 것 (와이어프레임에는 있음)
-로그인·회원가입, 3D 포즈·색상 필터(탭은 비활성), 킵 스페이스·서랍, 알림·팔로우·하트·댓글, 사진 API 이미지.
-작성자는 닉네임만 입력합니다(계정 없음). PRD §6 기준 F01~F07 범위입니다.
-
 ## 환경 변수 (`.env`)
-`DB_URL`(비우면 SQLite `data/reffy.db`, MySQL 은 `mysql+pymysql://...`), `TAGGER`(auto/off/mock), `CLASSIFIER`, `WD_THRESHOLD`, `TEAM_PROB`, `TAG_THRESHOLD`, `PORT`.
+`LAYOUT`(pc/mobile/auto), `HOST`, `PORT`, `DATA_DIR`·`MODEL_DIR`(다른 폴더 것을 같이 쓸 때), `DB_URL`(비우면 SQLite `data/reffy.db`, MySQL 은 `mysql+pymysql://...`), `TAGGER`(auto/off/mock), `CLASSIFIER`, `WD_THRESHOLD`, `TEAM_PROB`, `TAG_THRESHOLD`, `PORT`.
 `TAGGER=mock` 은 모델 없이 화면을 시험하는 가짜 태그입니다. 실제 서비스에는 쓰지 마세요. 값 뒤에 `# 주석`을 붙이지 마세요.
-
-## 폴더
-`app/` 서버(main·tagger·classifier·tagmap·search·db) · `static/` 화면 · `tools/` 분류기 내보내기·재태깅·시드 · `data/` 기준표·DB·업로드 · `models/` 모델 파일
 
 ## 계정·킵 스페이스·서랍·알림 (Figma 와이어프레임 반영)
 - 화면 주소: `#/` 홈, `#/login`, `#/signup`, `#/keep`(킵 스페이스), `#/drawer`(서랍: 레퍼런스 북 · 최근 본 · 반응한), `#/post/번호`(게시물 상세).
@@ -83,8 +106,3 @@ Figma "Web (가이드 적용본)" 기준: GNB 88px(검색 320,22 950×44 · 액�
 - 새 API(`app/extras.py`): 차단 `POST|DELETE /api/users/{uid}/block`, `GET /api/me/blocks` · 신고 `POST /api/reports` · 문의 `POST /api/inquiries` · 알림 설정 `GET|PUT /api/me/settings` · 비밀번호 `PUT /api/me/password` · 탈퇴 `POST /api/me/leave` · 반응한 게시물 `GET /api/me/reacted`.
 - 아직 없는 것: 3D Pose 필터와 이미지 기반 관절 검색, 게시물 공개/비공개, 여러 장 올리기 · 임시 저장, 사용한 툴 · 사용 소재, 킵 스페이스 크게 보기(스와이프) · 순서 변경, 방해 금지 시간, 2단계 인증, SNS 계정 연결, 문의 사진 첨부.
 
-## PC 서버와 모바일 서버를 따로 켜기
-- `.env` 의 `LAYOUT` 으로 화면 틀을 고정합니다: `auto`(화면 폭에 따라 자동, 기본) / `pc`(항상 PC) / `mobile`(항상 모바일).
-- 모바일 폴더를 따로 둘 때: 이 폴더를 `reffy-mobile` 로 복사하고 `.env.mobile.example` 을 `.env` 로 복사해 `python run.py` (기본 `http://127.0.0.1:8200`).
-  `DATA_DIR=../reffy/data` 라서 PC 폴더와 같은 게시물·계정을 씁니다. PC 폴더의 `.env` 에는 `LAYOUT=pc` 를 넣으세요.
-- `HOST` · `PORT` 도 `.env` 에서 읽습니다. 다른 기기에서 접속하려면 `HOST=0.0.0.0`.

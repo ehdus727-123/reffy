@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>REFFY · 레퍼런스 검색</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="icon" type="image/svg+xml" href="assets/reffy-symbol.svg">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="mobile.css" media="(max-width:767px)">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <a href="#/" id="home" aria-label="REFFY 홈">
+      <img class="logo" src="assets/reffy-symbol.svg" width="34" height="34" alt="REFFY">
+    </a>
+    <nav class="nav" id="nav" aria-label="주요 메뉴"><a data-r="" href="#/">홈</a><a data-r="keep" href="#/keep">킵 스페이스</a><a data-r="drawer" href="#/drawer">서랍</a></nav>
+  </div>
+  <button class="icon-btn m-only" id="mBack" type="button" aria-label="뒤로" hidden><i data-ic="back" data-s="24"></i></button>
+  <form class="search" id="searchForm" role="search" autocomplete="off">
+    <i data-ic="search" data-s="20"></i>
+    <input id="q" type="search" placeholder="원하는 포즈, 구도, 소재를 검색해보세요" aria-label="검색어">
+    <div class="suggest" id="suggest" hidden></div>
+  </form>
+  <div class="actions"><div class="notif" id="notif" hidden></div>
+    <button class="icon-btn" id="bell" type="button" aria-label="알림" aria-haspopup="true" aria-expanded="false"><i data-ic="bell" data-s="24"></i></button>
+    <button class="icon-btn" id="uploadBtn" type="button" aria-label="이미지 올리기" title="이미지 올리기"><i data-ic="upload" data-s="24"></i></button>
+    <button class="avatar" id="me" type="button" aria-label="닉네임 설정" title="닉네임 설정"></button>
+  </div>
+</header>
+<main id="page" hidden></main>
+<div class="layout f-open" id="layout">
+  <div class="m-ov m-only" id="mOv"></div>
+  <aside class="side" aria-label="필터">
+    <div class="m-sheet-h m-only"><h2>필터</h2><button class="icon-btn" id="mFilterClose" type="button" aria-label="필터 닫기"><i data-ic="close" data-s="24"></i></button></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabTag" aria-selected="true" class="on">상세 필터</button>
+      <button role="tab" disabled title="준비 중이에요">3D 포즈</button>
+      <button role="tab" id="tabColor" aria-selected="false">색상 필터</button>
+      <button class="reset" id="reset" type="button">초기화</button>
+    </div>
+    <div class="groups" id="groups"></div>
+    <div class="cpanel" id="cpanel" hidden></div>
+    <div class="apply"><button class="btn block m-only" id="mReset" type="button">초기화</button><button class="btn primary block" id="apply" type="button">필터 적용하기</button></div>
+  </aside>
+  <main class="main">
+    <div class="bar">
+      <button class="fbtn" id="filterBtn" type="button" aria-label="필터 열기/닫기" aria-expanded="true">필터</button>
+      <div class="grow"><div class="result"><h1 id="resultTitle">레퍼런스</h1><span class="count" id="count"></span></div><div class="chips" id="chips"></div></div>
+      <div class="sortfilter">
+        <div class="sortwrap">
+          <button class="sortbtn" id="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="sortLabel">최근 순</span><i data-ic="chevronDown" data-s="16"></i></button>
+          <div class="menu" id="sortMenu" role="listbox" hidden></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid" id="grid" aria-live="polite"></div>
+    <div class="empty" id="empty" hidden></div>
+    <div id="more" aria-hidden="true"></div>
+  </main>
+  <section class="panel" id="panel" hidden aria-label="레퍼런스 상세"></section>
+</div>
+<nav class="mtab m-only" id="mtab" aria-label="하단 메뉴">
+  <a data-r="" href="#/"><i data-ic="home" data-s="24"></i><span>홈</span></a>
+  <a data-r="keep" href="#/keep"><i data-ic="keep" data-s="24"></i><span>킵 스페이스</span></a>
+  <a data-r="drawer" href="#/drawer"><i data-ic="box" data-s="24"></i><span>서랍</span></a>
+  <a data-r="me" href="#/me"><i data-ic="user" data-s="24"></i><span>마이페이지</span></a>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="icons.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="mobile.js"></script>
+<script src="pages.js"></script>
+</body>
+</html>

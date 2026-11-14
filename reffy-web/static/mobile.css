@@ -1,0 +1,217 @@
+/* REFFY — 모바일(767px 이하) 화면. Figma "Mobile 2차" 와이어프레임(390×844) 기준.
+   이 파일은 <link media="(max-width:767px)"> 로만 읽힙니다. html 에 .m 클래스가 붙습니다(우선순위용). */
+.m-only{display:block!important}
+.m-only[hidden]{display:none!important}
+.m body{padding-bottom:calc(64px + env(safe-area-inset-bottom));-webkit-text-size-adjust:100%}
+.m.m-detail body,.m body.no-tab{padding-bottom:0}
+.m .layout,.m #page,.m .drawer{min-height:0}
+
+/* ---- 하단 탭바 (WF/TabBar) */
+.m .mtab{display:flex!important;position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:#fff;border-top:1px solid #e4e3e5;z-index:30;box-sizing:border-box}
+.m .mtab a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 12px/16px Pretendard,sans-serif;color:#8e8c91;text-decoration:none}
+.m .mtab a.on{color:#18171a;font-weight:600}
+.m.m-detail .mtab,.m body.no-tab .mtab,.m body:has(.modal.upl) .mtab,.m body:has(.dlg.bk) .mtab{display:none!important}
+
+/* ---- 홈 앱바: 로고 + 검색 + 알림 */
+.m .top{height:60px;padding:0 16px;gap:12px;border-bottom:0}
+.m body:not(.route-home) .top{display:none}
+.m .brand{gap:0;flex:none}
+.m .nav,.m #uploadBtn,.m #me{display:none}
+.m .logo{width:28px;height:28px;display:block}
+.m .search{height:40px;padding:0 12px;gap:8px}
+.m .search:focus-within{box-shadow:none}
+.m .search input{font-size:14px}
+.m .actions{gap:0;flex:none}
+.m #mBack{display:grid!important;place-items:center;width:28px;height:28px;flex:none;margin-left:-4px}
+.m #mBack[hidden]{display:none!important}
+.m .top:has(#mBack:not([hidden])) .brand,.m .top:has(#mBack:not([hidden])) .actions{display:none}
+.m.m-search #suggest{display:block!important;position:fixed;left:0;right:0;top:60px;bottom:calc(64px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none;padding:16px;overflow:auto}
+.m #suggest h3{font:600 16px/22px Pretendard,sans-serif}
+
+/* ---- 홈 피드 */
+.m .layout{display:block}
+.m .main,.m .layout:not(.f-open) .main{padding:4px 16px 24px}
+.m .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.m .bar .grow{display:contents}
+.m .fbtn,.m .layout.f-open .fbtn{order:1;height:28px;padding:0 12px 0 10px;border-radius:999px;display:inline-flex;gap:4px;align-items:center;font:600 13px/18px Pretendard,sans-serif;background:#fff;border:1px solid #c3c2c5}
+.m .fbtn.on,.m .layout.f-open .fbtn.on{background:#18171a;color:#fff;border-color:#18171a}
+.m .chips{order:2;flex:1 1 0;min-width:0;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:0;scrollbar-width:none}
+.m .chips::-webkit-scrollbar{display:none}
+.m .chips .chip.dark{background:#fff;color:#18171a;border:1px solid #c3c2c5;height:28px;box-sizing:border-box;padding:0 10px;white-space:nowrap;flex:none}
+.m .chips .chip.dark .sw{border-color:#c3c2c5}
+.m .result{display:none;order:3;flex:1 1 auto;gap:4px}
+.m body.searching .chips{flex:1 1 calc(100% - 110px)}
+.m body.searching .result{display:flex}
+.m .result h1{font:500 13px/18px Pretendard,sans-serif;letter-spacing:0}
+.m .result .count{font:400 13px/18px Pretendard,sans-serif;color:#6f6d72}
+.m .sortfilter{order:4;margin-left:auto}
+.m .sortbtn{border:0;padding:0;height:28px;font:500 13px/18px Pretendard,sans-serif;background:none;gap:2px}
+.m .grid,.m .layout.f-open .grid,.m .layout.has-panel .grid,.m .layout.f-open.has-panel .grid,.m .grid.c2,.m .grid.c5,.m .grid.c6{column-count:2;column-gap:13px}
+.m .card{margin-bottom:13px}
+.m .card .palbtn,.m .card .more-btn{display:none}
+.m .card .meta{padding:8px 2px}
+.m .empty,.m .notice{padding:72px 0}
+
+/* ---- 필터 바텀시트 (HOM_0201~0203) */
+.m .m-ov{display:none!important;position:fixed;inset:0;background:rgba(24,23,26,.5);z-index:45}
+.m .layout.f-open>.m-ov{display:block!important}
+.m .side{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:min(760px,92dvh);border-radius:20px 20px 0 0;background:#fff;z-index:46;padding:0;gap:0;border:0}
+.m .side .m-sheet-h{display:flex!important;align-items:center;justify-content:space-between;padding:24px 24px 12px;flex:none}
+.m .side .m-sheet-h h2{margin:0;font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px}
+.m .side .tabs{margin:0 24px;gap:0}
+.m .side .tabs button{flex:1;text-align:center;padding:10px 0 12px;font:500 16px/22px Pretendard,sans-serif}
+.m .side .tabs button.on{padding-bottom:10px;font-weight:600}
+.m .side .tabs .reset{display:none}
+.m .side .groups,.m .side .cpanel{padding:16px 24px;margin:0}
+.m .side .apply{display:flex;gap:8px;padding:12px 24px calc(16px + env(safe-area-inset-bottom));margin:0}
+.m #mReset{display:block!important;flex:0 0 92px;width:auto;height:48px;border-radius:10px;font:500 16px/22px Pretendard,sans-serif}
+.m #apply{flex:1;width:auto;height:48px;border-radius:10px}
+.m .chk{min-height:36px}
+
+/* ---- 시트 · 모달 */
+.m .modal:not(.center):not(.upl){place-items:end stretch;padding:0}
+.m .modal.msheet .sheet,.m .modal:not(.center):not(.upl) .dlg{width:100%;max-width:none;border-radius:20px 20px 0 0;max-height:90dvh;padding-bottom:env(safe-area-inset-bottom);box-sizing:border-box}
+.m .modal.msheet.tall .sheet{height:640px}
+.m .modal.msheet.smenu .sheet-b{padding-bottom:20px}
+.m .modal.center{place-items:center;padding:24px}
+.m .modal.center .dlg.confirm,.m .modal.center .dlg.confirm.wf{width:100%;max-width:342px;border-radius:16px;padding:24px;box-sizing:border-box}
+.m .dlg.confirm.wf h2{font:600 18px/26px Pretendard,sans-serif}
+.m .dlg.confirm.wf .cft{margin-top:20px}
+.m .dlg.confirm.wf .cft .btn{flex:1;height:48px;border-radius:10px;font:500 16px/22px Pretendard,sans-serif}
+.m .modal .dlg.fol,.m .modal .dlg.bk{height:100dvh;max-height:100dvh;border-radius:0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.m .dlg.bk .cft{margin-top:auto}
+.m .dlg.bk .cft .btn{flex:1;height:48px;border-radius:10px}
+.m .toast{bottom:calc(84px + env(safe-area-inset-bottom));font-size:14px;text-align:center}
+.m.m-detail .toast{bottom:calc(24px + env(safe-area-inset-bottom))}
+
+/* ---- 게시물 상세 (COM_0100) */
+.m .panel,.m .layout.has-panel .panel{position:fixed;inset:0;width:auto;height:auto;border:0;z-index:40;overflow:auto;background:#fff}
+.m .panel .mbar{position:sticky;top:0;z-index:3}
+.m .pimg{height:auto;min-height:240px;display:block;position:relative}
+.m .pimg img{width:100%;max-width:100%;max-height:70vh;height:auto;object-fit:contain;display:block;margin:0 auto}
+.m .imgtop{position:absolute;right:8px;top:12px;display:flex;gap:8px;z-index:2}
+.m .circ{width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#18171a;box-shadow:0 1px 4px rgba(24,23,26,.14)}
+.m .pimg .imgact{right:8px;bottom:12px}
+.m .imgwho{position:absolute;left:16px;bottom:16px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 4px;border-radius:14px;background:rgba(24,23,26,.5);color:#fff;font:500 12px/16px Pretendard,sans-serif;text-decoration:none;max-width:60%;overflow:hidden;white-space:nowrap}
+.m .pbody{padding:20px 16px 40px}
+.m .who .av{width:40px!important;height:40px!important;border-radius:20px!important}
+.m .who .pname,.m .who b{font:600 16px/22px Pretendard,sans-serif}
+.m .who .btn{height:36px;border-radius:8px;margin-left:auto;padding:0 12px;font:600 14px/20px Pretendard,sans-serif}
+.m .ptitle{font:600 16px/22px Pretendard,sans-serif;margin:16px 0 12px}
+.m .prow{gap:20px;border:0;padding:0;margin-bottom:8px}
+.m .prow .stat{font-size:15px;gap:6px}
+.m .panel .cform .cin{height:44px;border-radius:10px}
+.m .panel .cform .btn{height:44px;border-radius:10px}
+.m .allc{height:44px;margin-top:12px;font:500 14px/20px Pretendard,sans-serif}
+.m .sec.rel:empty{display:none}
+
+/* ---- 알림 (HOM_0401) */
+.m .npage{padding:0 16px 24px}
+.m .npage .hd,.m .npage h4{display:none}
+.m .npage .ntabs{gap:0;margin-bottom:8px}
+.m .npage .ntabs button{flex:1;text-align:center;padding:10px 0 12px;font:500 14px/20px Pretendard,sans-serif}
+.m .npage .ntabs button.on{border-bottom-width:2px;font-weight:600}
+.m .npage .nitem{padding:10px 0}
+.m .npage .nitem .av{width:40px;height:40px;border-radius:20px}
+.m .npage .nitem .nt{font-size:14px}
+.m .npage .nitem .btn{height:36px;border-radius:8px;padding:0 12px;font-size:13px}
+
+/* ---- 킵 스페이스 · 서랍 */
+.m .pad{padding:0 16px 96px}
+.m .pad>.mbar{margin:0 -16px}
+.m .kbar{margin:4px 0 12px;gap:6px}
+.m .selbar{left:16px;right:16px;transform:none;bottom:calc(76px + env(safe-area-inset-bottom));height:50px;box-sizing:border-box;border-radius:12px;padding:0 8px 0 16px;gap:8px}
+.m .selbar .sp{flex:1}
+.m .selbar .btn{height:34px;padding:0 14px}
+.m .mtabs{display:flex;margin:0 16px;border-bottom:1px solid #e4e3e5}
+.m .mtabs a{flex:1;text-align:center;padding:10px 0 12px;font:500 14px/20px Pretendard,sans-serif;color:#6f6d72;text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.m .mtabs a.on{color:#18171a;font-weight:600;border-bottom-color:#18171a}
+.m .drw .dmain{padding:16px 16px 96px}
+.m .dhead{align-items:center;margin-bottom:12px}
+.m .dhead h1,.m .dhead .btn.primary{display:none}
+.m .dhead .sub{margin:0;font-size:13px}
+.m .books{grid-template-columns:1fr 1fr;gap:20px 13px}
+.m .act-h{display:flex;justify-content:space-between;align-items:flex-end;margin:20px 0 12px}
+.m .act-h:first-child{margin-top:4px}
+.m .act-h h2{margin:0;font:600 18px/26px Pretendard,sans-serif}
+.m .act-h p{margin:2px 0 0;font:400 12px/16px Pretendard,sans-serif;color:#6f6d72}
+.m .act-h a{display:inline-flex;align-items:center;gap:2px;font:500 13px/18px Pretendard,sans-serif;color:#18171a;text-decoration:none;white-space:nowrap}
+.m .hscroll{display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px;scrollbar-width:none}
+.m .hscroll::-webkit-scrollbar{display:none}
+.m .hscroll button{flex:0 0 108px;aspect-ratio:108/140;border-radius:8px;overflow:hidden;background:#f1f0f2;padding:0}
+.m .hscroll img,.m .sq3 img{width:100%;height:100%;object-fit:cover;display:block}
+.m .sq3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.m .sq3 button{aspect-ratio:1;position:relative;border-radius:8px;overflow:hidden;background:#f1f0f2;padding:0}
+.m .sq3 i{position:absolute;right:6px;bottom:6px;width:24px;height:24px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#18171a}
+.m .bk-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin:4px 0 16px}
+.m .bk-h h1{margin:0;font:700 26px/34px Pretendard,sans-serif;overflow-wrap:anywhere}
+.m .bk-h p{margin:2px 0 0;font:400 13px/18px Pretendard,sans-serif;color:#6f6d72}
+
+/* ---- 마이페이지 · 타 유저 프로필 (MYP_0100 · COM_0200) */
+.m .pf-banner{height:68px}
+.m .pf-body{display:block;padding:0}
+.m .pf-side{padding:0 16px 16px;align-items:stretch}
+.m .pf-av{position:absolute;right:16px;top:-22px;width:80px!important;height:80px!important;margin:0;font-size:28px!important;border-radius:50%!important}
+.m .pf-name{order:1;margin-top:16px;text-align:left;padding-right:96px}
+.m .pf-name h1{font:600 18px/26px Pretendard,sans-serif;letter-spacing:0}
+.m .pf-name span{font-size:12px;line-height:16px}
+.m .pf-stats{order:2;margin-top:10px;justify-content:flex-start;gap:20px}
+.m .pf-stat{gap:4px;font-size:13px;line-height:22px}
+.m .pf-stat b{font-size:16px}
+.m .pf-mid{display:contents}
+.m .pf-bio{order:3;margin-top:16px;font-size:13px;color:#5b595f}
+.m .pf-links{order:4;margin-top:14px}
+.m .pf-links h2{display:none}
+.m .pf-acts{order:5;margin-top:16px}
+.m .pf-acts .btn{height:44px;border-radius:10px;border-color:#c3c2c5;font:600 15px/20px Pretendard,sans-serif}
+.m .pf-acts .btn.up{display:none}
+.m .pf-main{padding:4px 16px 96px}
+.m .pf-tabs{gap:0}
+.m .pf-tab{flex:1;text-align:center}
+.m .pf-grid{grid-template-columns:1fr 1fr;gap:13px}
+
+/* ---- 프로필 수정 (MYP_0105) */
+.m .pe{width:auto;max-width:none;margin:0;padding:0 16px 40px;gap:16px}
+.m .pe>h1,.m .pe-ft{display:none}
+.m .pe>.mbar{margin:0 -16px}
+.m .pe-av{flex-direction:column;align-items:center;gap:8px}
+.m .pe-avtx{align-items:center}
+.m .pe-avtx>span,.m .pe-avbtns .btn.alt{display:none}
+.m .pe-avbtns .btn{border:0;background:none;font:500 14px/20px Pretendard,sans-serif;height:auto;padding:0}
+.m .pe-avb>i{display:grid;position:absolute;right:0;bottom:0;width:28px;height:28px;border-radius:50%;background:#fff;border:1px solid #e4e3e5;place-items:center;color:#18171a}
+
+/* ---- 게시물 등록 (MYP_0200) */
+.m .modal.upl{inset:0;z-index:45}
+.m .upl .dlg{width:100%;max-height:none;min-height:100dvh;border-radius:0;padding:0 16px 96px;box-sizing:border-box}
+.m .upl .dlg>header{display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;height:52px;position:relative;margin:0 -4px 12px;padding:0}
+.m .upl .dlg>header h2{position:absolute;left:56px;right:56px;margin:0;text-align:center;font:600 18px/26px Pretendard,sans-serif}
+.m .upl .up{grid-template-columns:1fr;gap:16px}
+.m .upl .drop{aspect-ratio:1;display:grid;place-content:center;justify-items:center;gap:8px;text-align:center;border:1.5px dashed #c3c2c5;border-radius:12px;background:#f8f7f8;padding:16px;height:auto;min-height:0}
+.m .upl .drop b{font:600 15px/22px Pretendard,sans-serif}
+.m .upl .drop p{margin:0;font:400 12px/16px Pretendard,sans-serif;color:#6f6d72}
+.m .upl .foot{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e4e3e5;display:flex;gap:8px;margin:0;z-index:2}
+.m .upl .foot .btn{height:48px;flex:0 0 92px;border-radius:10px}
+.m .upl .foot .btn.primary{flex:1}
+
+/* ---- 설정 · 로그인 */
+.m .mpage.set{max-width:none;padding-bottom:24px}
+.m .formcol{padding:48px 24px}
+.m .foot-link{margin-top:32px!important}
+.m .actions{width:auto;min-width:0;margin:0}
+.m .pill{display:inline-flex;align-items:center;text-decoration:none;color:#18171a}
+.m .pill.on{color:#fff}
+.m .pf-more{position:static}
+.m .pf-more .icon-btn{border:0;width:32px;height:32px;background:none}
+.m .pf-more svg{transform:rotate(90deg)}
+.m .upl .foot{width:auto;min-width:0;max-width:none;box-sizing:border-box;justify-content:stretch}
+.m .upl .foot .btn{min-width:0}
+.m .bk .more-btn svg{transform:rotate(90deg)}
+
+/* ---- LAYOUT=mobile 서버를 넓은 화면(PC 브라우저)에서 열었을 때: 가운데 430px 폭으로 보여 줌 */
+@media (min-width:768px){
+  .m-force{background:#e4e3e5}
+  .m-force body{max-width:430px;margin:0 auto;min-height:100vh;background:#fff}
+  .m-force .top{position:sticky}
+  .m-force .mtab,.m-force .side,.m-force .panel,.m-force .layout.has-panel .panel,.m-force .modal,.m-force.m-search #suggest,.m-force .selbar,.m-force .m-ov{left:50%;right:auto;width:430px;transform:translateX(-50%)}
+  .m-force .selbar{width:398px}
+}
