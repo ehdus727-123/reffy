@@ -399,3 +399,51 @@
 /* 검색 결과 0개: 필터 · 정렬 줄 없이 결과 줄부터 (HOM_0501 빈 상태) */
 .m body:has(#zero:not([hidden])) #filterBtn,.m body:has(#zero:not([hidden])) #chips,.m body:has(#zero:not([hidden])) .sortwrap{display:none!important}
 .m .qclear{width:24px;height:24px}
+
+/* ================================================================ HOM_0201 필터 · 키워드 / HOM_0203 무드 실측 (2215:47134 · 2215:47489)
+   시트 y 84 · 모서리 16 · Padding 24 · 블록 간격 20 [제목 28 · 탭 · 내용 · 버튼 48] */
+.m .side{top:84px;height:auto;bottom:0;border-radius:16px 16px 0 0;padding:24px 24px calc(24px + env(safe-area-inset-bottom));gap:20px;box-sizing:border-box;overflow:hidden}
+.m .side .m-sheet-h{padding:0;height:28px;flex:none}
+.m .side .m-sheet-h h2{font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px}
+.m .side .m-sheet-h .icon-btn{width:24px;height:24px}
+/* 탭: 3등분 · 위 8 / 아래 10 · 글자 16 · 구분선 #F1F0F2 */
+.m .side .tabs{margin:0;gap:0;border-bottom:1px solid #f1f0f2;flex:none}
+.m .side .tabs button{flex:1;padding:8px 0 10px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72;border-bottom:2px solid transparent;margin-bottom:-1px}
+.m .side .tabs button.on{font-weight:600;color:#18171a;border-bottom-color:#18171a;padding-bottom:10px}
+/* 내용: 그룹 사이 16 · 그룹 [머리 24 · 16 · 항목(20, 사이 16) · 16 · 구분선] */
+.m .side .groups,.m .side .cpanel,.m .side .ppanel{padding:0;margin:0;flex:1;min-height:0;overflow:auto;gap:16px}
+.m .fgroup{gap:16px;padding:0 0 16px;border-bottom:1px solid #f1f0f2}
+.m .fgroup>button{height:24px;font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+.m .fgroup>button .ic,.m .fgroup>button svg{width:20px;height:20px;transform:rotate(0deg)}
+.m .fgroup[data-open=false]>button svg{transform:rotate(-90deg)}
+.m .fgroup[data-open=true]>button svg{transform:rotate(0deg)}
+.m .fbody,.m .fbody .axis{display:flex;flex-direction:column;gap:16px}
+.m .chk{min-height:20px;padding:0;gap:10px;font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+.m .chk.zero{color:#18171a}
+.m .chk input{width:18px;height:18px;border-radius:4px;border:1.2px solid #6f6d72}
+/* 버튼: 초기화 92 · 적용하기 채움 · 48 · 모서리 10 · 사이 8 */
+.m .side .apply{padding:0;margin:0;gap:8px;flex:none}
+.m #mReset{flex:0 0 92px;height:48px;padding:0;border:1px solid #c3c2c5;border-radius:10px;font:500 16px/24px Pretendard,sans-serif}
+.m #apply{flex:1;height:48px;border-radius:10px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:0}
+/* 무드: 색 상자 200 · 16 · 색상 줄(스포이트 20 · 12 · 막대 12) · 12 · Color Code 줄 34 · 27 · 현재 팔레트(제목 · 12 · 원 36, 사이 10) · 31 · 지난 팔레트 */
+.m .cpanel{display:flex;flex-direction:column;gap:0}
+.m .cbox{height:200px;border-radius:8px;border:0;flex:none}
+.m .chrow{margin-top:16px;gap:12px;height:20px}
+.m .ceye{width:20px;height:20px}
+.m .chue{height:12px;border-radius:6px}
+.m .ccode{margin-top:12px;height:34px;gap:8px}
+.m .ccode>span{font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+.m .cfield{flex:0 0 102px;height:34px;padding:0 11px;gap:6px;border-radius:8px;box-sizing:border-box}
+.m .chex{font:500 14px/20px Pretendard,sans-serif}
+.m .cfield .sw{width:14px;height:14px;border-radius:3px}
+.m .ccode .btn{margin-left:auto;height:32px;padding:0 12px;border-radius:6px}
+.m .cdiv{display:none}
+.m .ctit{margin:27px 0 12px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+.m .ctit~.ctit{margin-top:31px}
+.m .cpal{gap:10px;margin:0}
+.m .ccirc{width:36px;height:36px}
+.m .side .cpanel{gap:0}
+/* 항목은 171 너비 2열 (세로 간격 16) */
+.m .fbody .axis{flex-direction:row;flex-wrap:wrap;gap:16px 0}
+.m .fbody .chk{width:50%;flex:0 0 50%;box-sizing:border-box}
+.m .cfield{padding:0 8px;gap:6px}.m .chex{flex:1;min-width:0;letter-spacing:-.2px;padding:0;width:auto}
