@@ -937,3 +937,7 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
   .layout.has-panel .main{padding-right:20px}
   .layout.has-panel .panel{margin-right:24px;border-right:1px solid var(--line)}
 }
+/* 카드(WF/Card): 이미지와 정보 줄이 모서리 8 카드 안에서 함께 잘림 */
+.card{overflow:hidden}
+.card .im{border-radius:0}
+.card.sel{outline:2px solid var(--t1);outline-offset:-2px}

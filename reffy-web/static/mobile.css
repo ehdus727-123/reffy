@@ -370,3 +370,22 @@
 .ro-it.drag{outline:2px solid #18171a;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .m .selbar{display:flex;align-items:center}
 .m .selbar>b{font:600 14px/20px Pretendard,sans-serif}
+
+/* ---- HOM_0001 홈 피드 실측 (2215:53612) */
+/* 앱바: 로고 28 · 검색창 271 · 알림 24, 사이 17.5 */
+.m .top{gap:17.5px}
+.m .logo{width:28px;height:28px}
+.m #bell{width:24px;height:24px;position:relative}
+.m #bell.has::after{content:"";position:absolute;left:15px;top:5px;width:5px;height:5px;border-radius:50%;background:#e5484d;border:0;font-size:0;min-width:0;padding:0}
+/* 본문 위 8 · 툴바 32(아래 맞춤) ↔ 그리드 12 */
+.m .main,.m .layout:not(.f-open) .main{padding-top:8px}
+.m .bar{align-items:flex-end;min-height:32px;margin-bottom:12px}
+.m .fbtn,.m .layout.f-open .fbtn{height:28px;padding:0 10.5px;gap:5.25px;border:.875px solid #c3c2c5;border-radius:14px;font:500 12px/16px Pretendard,sans-serif}
+.m .fbtn svg{width:12.25px;height:12.25px}
+.m .sortbtn{height:32px;padding:0;gap:4px;border:0;align-items:flex-end;font:500 12px/16px Pretendard,sans-serif;padding-bottom:0}
+.m .sortbtn .ic,.m .sortbtn svg{width:16px;height:16px}
+/* 카드: 흰 카드 안에 이미지 + 정보 줄(30), 모서리 8로 함께 잘림 · 아바타 15 · 하트 14 */
+.m .card{overflow:hidden}
+.m .card .im{border-radius:0}
+.m .card .meta .av{width:15px;height:15px}
+.m .card .meta .like svg{width:14px;height:14px}
