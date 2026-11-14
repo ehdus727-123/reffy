@@ -389,3 +389,13 @@
 .m .card .im{border-radius:0}
 .m .card .meta .av{width:15px;height:15px}
 .m .card .meta .like svg{width:14px;height:14px}
+
+/* ---- HOM_0201 필터 시트 · HOM_0300 정렬 · HOM_0501 검색 결과 실측 */
+.m .fgroup>button{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+.m .chk .n,.m .axis h4 .mode{display:none}
+.m .axis h4{display:none}
+.m .srow .lbl-fit{flex:none}
+.m .srow .lbl-fit+svg{margin-left:4px}
+/* 검색 결과 0개: 필터 · 정렬 줄 없이 결과 줄부터 (HOM_0501 빈 상태) */
+.m body:has(#zero:not([hidden])) #filterBtn,.m body:has(#zero:not([hidden])) #chips,.m body:has(#zero:not([hidden])) .sortwrap{display:none!important}
+.m .qclear{width:24px;height:24px}

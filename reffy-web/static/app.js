@@ -53,28 +53,35 @@ async function loadVocab() {
   drawGroups();
 }
 const openState = store.get("reffy.open", {});
+const KINDS = [["photo", "사진"], ["illust", "일러스트"]];
 function drawGroups() {
   const root = $("#groups"); root.replaceChildren();
-  S.vocab.groups.forEach((g, gi) => {
-    const open = openState[g.name] ?? gi === 0;
+  S.pickedKind = S.pickedKind || new Set();
+  // 종류(사진 · 일러스트)는 맨 위 그룹. 모바일은 축(인물 수 · 성별 …)마다 접히는 그룹으로 보여 줍니다 (HOM_0201)
+  const kindAxis = { name: "종류", mode: "", kind: true, tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
+  const groups = isM()
+    ? [{ name: "종류", axes: [kindAxis] }, ...S.vocab.groups.flatMap((g) => g.axes.map((a) => ({ name: a.name, axes: [a], one: true })))]
+    : [{ name: "종류", axes: [kindAxis], one: true }, ...S.vocab.groups];
+  groups.forEach((g, gi) => {
+    const open = openState[g.name] ?? gi < (isM() ? 3 : 1);
     const box = h("div", { class: "fgroup", "data-open": String(open) });
     const btn = h("button", { type: "button", "aria-expanded": String(open), onclick: () => { const o = box.dataset.open !== "true"; box.dataset.open = String(o); btn.setAttribute("aria-expanded", String(o)); openState[g.name] = o; store.set("reffy.open", openState); } }, g.name, icon("chevronDown"));
     const body = h("div", { class: "fbody" });
     g.axes.forEach((a) => body.append(h("div", { class: "axis" },
-      h("h4", {}, a.name, a.mode === "단일" ? h("span", { class: "mode" }, "하나만") : null),
-      a.tags.map((t) => h("label", { class: "chk" + (t.n ? "" : " zero") },
-        h("input", { type: "checkbox", checked: S.picked.has(t.ikey), onchange: (e) => { e.target.checked ? S.picked.add(t.ikey) : S.picked.delete(t.ikey); } }),
-        t.label, h("span", { class: "n" }, String(t.n)))))));
+      g.one || a.name === g.name ? null : h("h4", {}, a.name, a.mode === "단일" ? h("span", { class: "mode" }, "하나만") : null),
+      a.tags.map((t) => h("label", { class: "chk" + (t.kind || t.n ? "" : " zero") },
+        h("input", { type: "checkbox", checked: t.kind ? S.pickedKind.has(t.kind) : S.picked.has(t.ikey), onchange: (e) => { const set = t.kind ? S.pickedKind : S.picked; const v = t.kind || t.ikey; e.target.checked ? set.add(v) : set.delete(v); } }),
+        t.label, t.kind ? null : h("span", { class: "n" }, String(t.n)))))));
     box.append(btn, body); root.append(box);
   });
 }
 $("#apply").onclick = () => {
   if (curTab === "pose") { toast("3D 포즈 검색은 준비 중이에요"); return; }
   if (CP.dirty && !$("#cpanel").hidden) { const c = hsv2hex(CP.h, CP.s, CP.v); if (!S.pickColors.includes(c)) S.pickColors = [...S.pickColors, c].slice(-5); CP.dirty = false; }   // 저장하지 않아도 지금 고른 색으로 적용
-  S.applied = [...S.picked]; S.colors = [...S.pickColors]; if (!$("#cpanel").hidden) drawColorPanel(); reload();
+  S.applied = [...S.picked]; S.kinds = [...(S.pickedKind || [])]; S.colors = [...S.pickColors]; if (!$("#cpanel").hidden) drawColorPanel(); reload();
   if (isM()) setFilterOpen(false);
 };
-$("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.colors = []; S.pickColors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
+$("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.pickedKind = new Set(); S.kinds = []; S.colors = []; S.pickColors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
 const isTablet = () => !isM() && LAYOUT !== "pc" && innerWidth >= 768 && innerWidth < 1200;
 /* 태블릿: 딤(빈 곳)을 누르면 드로어를 닫는다 */
 $("#layout").addEventListener("click", (e) => { if (e.target !== e.currentTarget || !isTablet()) return; if (!$("#panel").hidden) closeDetail(); else setFilterOpen(false); });
@@ -208,6 +215,7 @@ async function more(first) {
   const p = new URLSearchParams({ q: S.q, tags: S.applied.join(","), offset: S.items.length });
   if (S.sort) p.set("sort", S.sort);
   if (S.colors.length) p.set("color", S.colors.join(","));
+  if ((S.kinds || []).length) p.set("kind", S.kinds.join(","));
   try {
     const d = await api("/api/images?" + p);
     if (my !== S.req) return;
@@ -225,12 +233,12 @@ async function more(first) {
 /* 검색 결과 0개 (HOM_0501 빈 상태): 추천 키워드 · 추천 레퍼런스 */
 async function drawZero() {
   const z = $("#zero"); z.hidden = false;
-  const any = S.q || S.applied.length || S.colors.length;
+  const any = S.q || S.applied.length || S.colors.length || (S.kinds || []).length;
   const kw = h("div", { class: "z-kw" }), rec = h("div", { class: "z-rec" });
   z.replaceChildren(
     h("div", { class: "z-empty" }, h("span", { class: "z-ic" }, icon("search", 40)),
       h("div", { class: "z-tx" }, h("h2", {}, any ? "검색 결과가 없어요" : "아직 레퍼런스가 없어요"), h("p", {}, any ? "다른 키워드로 검색하거나 필터를 바꿔 보세요" : "첫 레퍼런스를 올려 보세요")),
-      any ? h("button", { class: "btn m", type: "button", onclick: () => { S.q = ""; qEl.value = ""; S.applied = []; S.picked = new Set(); S.colors = []; S.pickColors = []; drawGroups(); reload(); } }, "피드 둘러보기")
+      any ? h("button", { class: "btn m", type: "button", onclick: () => { S.q = ""; qEl.value = ""; S.applied = []; S.picked = new Set(); S.kinds = []; S.pickedKind = new Set(); S.colors = []; S.pickColors = []; drawGroups(); reload(); } }, "피드 둘러보기")
         : h("button", { class: "btn m", type: "button", onclick: () => openUpload() }, "+ 업로드"), kw),
     rec);
   try {
@@ -247,7 +255,8 @@ async function drawZero() {
 function drawBar(d) {
   const hasQ = !!S.q;
   mobileBar(hasQ);
-  const t = $("#resultTitle"); t.textContent = isM() ? "검색 결과" : hasQ ? `“${S.q}”` : (S.applied.length || S.colors.length ? "검색 결과" : "레퍼런스"); t.className = hasQ ? "q" : "";
+  $("#qClear").hidden = !qEl.value;
+  const t = $("#resultTitle"); t.textContent = isM() ? "검색 결과" : hasQ ? `“${S.q}”` : (S.applied.length || S.colors.length || (S.kinds || []).length ? "검색 결과" : "레퍼런스"); t.className = hasQ ? "q" : "";
   $("#count").textContent = `${S.total.toLocaleString()}개`;
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
@@ -256,6 +265,8 @@ function drawBar(d) {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
     chips.append(h("span", { class: "chip dark" }, "#" + m.label, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, "✕") : null));
   });
+  (S.kinds || []).forEach((k) => chips.append(h("span", { class: "chip dark" }, "#" + (KINDS.find((x) => x[0] === k) || [k, k])[1],
+    h("button", { type: "button", "aria-label": "종류 필터 해제", onclick: () => { S.kinds = S.kinds.filter((x) => x !== k); S.pickedKind.delete(k); drawGroups(); reload(); } }, "✕"))));
   S.colors.forEach((c) => chips.append(h("span", { class: "chip dark" }, h("i", { class: "sw", style: `background:${c}` }), c.toUpperCase(),
     h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); S.pickColors = [...S.colors]; drawColorPanel(); reload(); } }, "✕"))));
   $("#empty").hidden = true;   // 0개일 때는 drawZero() 가 빈 상태를 그립니다
@@ -486,3 +497,9 @@ async function publish() {
 }
 $("#uploadBtn").onclick = openUpload;
 
+
+/* 검색창 지우기(×): 글자가 있을 때만 보임 */
+{ const qc = $("#qClear"); const sync = () => (qc.hidden = !qEl.value);
+  qEl.addEventListener("input", sync); sync();
+  qc.onclick = () => { qEl.value = ""; sync(); qEl.focus(); };
+  const _rq = runQuery; runQuery = function (q) { _rq(q); sync(); }; }

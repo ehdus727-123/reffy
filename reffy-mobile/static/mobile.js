@@ -21,18 +21,18 @@ function sheet(title, body, foot, cls) {
 /* 메뉴 시트: [{ic, label, fn, danger, on}] */
 function sheetMenu(title, items) {
   const s = sheet(title, items.map((it) => h("button", { class: "srow" + (it.danger ? " danger" : ""), type: "button", "aria-pressed": it.on == null ? null : String(!!it.on), onclick: () => { s.close(); it.fn(); } },
-    it.ic ? icon(it.ic, 24) : null, h("span", {}, it.label), it.on ? icon("check", 20) : null)), null, "smenu");
+    it.ic ? icon(it.ic, 24) : null, h("span", { class: it.on != null ? "lbl-fit" : "" }, it.label), it.on ? icon("check", 20) : null)), null, "smenu");
   return s;
 }
 const jsonOpt = (method, body) => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
 /* ---------------------------------------------------------------- 홈: 필터 버튼 · 검색 상태 */
 function mobileBar(hasQ) {
-  const any = hasQ || S.applied.length || S.colors.length;
+  const any = hasQ || S.applied.length || S.colors.length || (S.kinds || []).length;
   document.body.classList.toggle("searching", !!any);
   $("#mBack").hidden = !hasQ && !document.documentElement.classList.contains("m-search");
   if (!isM()) return;
-  const n = S.applied.length + S.colors.length, fb = $("#filterBtn");
+  const n = S.applied.length + S.colors.length + (S.kinds || []).length, fb = $("#filterBtn");
   fb.replaceChildren(icon("filter", 16), "필터" + (n ? " " + n : "")); fb.classList.toggle("on", n > 0);
 }
 $("#mOv").onclick = () => setFilterOpen(false);

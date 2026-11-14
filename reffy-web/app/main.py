@@ -124,7 +124,7 @@ def status():
 
 # ------------------------------------------------------------------ 피드·검색
 @app.get("/api/images")
-def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", offset: int = 0, limit: int = config.PAGE, color: str = ""):
+def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", offset: int = 0, limit: int = config.PAGE, color: str = "", kind: str = ""):
     tl = [t for t in tags.split(",") if t]
     cl = [("#" + c.lstrip("#")).lower() for c in color.split(",") if colormod.HEX.match(c.strip())][:5]
     sort = sort or ("relevance" if (q.strip() or cl) else "recent")
@@ -132,6 +132,9 @@ def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", o
     viewer = social.me(request)
     hide = extras.hidden_ids(request)   # 차단한(또는 나를 차단한) 사용자의 게시물은 피드에서 뺀다
     hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE COALESCE(private,0) = 1 AND (user_id IS NULL OR user_id != :u)", u=viewer["id"] if viewer else -1)}   # 남의 비공개 게시물
+    kinds = {k for k in kind.split(",") if k in ("photo", "illust")}   # 종류 필터 (사진 · 일러스트, 둘 중 하나라도)
+    if kinds and len(kinds) < 2:
+        hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE COALESCE(kind,'illust') != :k", k=next(iter(kinds)))}
     if cl or hide:
         all_ids, _, found = search(q, tl, sort, 0, 100000)
         ids_all = [i for i in all_ids if i not in hide]
