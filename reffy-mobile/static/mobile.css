@@ -447,3 +447,11 @@
 .m .fbody .axis{flex-direction:row;flex-wrap:wrap;gap:16px 0}
 .m .fbody .chk{width:50%;flex:0 0 50%;box-sizing:border-box}
 .m .cfield{padding:0 8px;gap:6px}.m .chex{flex:1;min-width:0;letter-spacing:-.2px;padding:0;width:auto}
+
+/* 넓은 PC 화면에서 모바일 서버를 볼 때: 업로드·전체 화면 창도 가운데 430 폭에 맞춤 */
+@media (min-width:431px){
+  .m-force .modal.upl,.m-force .modal.mfull{inset:0 auto 0 50%;width:430px;transform:translateX(-50%)}
+  .m-force .upl .dlg{width:100%;margin:0}
+  .m-force .upl .up{grid-template-columns:1fr}
+  .m-force .upl .pv,.m-force .upl .drop,.m-force .upl .dlg>header,.m-force .upl .up>*{width:auto;max-width:100%}
+}
