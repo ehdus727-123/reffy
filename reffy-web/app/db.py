@@ -89,7 +89,16 @@ ACTIVE = "((t.user_state = 'add') OR (t.user_state IS NULL AND t.ai_prob >= :thr
 
 
 def init():
-    md.create_all(engine)
+    # 웹 · 모바일 서버가 같은 새 DB 를 동시에 만들면 한쪽이 "already exists" 로 실패할 수 있어 몇 번 다시 시도한다
+    import time
+    for n in range(5):
+        try:
+            md.create_all(engine)
+            break
+        except Exception as e:
+            if "already exists" not in str(e) or n == 4:
+                raise
+            time.sleep(0.3)
     # 예전에 만든 DB 에는 없는 열을 채워 넣는다 (데이터는 그대로 유지)
     cols = {c["name"] for c in inspect(engine).get_columns("images")}
     with engine.begin() as c:
