@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 import webbrowser
 from pathlib import Path
@@ -138,7 +139,7 @@ URL_RE = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
 
 
 def open_tunnel(exe, port, found):
-    p = subprocess.Popen([exe, "tunnel", "--no-autoupdate", "--url", f"http://localhost:{port}"],
+    p = subprocess.Popen([exe, "tunnel", "--no-autoupdate", "--url", f"http://127.0.0.1:{port}"],
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace",
                          creationflags=subprocess.CREATE_NO_WINDOW if WIN else 0)
 
@@ -163,6 +164,21 @@ def share():
     if 8100 not in found:
         fail("공유 링크를 만들지 못했어요. 인터넷 연결이나 회사·학교 방화벽을 확인해 주세요.")
     web, mob = found.get(8100), found.get(8200, "(만들지 못함)")
+    say("  링크가 밖에서 열리는지 확인 중... (최대 1분)")
+    ok = False
+    for _ in range(30):   # 새 주소는 인터넷에 퍼지는 데 몇 초 걸린다
+        try:
+            req = urllib.request.Request(web + "/config.js", headers={"User-Agent": "reffy-launcher"})
+            urllib.request.urlopen(req, timeout=5).close()
+            ok = True
+            break
+        except urllib.error.HTTPError as e:   # 서버까지 닿았으면(404 등) 연결은 된 것
+            if e.code < 500:
+                ok = True
+                break
+        except Exception:  # noqa: BLE001
+            pass
+        time.sleep(2)
     (ROOT / "공유주소.txt").write_text(
         f"REFFY 공유 링크 (이 컴퓨터와 창이 켜져 있는 동안만 열려요)\n웹     : {web}\n모바일 : {mob}\n", encoding="utf-8")
     if WIN:
@@ -173,6 +189,8 @@ def share():
     say(f"    웹      : {web}")
     say(f"    모바일  : {mob}")
     say("  ================================================")
+    say()
+    say("  → 밖에서 열리는 것 확인됨" if ok else "  → 아직 밖에서 확인이 안 됐어요. 1~2분 뒤 휴대폰(LTE)으로 열어 보세요.")
     say()
     say("  ※ 이 창을 닫으면 공유 링크가 끊겨요. 시연 중에는 켜 두세요.")
     say("  ※ 컴퓨터가 잠자기에 들어가도 끊겨요. 다시 실행하면 주소가 새로 바뀌어요.")
