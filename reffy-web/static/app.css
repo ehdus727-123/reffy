@@ -1031,3 +1031,43 @@ html:not(.m) .chip.dark button{width:20px;height:20px;font-size:15px;line-height
 .ftype-items{display:flex;flex-direction:column;gap:16px;margin-top:-6px}
 .ftype::after{content:"";height:1px;background:#dedede}
 .ftype .chk{min-height:20px;padding:0;gap:10px;font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+
+/* ================================================================ Figma Common · Icon (Material Icons Round) — 채우기로 그리는 아이콘
+   Outlined(.ico) 기본, 활성 상태에서는 Filled(.icf)로 바뀜 */
+.ic.icm{fill:currentColor;stroke:none}
+.icm .icf{display:none}
+.stat.on .icm .ico,.meta.liked .like .icm .ico,#mtab a.on .icm .ico{display:none}
+.stat.on .icm .icf,.meta.liked .like .icm .icf,#mtab a.on .icm .icf{display:inline}
+.stat.on svg.icm{fill:#e5484d;stroke:none}
+.upd-thx .ic{color:#fff}
+
+/* ================================================================ Web/Top app bar/GNB (2137:982)
+   1440×88 · 좌우 24 · 로고↔메뉴 28 · 메뉴 사이 24 · 그룹↔검색창 70 · 검색창 h44 r10 #F1F0F2 (좌우 16 · 아이콘 20 ↔ 글 10) · 알림 24 ↔ 아바타 32 = 20 */
+html:not(.m) .top{height:88px;padding:0 24px;gap:70px;border-bottom:1px solid #f1f0f2;background:#fff;box-sizing:border-box}
+html:not(.m) .brand{gap:28px}
+html:not(.m) .brand .logo{width:34px;height:34px}
+html:not(.m) .nav{gap:24px}
+html:not(.m) .nav a{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72;padding:0;border:0}
+html:not(.m) .nav a:hover{color:#5b595f}
+html:not(.m) .nav a.on{color:#18171a}
+html:not(.m) .nav a.on::after{display:none}
+html:not(.m) .search{flex:1;height:44px;max-width:none;margin:0;padding:0 16px;gap:10px;border-radius:10px;background:#f1f0f2;border:0;box-sizing:border-box}
+html:not(.m) .search>.ic{width:20px;height:20px;color:#6f6d72}
+html:not(.m) .search input{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .search input::placeholder{color:#6f6d72}
+html:not(.m) .actions{gap:20px;position:relative}
+html:not(.m) .actions #bell{width:24px;height:24px;padding:0}
+html:not(.m) .actions #bell .ic{width:24px;height:24px}
+html:not(.m) .avatar#me{width:32px;height:32px}
+
+/* ================================================================ Common · Components (2128:501) — 웹·앱 공통 적용
+   Checkbox: 18 · r4 · 선택 시 brand(#7425F6) / Snackbar: neutral-800(#2B2B2E) · h48 · 14/20 · r10 · 그림자
+   Menu item M: h40 · 좌우 16 · Body/M(14/20 Regular) · Destructive 는 status/error / Button: S32 r6 · M40 r8 · L48 r10, 최소 폭 64 */
+.chk input:checked,.cbx:checked,.m .chk input:checked{background:#7425f6;border-color:#7425f6}
+.toast{background:#2b2b2e;color:#fff;min-height:48px;padding:14px 20px;border-radius:10px;font:500 14px/20px Pretendard,sans-serif;filter:drop-shadow(0 4px 6px rgba(0,0,0,.15))}
+.menu button,.pop-menu button{height:40px;padding:0 16px;gap:12px;border-radius:0;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a;display:flex;align-items:center;justify-content:space-between}
+.menu button:hover,.pop-menu button:hover{background:#f1f0f2}
+.menu,.pop-menu{padding:4px 0;border-radius:8px;overflow:hidden}
+.pop-menu button.danger,.menu button.danger{color:#c43a49}
+.btn{min-width:64px;box-sizing:border-box}
+.icon-btn.btn,.btn.icon{min-width:0}

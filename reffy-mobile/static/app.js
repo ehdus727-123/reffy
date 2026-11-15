@@ -78,10 +78,10 @@ function drawGroups() {
     const btn = h("button", { type: "button", "aria-expanded": String(open), onclick: () => { const o = box.dataset.open !== "true"; box.dataset.open = String(o); btn.setAttribute("aria-expanded", String(o)); openState[g.name] = o; store.set("reffy.open", openState); } }, g.name, icon("chevronDown"));
     const body = h("div", { class: "fbody" });
     g.axes.forEach((a) => body.append(h("div", { class: "axis" },
-      g.one || a.name === g.name ? null : h("h4", {}, a.name, a.mode === "단일" ? h("span", { class: "mode" }, "하나만") : null),
-      a.tags.map((t) => h("label", { class: "chk" + (t.kind || t.n ? "" : " zero") },
+      g.one || a.name === g.name ? null : h("h4", {}, a.name),
+      a.tags.map((t) => h("label", { class: "chk" },
         h("input", { type: "checkbox", checked: t.kind ? S.pickedKind.has(t.kind) : S.picked.has(t.ikey), onchange: (e) => { const set = t.kind ? S.pickedKind : S.picked; const v = t.kind || t.ikey; e.target.checked ? set.add(v) : set.delete(v); } }),
-        t.label, t.kind ? null : h("span", { class: "n" }, String(t.n)))))));
+        t.label)))));
     box.append(btn, body); root.append(box);
   });
 }
@@ -506,7 +506,7 @@ async function publish() {
     store.set("reffy.draft", null); closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
   } catch (e) { b.disabled = false; b.textContent = isM() ? "등록" : "게시하기"; toast(e.message); }
 }
-$("#uploadBtn").onclick = openUpload;
+if ($("#uploadBtn")) $("#uploadBtn").onclick = openUpload;
 
 
 /* 검색창 지우기(×): 글자가 있을 때만 보임 */
