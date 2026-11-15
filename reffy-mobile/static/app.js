@@ -107,7 +107,15 @@ $("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.pickedKind = n
 const isTablet = () => !isM() && LAYOUT !== "pc" && innerWidth >= 768 && innerWidth < 1200;
 /* 태블릿: 딤(빈 곳)을 누르면 드로어를 닫는다 */
 $("#layout").addEventListener("click", (e) => { if (e.target !== e.currentTarget || !isTablet()) return; if (!$("#panel").hidden) closeDetail(); else setFilterOpen(false); });
-function setFilterOpen(o) { $("#layout").classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o)); }
+let fCloseT;
+function setFilterOpen(o) {
+  const L = $("#layout"), was = L.classList.contains("f-open");
+  clearTimeout(fCloseT);
+  // PC에서 닫을 때: 필터 창을 바로 없애지 않고 왼쪽으로 미끄러져 사라지게 (그동안 피드는 왼쪽으로 채워짐)
+  if (was && !o && !isM() && !RM.matches) { L.classList.add("f-closing"); fCloseT = setTimeout(() => L.classList.remove("f-closing"), 300); }
+  else L.classList.remove("f-closing");
+  L.classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o));
+}
 $("#filterBtn").onclick = () => setFilterOpen(!$("#layout").classList.contains("f-open"));
 if (isTablet()) setFilterOpen(false);
 $("#home").onclick = (e) => { e.preventDefault(); $("#reset").click(); closeDetail(); };

@@ -1097,7 +1097,8 @@ html:not(.m) .avatar#me{width:32px;height:32px}
   .card .im img{transition:transform var(--t3) var(--ease)}
   html:not(.m) .card:hover .im img{transform:scale(1.025)}
   /* PC 필터 패널 · 상세 패널: 열릴 때 옆에서 미끄러져 들어옴 */
-  html:not(.m) .layout.f-open .side{animation:rf-left var(--t2) var(--ease) both}
+  html:not(.m) .layout.f-open .side{animation:rf-side-in .34s var(--ease) both}
+  html:not(.m) .layout.f-open .side>*{animation:rf-fade .28s .08s var(--ease) both}
   html:not(.m) .layout.has-panel .panel{animation:rf-right var(--t2) var(--ease) both}
   .fgroup[data-open=true] .fbody{animation:rf-drop var(--t2) var(--ease) both}
   .fgroup>button .ic{transition:transform var(--t2) var(--ease)}
@@ -1561,3 +1562,9 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
 }
 
 #grid .card{transform-origin:0 0}
+
+/* 필터 창: 왼쪽에서 미끄러져 들어오고, 닫을 때는 왼쪽으로 미끄러져 나감 */
+@keyframes rf-side-in{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes rf-side-out{from{transform:none}to{transform:translateX(-100%)}}
+html:not(.m) .layout.f-closing:not(.f-open) .side{display:flex;position:fixed;left:0;top:88px;z-index:15;animation:rf-side-out .3s var(--ease-in) both;pointer-events:none}
+html:not(.m) .layout{overflow-x:clip}
