@@ -167,7 +167,7 @@ def image_colors(image_id: int):
 
 @app.get("/api/images/{image_id}")
 def detail(image_id: int, request: Request):
-    r = db.rows("SELECT id, title, author, w, h, views, created_at, user_id, COALESCE(private,0) AS private, materials FROM images WHERE id = :i", i=image_id)
+    r = db.rows("SELECT id, title, author, w, h, views, created_at, user_id, COALESCE(private,0) AS private, materials, COALESCE(kind,'illust') AS kind FROM images WHERE id = :i", i=image_id)
     if not r or (r[0]["private"] and not ((v := social.me(request)) and v["id"] == r[0]["user_id"])):
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
     with db.engine.begin() as c:
@@ -177,6 +177,7 @@ def detail(image_id: int, request: Request):
     d["views"] += 1
     d["private"] = bool(r[0]["private"])
     d["materials"] = _materials(r[0]["materials"])
+    d["kind"] = "photo" if r[0]["kind"] == "photo" else "illust"
     d["full"] = f"/img/{image_id}?s=full&v={_ver(r[0])}"
     d["tags"] = _tags_of(image_id)
     d["colors"] = colormod.palette_of(colormod.loads((db.rows("SELECT colors FROM images WHERE id = :i", i=image_id) or [{}])[0].get("colors")))
@@ -258,6 +259,25 @@ def edit_meta(image_id: int, body: MetaIn, request: Request):
         c.execute(text("UPDATE images SET title = :t, materials = :m, private = :p WHERE id = :i"),
                   {"t": body.title.strip()[:120], "m": _clean_links(body.materials), "p": 1 if body.private else 0, "i": image_id})
     return {"ok": True}
+
+
+class KindIn(BaseModel):
+    kind: str
+
+
+@app.put("/api/images/{image_id}/kind")
+def edit_kind(image_id: int, body: KindIn, request: Request):
+    """종류(사진 · 일러스트) 바꾸기 (올린 사람만)."""
+    user = social.need(request)
+    r = db.rows("SELECT user_id FROM images WHERE id = :i", i=image_id)
+    if not r:
+        raise HTTPException(404, "이미지를 찾을 수 없어요.")
+    if r[0]["user_id"] not in (None, user["id"]):
+        raise HTTPException(403, "내가 올린 게시물만 수정할 수 있어요.")
+    k = "photo" if body.kind == "photo" else "illust"
+    with db.engine.begin() as c:
+        c.execute(text("UPDATE images SET kind = :k WHERE id = :i"), {"k": k, "i": image_id})
+    return {"ok": True, "kind": k}
 
 
 @app.post("/api/images")

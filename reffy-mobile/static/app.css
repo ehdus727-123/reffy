@@ -1307,3 +1307,9 @@ html:not(.m) .panel{padding:0}
 /* 이미지 위 원형 버튼: 흰색 60% + 배경 흐림 10 (Common/Floating icon button) */
 .dp-fb{background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .dp-fb:hover{background:rgba(255,255,255,.75)}
+
+/* 종류 태그(사진 · 일러스트): 다른 태그와 구분되게 보라 계열 */
+.tag.kind{background:#f5eeff;color:#7425f6}
+.tag.kind:hover{background:#ebdfff}
+.kind-seg{align-self:flex-start;margin-bottom:4px}
+.kind-seg button{height:32px;padding:0 14px;font:var(--type-label-l)}

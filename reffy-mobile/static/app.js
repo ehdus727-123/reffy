@@ -444,7 +444,8 @@ function drawDetail(d, edit = false) {
             h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, icon("comment", 20), String(so.comments.length))))),
       h("div", { class: "dp-sec" },
         head("태그", so.editable ? h("button", { class: "dp-link", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
-        h("div", { class: "tags" }, act_.length ? act_.map(tagEl) : h("span", { class: "hint" }, "아직 태그가 없어요.")),
+        edit ? kindTag(d, true, () => drawDetail(d, true)) : null,
+        h("div", { class: "tags" }, edit ? null : kindTag(d, false), act_.length ? act_.map(tagEl) : (edit ? h("span", { class: "hint" }, "아직 태그가 없어요.") : null)),
         edit ? h("div", { class: "tags", style: "margin-top:10px" }, pickButton(box, (t) => save(d, { add: [t.ikey] }, t), () => new Set(d.tags.filter((x) => x.active).map((x) => x.ikey))),
           off.map((t) => h("button", { class: "tag off", type: "button", title: "눌러서 되돌리기", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null),
       mats.length ? h("div", { class: "dp-sec" }, head("사용 소재", mats.length > 3 ? h("button", { class: "dp-link", type: "button", onclick: (e) => { drawMats(true); e.currentTarget.remove(); } }, "더보기") : null), matList) : null,
@@ -454,6 +455,14 @@ function drawDetail(d, edit = false) {
         so.comments.length ? clist : null, allBtn),
       h("div", { class: "dp-sec dp-rel" }, head("연관 이미지"), h("div", { class: "dp-grid" }, relCols), relMore)));
   loadRel();
+}
+/* 종류(사진 · 일러스트) 태그: 누르면 그 종류만 보기 · 태그 수정 중이면 바꾸기 */
+function kindTag(d, edit, redraw) {
+  const k = d.kind === "photo" ? "photo" : "illust", label = (KINDS.find((x) => x[0] === k) || [k, k])[1];
+  if (edit) return h("div", { class: "seg kind-seg", role: "radiogroup", "aria-label": "종류" }, KINDS.map(([v, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(k === v), class: k === v ? "on" : "",
+    onclick: async () => { if (v === k) return; try { await api(`/api/images/${d.id}/kind`, jsonOpt("PUT", { kind: v })); d.kind = v; toast(`종류를 ‘${l}’로 바꿨어요`); redraw(); } catch (e) { toast(e.message); } } }, l)));
+  return h("button", { class: "tag kind", type: "button", title: `${label}만 보기`, onclick: () => {
+    S.pickedKind = new Set([k]); S.kinds = [k]; S.picked = new Set(); S.applied = []; S.q = ""; qEl.value = ""; drawGroups(); if (isM() && !$("#panel").hidden) closeDetail(); reload(); } }, "#" + label);
 }
 async function removePost(d) {
   if (!(await confirmDialog("게시물을 삭제할까요?", "삭제한 게시물은 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소", danger: true }))) return;

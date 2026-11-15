@@ -205,16 +205,22 @@ def my_reacted(request: Request, kind: str = ""):
 
 # ------------------------------------------------------------------ 게시물 상세: 연관 이미지 (같은 태그가 많은 순)
 @router.get("/images/{image_id}/related")
-def related(image_id: int, request: Request, limit: int = 10):
+def related(image_id: int, request: Request, limit: int = 10, offset: int = 0):
+    """연관 이미지: 태그가 많이 겹치는 순 → 그다음은 최신 이미지로 이어서 (더보기 · 계속 스크롤)."""
     tags = [r["ikey"] for r in db.rows(f"SELECT t.ikey FROM image_tags t WHERE t.image_id = :i AND {db.ACTIVE}", i=image_id, thr=config.TAG_THRESHOLD)]
     ids: List[int] = []
     if tags:
         ph = ",".join(f":k{n}" for n in range(len(tags)))
         ids = [r["image_id"] for r in db.rows(
             f"SELECT t.image_id, COUNT(*) AS n FROM image_tags t WHERE t.image_id != :i AND t.ikey IN ({ph}) AND {db.ACTIVE} "
-            f"GROUP BY t.image_id ORDER BY n DESC, t.image_id DESC LIMIT 40",
+            f"GROUP BY t.image_id ORDER BY n DESC, t.image_id DESC LIMIT 1000",
             i=image_id, thr=config.TAG_THRESHOLD, **{f"k{n}": k for n, k in enumerate(tags)})]
+    seen = set(ids) | {image_id}
+    ids += [r["id"] for r in db.rows("SELECT id FROM images ORDER BY id DESC LIMIT 2000") if r["id"] not in seen]
     hide = hidden_ids(request)
     v = S.me(request)
-    ids = S.visible([i for i in ids if i not in hide], v)[:max(1, min(limit, 20))]
-    return {"items": S.with_likes(S.cards(ids), v)}
+    limit = max(1, min(limit, 40)); offset = max(0, offset)
+    total = len(ids)
+    ids = S.visible([i for i in ids[:offset + limit + 300] if i not in hide], v)
+    page = ids[offset:offset + limit]
+    return {"items": S.with_likes(S.cards(page), v), "more": len(page) == limit and offset + limit < total}
