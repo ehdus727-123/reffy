@@ -221,7 +221,7 @@ async function doLogout() { try { await api("/api/auth/logout", { method: "POST"
 $("#me").onclick = (e) => {
   e.stopPropagation();
   if (!ME) return needLogin();
-  popMenu(e.currentTarget, [["마이페이지", () => (location.hash = "#/me")], ["설정", () => (location.hash = "#/settings")], ["로그아웃", doLogout]]);
+  popMenu(e.currentTarget, [["마이페이지", () => (location.hash = "#/me")], ["설정", () => (location.hash = "#/settings")], ...(NO_LOGIN ? [] : [["로그아웃", doLogout]])]);
 };
 
 /* ---------------------------------------------------------------- 로그인 · 회원가입 */
@@ -435,7 +435,7 @@ function route() {
   if (a !== "post") document.documentElement.classList.remove("m-detail");
   document.querySelectorAll("#nav a").forEach((l) => { const on = l.dataset.r === (a === "post" ? "" : a); l.classList.toggle("on", on); on ? l.setAttribute("aria-current", "page") : l.removeAttribute("aria-current"); });
   $("#notif").hidden = true;
-  if (ME && (a === "login" || a === "signup")) { location.hash = "#/"; return; }
+  if ((ME || NO_LOGIN) && (a === "login" || a === "signup")) { location.hash = "#/"; return; }
   if (a === "login") loginPage();
   else if (a === "signup") signupPage();
   else if (a === "keep") keepPage();

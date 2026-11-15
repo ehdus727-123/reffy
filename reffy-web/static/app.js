@@ -26,6 +26,7 @@ async function api(path, opt) {
 function toast(msg, link) { const t = $("#toast"); t.replaceChildren(msg, link ? h("a", { href: link[1], onclick: () => t.classList.remove("show") }, link[0]) : ""); t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), link ? 5000 : 2600); }
 
 /* 모바일(767px 이하) 여부. 모바일 전용 화면 조각은 mobile.js · mobile.css 에 있습니다. */
+const NO_LOGIN = !!window.REFFY_NO_LOGIN;          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
 const LAYOUT = window.REFFY_LAYOUT || "auto";   // 서버 .env 의 LAYOUT: auto / pc / mobile
 const MQ = window.matchMedia("(max-width:767px)");
 const isM = () => LAYOUT === "mobile" || (LAYOUT !== "pc" && MQ.matches);
@@ -37,13 +38,17 @@ const S = { q: "", picked: new Set(), applied: [], sort: "", items: [], total: 0
 
 /* ---------------------------------------------------------------- 사용자(서버 계정) */
 let ME = null, UNREAD = 0;
-async function loadMe() { const r = await api("/api/auth/me"); ME = r.user; UNREAD = r.unread; drawMe(); }
+async function loadMe() {
+  const r = await api("/api/auth/me"); ME = r.user; UNREAD = r.unread;
+  if (!ME && NO_LOGIN) { try { ME = (await api("/api/auth/guest", { method: "POST" })).user; } catch { /* 꺼져 있으면 그대로 */ } }
+  drawMe();
+}
 function drawMe() {
   $("#me").replaceChildren(ME ? (ME.avatar ? h("img", { src: ME.avatar, alt: "" }) : ME.nick.slice(0, 1).toUpperCase()) : "");
   $("#me").title = ME ? `${ME.nick} · 메뉴` : "로그인";
   $("#bell").classList.toggle("has", UNREAD > 0);
 }
-function needLogin() { if (ME) return true; sessionStorage.setItem("reffy.next", location.hash || "#/"); location.hash = "#/login"; return false; }
+function needLogin() { if (ME) return true; if (NO_LOGIN) { loadMe().catch(() => {}); toast("잠시 후 다시 눌러 주세요"); return false; } sessionStorage.setItem("reffy.next", location.hash || "#/"); location.hash = "#/login"; return false; }
 const goPost = (id) => { location.hash = "#/post/" + id; };
 
 /* ---------------------------------------------------------------- 필터 패널 */

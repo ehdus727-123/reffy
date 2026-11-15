@@ -114,6 +114,21 @@ def signup(body: SignupIn, resp: Response):
     return {"user": {"id": uid, "uid": body.uid, "nick": nick}}
 
 
+@router.post("/auth/guest")
+def guest(resp: Response):
+    """NO_LOGIN 시연 모드: 방문자마다 게스트 계정을 만들어 바로 로그인시킨다."""
+    if not config.NO_LOGIN:
+        raise HTTPException(403, "게스트 입장이 꺼져 있어요.")
+    for _ in range(20):
+        uid, nick = f"guest{secrets.token_hex(4)}", f"게스트{secrets.randbelow(9000) + 1000}"
+        if not db.rows("SELECT id FROM users WHERE lower(nick) = lower(:n) OR lower(uid) = lower(:u)", n=nick, u=uid):
+            break
+    with db.engine.begin() as c:
+        new_id = c.execute(db.users.insert().values(uid=uid, nick=nick, pw_hash=_hash(secrets.token_urlsafe(16)), marketing=False)).inserted_primary_key[0]
+    _start_session(resp, new_id, True)
+    return {"user": {"id": new_id, "uid": uid, "nick": nick}}
+
+
 _fails: dict = {}
 
 

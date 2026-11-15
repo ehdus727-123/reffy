@@ -248,7 +248,7 @@ async function settingsPage(sub) {
   try {
     if (!sub) return show("설정", group("알림 · 계정"), row("알림 설정", "#/settings/notif"), row("계정 관리", "#/settings/account"), row("보안", "#/settings/security"), row("차단 유저", "#/settings/blocks"),
       h("div", { class: "sgap" }), group("고객 지원"), row("문의하기", "#/settings/inquiry"), h("div", { class: "srow2" }, h("span", {}, "앱 버전"), h("small", {}, "v1.0.0")), row("개인정보 처리 방침", "#/settings/privacy"), row("서비스 약관", "#/settings/terms"),
-      h("div", { class: "sgap" }), h("button", { class: "srow2 plain", type: "button", onclick: logoutAsk }, "로그아웃"), h("a", { class: "srow2 plain dim", href: "#/settings/leave" }, "탈퇴하기"));
+      ...(NO_LOGIN ? [] : [h("div", { class: "sgap" }), h("button", { class: "srow2 plain", type: "button", onclick: logoutAsk }, "로그아웃"), h("a", { class: "srow2 plain dim", href: "#/settings/leave" }, "탈퇴하기")]));
     if (sub === "notif") {
       const st = await api("/api/me/settings"); const n = st.notif;
       const put = async (k, v) => { n[k] = v; try { await api("/api/me/settings", jsonOpt("PUT", { notif: n })); } catch (e) { toast(e.message); } };

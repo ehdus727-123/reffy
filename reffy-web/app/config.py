@@ -23,6 +23,8 @@ if not DATA.is_absolute():
 LAYOUT = (os.getenv("LAYOUT") or "auto").strip().lower()
 if LAYOUT not in ("auto", "pc", "mobile"):
     LAYOUT = "auto"
+# NO_LOGIN: 1 이면 로그인·회원가입 화면 없이 방문자마다 게스트 계정으로 바로 들어옴 (시연용). 0 이면 원래대로.
+NO_LOGIN = (os.getenv("NO_LOGIN") or "1").strip().lower() not in ("0", "false", "off", "no")
 UPLOADS = DATA / "uploads"
 TMP = DATA / "tmp"
 for d in (UPLOADS, TMP, BASE / "models"):

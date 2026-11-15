@@ -345,7 +345,7 @@ def delete_image(image_id: int, request: Request):
 def config_js():
     """화면이 읽는 설정. LAYOUT=pc/mobile 이면 화면 폭과 상관없이 그 틀로 고정한다."""
     from fastapi.responses import Response
-    return Response(f'window.REFFY_LAYOUT = "{config.LAYOUT}";\n', media_type="application/javascript", headers={"Cache-Control": "no-cache"})
+    return Response(f'window.REFFY_LAYOUT = "{config.LAYOUT}";\nwindow.REFFY_NO_LOGIN = {"true" if config.NO_LOGIN else "false"};\n', media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 
 app.mount("/", StaticFiles(directory=str(config.BASE / "static"), html=True), name="static")
