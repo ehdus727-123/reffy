@@ -7,7 +7,13 @@ function ago(iso) {
   if (s < 604800) return Math.floor(s / 86400) + "일 전"; return when(iso).toLocaleDateString("ko-KR");
 }
 const btn = (label, cls, fn, attrs) => h("button", { class: "btn " + (cls || ""), type: "button", onclick: fn, ...(attrs || {}) }, label);
-function page(el) { $("#layout").hidden = true; const p = $("#page"); p.hidden = false; p.replaceChildren(el); window.scrollTo(0, 0); }
+function page(el) {
+  $("#layout").hidden = true; const p = $("#page");
+  // 같은 화면(설정 · 서랍) 안에서 왼쪽 메뉴만 바꾸면: 화면 전체가 떠오르지 않고 오른쪽 내용만 살짝 바뀜
+  const prev = p.hidden ? null : p.firstElementChild, cls = (x) => (x && x.className || "").split(" ")[0];
+  p.classList.toggle("same", !!prev && cls(prev) === cls(el) && !!el.querySelector(".st-snb, .dnav"));
+  p.hidden = false; p.replaceChildren(el); window.scrollTo(0, 0);
+}
 function popMenu(anchor, items) {
   if (isM()) return sheetMenu("더보기", items.map(([l, fn]) => ({ label: l, fn, danger: /삭제|빼기/.test(l) })));
   document.querySelector(".pop-menu")?.remove();
@@ -220,8 +226,11 @@ async function drawerPage(sub, id) {
   if (sub === "act") sub = "";
   const link = (t, href, on) => h("a", { href, class: on ? "on" : "", "aria-current": on ? "page" : null }, t);
   const main = h("div", { class: "dmain" });
-  page(h("div", { class: "drawer" }, h("aside", { class: "dnav" }, h("h2", {}, "서랍"), link("레퍼런스 북", "#/drawer", !sub || sub === "book"), h("small", {}, "내 활동"),
-    link("최근 본 게시물", "#/drawer/recent", sub === "recent"), link("반응한 게시물", "#/drawer/liked", sub === "liked")), main));
+  const root = h("div", { class: "drawer" }, h("aside", { class: "dnav" }, h("h2", {}, "서랍"), link("레퍼런스 북", "#/drawer", !sub || sub === "book"), h("small", {}, "내 활동"),
+    link("최근 본 게시물", "#/drawer/recent", sub === "recent"), link("반응한 게시물", "#/drawer/liked", sub === "liked")), main);
+  // 이미 서랍 화면이면 새 내용을 다 불러온 뒤에 바꿔 끼움 (빈 화면이 잠깐 보이지 않게)
+  const stay = !$("#page").hidden && $("#page > .drawer");
+  if (!stay) page(root);
   try {
     if (sub === "recent" || sub === "liked") {
       const d = await api(sub === "recent" ? "/api/me/viewed" : "/api/me/liked");
@@ -229,6 +238,7 @@ async function drawerPage(sub, id) {
         d.items.length ? pgrid(d.items, {}, "c5") : notice(sub === "recent" ? "최근 본 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
     } else if (sub === "book") await bookDetail(main, id); else await bookList(main);
   } catch (e) { main.replaceChildren(notice("불러오지 못했어요", e.message)); }
+  if (stay && location.hash.startsWith("#/drawer")) page(root);
 }
 async function bookList(main, sort = "recent") {
   const d = await api("/api/books?sort=" + sort);
@@ -556,9 +566,11 @@ async function settingsPC(sub) {
   const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("h1", {}, "내 설정"),
     SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, l)),
     h("i", { class: "st-div" }), h("a", { href: "#/settings/leave", class: "st-leave" + (sub === "leave" ? " on" : ""), "aria-current": sub === "leave" ? "page" : null }, "탈퇴하기"));
-  page(h("div", { class: "st" }, snb, main));
+  const root = h("div", { class: "st" }, snb, main);
+  const stay = !$("#page").hidden && $("#page > .st");   // 이미 설정 화면이면 내용이 준비된 뒤에 바꿔 끼움
+  if (!stay) page(root);
   const head = (t, d) => h("div", { class: "st-head" }, h("h2", {}, t), d ? h("p", {}, d) : null);
-  const show = (...kids) => main.replaceChildren(h("div", { class: "st-c" }, ...kids.flat(3).filter((k) => k != null && k !== false)));
+  const show = (...kids) => { main.replaceChildren(h("div", { class: "st-c" }, ...kids.flat(3).filter((k) => k != null && k !== false))); if (!root.isConnected && location.hash.startsWith("#/settings")) page(root); };
   const toggle = (on, fn, label) => { const i = h("input", { type: "checkbox", class: "st-tg-in", role: "switch", checked: on, "aria-label": label, onchange: (e) => fn(e.target.checked) }); return h("label", { class: "st-tg" }, i, h("i", {})); };
   const row = (t, d, right) => h("div", { class: "st-row" }, h("div", { class: "st-tx" }, h("b", {}, t), d ? h("small", {}, d) : null), right);
   const group = (t, ...rows) => h("section", { class: "st-grp" }, h("h3", {}, t), ...rows);
