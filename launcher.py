@@ -62,12 +62,27 @@ def is_up(port):
         return False
 
 
+def stop_port(port):
+    """그 포트를 쓰고 있는 예전 서버를 끈다 (코드를 새로 받은 뒤에도 옛 서버가 남아 있는 문제 방지)."""
+    if not WIN:
+        return
+    out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, errors="replace").stdout
+    pids = {ln.split()[-1] for ln in out.splitlines()
+            if "LISTENING" in ln and len(ln.split()) >= 5 and ln.split()[1].endswith(f":{port}")}
+    for pid in pids - {"0"}:
+        subprocess.run(["taskkill", "/PID", pid, "/T", "/F"], capture_output=True)
+    for _ in range(10):
+        if not is_up(port):
+            return
+        time.sleep(0.5)
+
+
 def start_servers():
     say("  [3/3] 서버 켜는 중...")
     for name, folder, port in SERVERS:
         if is_up(port):
-            say(f"        {name} 서버는 이미 켜져 있어요 ({port})")
-            continue
+            say(f"        예전 {name} 서버를 끄고 새로 켜요 ({port})")
+            stop_port(port)
         kw = {"cwd": str(ROOT / folder)}
         if WIN:  # 서버마다 작은 창을 따로 띄움 (그 창을 닫으면 그 서버가 꺼짐)
             kw["creationflags"] = subprocess.CREATE_NEW_CONSOLE
