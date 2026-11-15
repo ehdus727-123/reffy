@@ -25,6 +25,16 @@ async function api(path, opt) {
 }
 function toast(msg, link) { const t = $("#toast"); t.replaceChildren(msg, link ? h("a", { href: link[1], onclick: () => t.classList.remove("show") }, link[0]) : ""); t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), link ? 5000 : 2600); }
 
+/* 모달·시트를 닫을 때 바로 지우지 않고 짧게 사라지는 움직임을 보여 준 뒤 지움 ('동작 줄이기' 설정이면 바로 지움) */
+{ const rm = Element.prototype.remove; const calm = matchMedia("(prefers-reduced-motion: reduce)");
+  Element.prototype.remove = function () {
+    if (this.nodeType === 1 && this.classList.contains("closing")) return;   // 이미 사라지는 중
+    if (this.nodeType === 1 && this.classList.contains("modal") && this.isConnected && !calm.matches) {
+      this.classList.add("closing"); setTimeout(() => rm.call(this), 190); return;
+    }
+    return rm.call(this);
+  }; }
+
 /* 모바일(767px 이하) 여부. 모바일 전용 화면 조각은 mobile.js · mobile.css 에 있습니다. */
 const NO_LOGIN = window.REFFY_NO_LOGIN !== false;          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
 const LAYOUT = window.REFFY_LAYOUT || "auto";   // 서버 .env 의 LAYOUT: auto / pc / mobile
@@ -422,11 +432,11 @@ async function save(d, body, tag, keepPicker) {
     loadVocab().catch(() => {});
   } catch (e) { toast(e.message); }
 }
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($(".modal")) $(".modal").remove(); else if (!$("#panel").hidden) closeDetail(); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($(".modal:not(.closing)")) $(".modal:not(.closing)").remove(); else if (!$("#panel").hidden) closeDetail(); } });
 
 /* ---------------------------------------------------------------- 업로드: 분석 -> 태그 확인 -> 게시 */
 let up = null;
-function closeUpload() { $(".modal")?.remove(); up = null; }
+function closeUpload() { $(".modal:not(.closing)")?.remove(); up = null; }
 function openUpload() { return isM() ? openUploadM() : openUploadPC(); }
 function openUploadM() {
   if (!needLogin()) return;

@@ -1071,3 +1071,52 @@ html:not(.m) .avatar#me{width:32px;height:32px}
 .pop-menu button.danger,.menu button.danger{color:#c43a49}
 .btn{min-width:64px;box-sizing:border-box}
 .icon-btn.btn,.btn.icon{min-width:0}
+
+/* ================================================================ 모션 (부드러운 화면 전환)
+   사용자가 연 것·닫은 것을 보여 주는 움직임만. 0.18~0.28초 · ease-out. '동작 줄이기' 설정이면 모두 끔 */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--ease-in:cubic-bezier(.4,0,1,1);--t1:.16s;--t2:.24s;--t3:.32s}
+@keyframes rf-fade{from{opacity:0}to{opacity:1}}
+@keyframes rf-fade-out{from{opacity:1}to{opacity:0}}
+@keyframes rf-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes rf-pop-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(6px) scale(.985)}}
+@keyframes rf-up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes rf-down{from{transform:none}to{transform:translateY(100%)}}
+@keyframes rf-left{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
+@keyframes rf-right{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes rf-drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes rf-img{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:no-preference){
+  /* 버튼 · 링크 · 입력: 색과 테두리가 부드럽게 바뀜 */
+  .btn,.icon-btn,.chip,.tag,.nav a,.tabs button,.sortbtn,.fbtn,.seg button,.menu button,.pop-menu button,.mcard button,.srow,.inp,.search,#mtab a,.upd-th,.upd-add,.upd-drop{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease),color var(--t1) var(--ease),box-shadow var(--t1) var(--ease),opacity var(--t1) var(--ease),transform var(--t1) var(--ease)}
+  .btn:active,.icon-btn:active,.chip:active,.fbtn:active,.sortbtn:active,#mtab a:active{transform:scale(.97)}
+  .chk input,.cbx{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease)}
+  .sw-ui,.sw-ui::after{transition:background-color var(--t2) var(--ease),transform var(--t2) var(--ease)}
+  /* 카드: 이미지가 천천히 나타나고, 마우스를 올리면 살짝 커짐 */
+  .card .im img{animation:rf-img var(--t3) var(--ease) both}
+  .card .im{overflow:hidden}
+  .card .im img{transition:transform var(--t3) var(--ease)}
+  html:not(.m) .card:hover .im img{transform:scale(1.025)}
+  /* PC 필터 패널 · 상세 패널: 열릴 때 옆에서 미끄러져 들어옴 */
+  html:not(.m) .layout.f-open .side{animation:rf-left var(--t2) var(--ease) both}
+  html:not(.m) .layout.has-panel .panel{animation:rf-right var(--t2) var(--ease) both}
+  .fgroup[data-open=true] .fbody{animation:rf-drop var(--t2) var(--ease) both}
+  .fgroup>button .ic{transition:transform var(--t2) var(--ease)}
+  /* 메뉴 · 드롭다운 · 검색 제안 */
+  .menu:not([hidden]),.pop-menu,.suggest:not([hidden]),.notif:not([hidden]){animation:rf-drop var(--t1) var(--ease) both;transform-origin:top right}
+  /* 모달: 배경은 서서히, 창은 살짝 떠오르며 */
+  .modal{animation:rf-fade var(--t2) var(--ease) both}
+  .modal>.dlg,.modal>.sheet{animation:rf-pop var(--t2) var(--ease) both}
+  .modal.closing{animation:rf-fade-out .18s var(--ease-in) both;pointer-events:none}
+  .modal.closing>.dlg{animation:rf-pop-out .18s var(--ease-in) both}
+  /* 모바일: 시트는 아래에서 올라오고, 상세 · 전체 화면 창은 옆에서 */
+  .m .modal.msheet>.sheet,.m .modal:not(.center):not(.upl):not(.mfull)>.dlg{animation:rf-up var(--t3) var(--ease) both}
+  .m .modal.msheet.closing>.sheet,.m .modal.closing:not(.center):not(.upl):not(.mfull)>.dlg{animation:rf-down .2s var(--ease-in) both}
+  .m .layout.f-open>.side{animation:rf-up var(--t3) var(--ease) both}
+  .m .layout.f-open>.m-ov{animation:rf-fade var(--t2) var(--ease) both}
+  .m .layout.has-panel .panel{animation:rf-right var(--t2) var(--ease) both}
+  .m .modal.upl,.m .modal.mfull{animation:rf-right var(--t2) var(--ease) both}
+  /* 화면(페이지) 바뀔 때 내용이 살짝 떠오름 */
+  #page:not([hidden])>*{animation:rf-pop var(--t2) var(--ease) both}
+  /* 토스트 */
+  .toast{transition:opacity var(--t2) var(--ease),transform var(--t2) var(--ease)}
+}
