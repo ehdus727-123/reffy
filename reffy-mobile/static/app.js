@@ -110,6 +110,7 @@ $("#layout").addEventListener("click", (e) => { if (e.target !== e.currentTarget
 let fCloseT;
 function setFilterOpen(o) {
   const L = $("#layout"), was = L.classList.contains("f-open");
+  if (was !== o) masSnap();
   clearTimeout(fCloseT);
   // PC에서 닫을 때: 필터 창을 바로 없애지 않고 왼쪽으로 미끄러져 사라지게 (그동안 피드는 왼쪽으로 채워짐)
   if (was && !o && !isM() && !RM.matches) { L.classList.add("f-closing"); fCloseT = setTimeout(() => L.classList.remove("f-closing"), 340); }
@@ -273,6 +274,8 @@ function masRects() {
   for (const it of S.items) { const c = MAS.el.get(it.id); if (!c) continue; const r = c.getBoundingClientRect(); if (r.width && r.bottom > -300 && r.top < innerHeight + 300) m.set(c, r); }
   return m;
 }
+/* 바뀌기 직전 카드 위치를 찍어 둠 (패널 숨김 등 클래스 말고 다른 변화가 먼저 일어나도 정확하게) */
+function masSnap() { if (MAS.cols.length && !$("#layout").hidden) { MAS.snap = masRects(); clearTimeout(masSnap.t); masSnap.t = setTimeout(() => (MAS.snap = null), 0); } }
 function masRebuild() {
   const n = masCount(); if (n === MAS.n) return;
   for (const c of MAS.el.values()) c.classList.add("in");
@@ -293,7 +296,8 @@ const masObs = new MutationObserver((recs) => {
   const g = $("#grid"); const rec = recs.find((r) => r.attributeName === "class");
   if (!rec || !g.classList.contains("mas") || !MAS.cols.length || $("#layout").hidden) return;
   const now = LAY.className; if (rec.oldValue === now) return;
-  LAY.className = rec.oldValue; const before = masRects(); LAY.className = now; masObs.takeRecords();
+  let before = MAS.snap; MAS.snap = null;
+  if (!before) { LAY.className = rec.oldValue; before = masRects(); LAY.className = now; masObs.takeRecords(); }
   masRebuild(); masFlip(before);
 });
 if (LAY) masObs.observe(LAY, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
@@ -391,6 +395,7 @@ function picker(onPick, exclude) {
 async function openDetail(id, back = false) {
   if (!back && S.open && S.open !== id) S.hist.push(S.open);   // back 버튼용: 직전에 본 이미지 기록
   S.open = id; document.querySelectorAll(".card").forEach((c) => c.classList.toggle("sel", +c.dataset.id === id));
+  masSnap(); clearTimeout(closeDetail.t); $("#layout").classList.remove("p-closing"); $("#panel").style.cssText = "";
   const panel = $("#panel"); panel.hidden = false; $("#layout").classList.add("has-panel"); document.documentElement.classList.add("m-detail"); if (isM()) panel.scrollTop = 0;
   panel.replaceChildren(h("div", { class: "pbody" }, "불러오는 중…"));
   try { const [d, so] = await Promise.all([api("/api/images/" + id), api("/api/images/" + id + "/social")]); d.so = so; drawDetail(d); }
@@ -398,7 +403,14 @@ async function openDetail(id, back = false) {
 }
 function goBack() { const p = S.hist.pop(); if (p != null) openDetail(p, true); }
 function closeDetail() {
-  S.hist = []; S.open = null; $("#panel").hidden = true; $("#layout").classList.remove("has-panel"); document.documentElement.classList.remove("m-detail");
+  S.hist = []; S.open = null; masSnap();
+  const P = $("#panel"), L = $("#layout");
+  clearTimeout(closeDetail.t);
+  if (!isM() && !RM.matches && L.classList.contains("has-panel")) {   // PC: 패널이 오른쪽으로 미끄러져 나가는 동안 피드가 같은 속도로 채워짐
+    const r = P.getBoundingClientRect(); P.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`;
+    L.classList.add("p-closing"); closeDetail.t = setTimeout(() => { L.classList.remove("p-closing"); P.style.cssText = ""; if (!L.classList.contains("has-panel")) P.hidden = true; }, 340);
+  } else P.hidden = true;
+  L.classList.remove("has-panel"); document.documentElement.classList.remove("m-detail");
   document.querySelectorAll(".card.sel").forEach((c) => c.classList.remove("sel"));
   if (location.hash.startsWith("#/post/")) location.hash = isM() && route.prev && !route.prev.startsWith("#/post/") ? route.prev : "#/";
 }
