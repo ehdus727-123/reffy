@@ -246,7 +246,7 @@ async function settingsPage(sub) {
     h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: on, disabled, onchange: (e) => fn && fn(e.target.checked) }), h("i", { class: "sw-ui" }));
   const group = (t) => h("h3", { class: "sgroup" }, t);
   try {
-    if (!sub) return show("설정", group("알림 · 계정"), row("알림 설정", "#/settings/notif"), row("계정 관리", "#/settings/account"), row("보안", "#/settings/security"), row("차단 유저", "#/settings/blocks"),
+    if (!sub) return show("설정", group("알림 · 계정"), row("알림 설정", "#/settings/notif"), ...(NO_LOGIN ? [] : [row("계정 관리", "#/settings/account"), row("보안", "#/settings/security")]), row("차단 유저", "#/settings/blocks"),
       h("div", { class: "sgap" }), group("고객 지원"), row("문의하기", "#/settings/inquiry"), h("div", { class: "srow2" }, h("span", {}, "앱 버전"), h("small", {}, "v1.0.0")), row("개인정보 처리 방침", "#/settings/privacy"), row("서비스 약관", "#/settings/terms"),
       ...(NO_LOGIN ? [] : [h("div", { class: "sgap" }), h("button", { class: "srow2 plain", type: "button", onclick: logoutAsk }, "로그아웃"), h("a", { class: "srow2 plain dim", href: "#/settings/leave" }, "탈퇴하기")]));
     if (sub === "notif") {
@@ -255,6 +255,7 @@ async function settingsPage(sub) {
       return show("알림 설정", group("활동 알림"), sw("팔로워", "새로운 팔로워가 생기면 알려드려요", n.follow, (v) => put("follow", v)), sw("댓글", "내 게시물에 댓글이 달리면", n.comment, (v) => put("comment", v)), sw("하트", "내 게시물에 하트가 눌리면", n.like, (v) => put("like", v)),
         h("div", { class: "sgap" }), group("알림 수신 시간"), sw("방해 금지 시간 사용", "준비 중인 기능이에요", false, null, true));
     }
+    if (NO_LOGIN && ["account", "security", "leave"].includes(sub)) { location.hash = "#/settings"; return; }
     if (sub === "account") return show("계정 관리", group("로그인 정보"), h("div", { class: "srow2" }, h("span", {}, "아이디"), h("small", {}, "@" + ME.uid)), h("div", { class: "srow2" }, h("span", {}, "닉네임"), h("small", {}, ME.nick)),
       h("div", { class: "sgap" }), group("연결된 계정"), ["Google", "카카오", "네이버", "X"].map((x) => h("div", { class: "srow2" }, h("span", {}, x), h("small", {}, "준비 중"))));
     if (sub === "security") {
