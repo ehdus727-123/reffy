@@ -380,41 +380,80 @@ function drawDetail(d, edit = false) {
   const comment = h("input", { class: "cin", maxlength: "500", placeholder: ME ? "댓글을 남겨 보세요" : "로그인하고 댓글을 남겨 보세요", "aria-label": "댓글 입력" });
   const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
   comment.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
-  const palBtn = h("button", { type: "button", class: "palbtn", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, icon("palette", 20));
+  const isOwner = !!(o && o.me);
+  const postMenu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
+    { ic: "save", label: "북에 저장", fn: () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) }) },
+    { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) },
+    ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
+      : [{ ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]); };
+  /* 사용 소재: 3개까지, '더보기'로 모두 */
+  const mats = d.materials || [];
+  const matList = h("div", { class: "dp-links" });
+  const drawMats = (all) => matList.replaceChildren(...mats.slice(0, all ? mats.length : 3).map((l) => h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, icon("link", 15), h("span", {}, l))));
+  drawMats(false);
+  /* 댓글: 3개까지, '모두 보기'로 전체 */
+  const clist = h("div", { class: "dp-clist" });
+  const cRow = (c) => h("div", { class: "dp-c" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 28, "dp-cav"),
+    h("div", { class: "dp-ct" }, h("div", { class: "dp-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body)),
+    h("button", { class: "icon-btn dp-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
+      ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act(d, "DELETE", `/api/comments/${c.id}`, null, edit) }]
+      : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 20)));
+  const drawComments = (all) => clist.replaceChildren(...so.comments.slice(0, all ? so.comments.length : 3).map(cRow));
+  drawComments(false);
+  const allBtn = so.comments.length > 3 ? h("button", { class: "dp-all", type: "button", onclick: (e) => { drawComments(true); e.currentTarget.remove(); } }, `댓글 ${so.comments.length}개 모두 보기`) : null;
+  comment.placeholder = "댓글을 남겨보세요";
+  const postBtn = h("button", { class: "dp-post", type: "button", onclick: send }, "게시");
+  comment.addEventListener("input", () => postBtn.classList.toggle("on", !!comment.value.trim()));
+  /* 연관 이미지: 2열, '더보기'를 누를 때마다 이어서 */
+  const relCols = [h("div", { class: "dp-col" }), h("div", { class: "dp-col" })];
+  const relMore = h("button", { class: "dp-more", type: "button", hidden: true }, "더보기");
+  let relOff = 0, relBusy = false;
+  const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => openDetail(it.id) },
+    h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
+    h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, icon("heart", 12), String(it.likes ?? 0))));
+  const loadRel = async () => {
+    if (relBusy) return; relBusy = true; relMore.disabled = true; relMore.textContent = "불러오는 중…";
+    try {
+      const r = await api(`/api/images/${d.id}/related?limit=10&offset=${relOff}`); if (S.open !== d.id) return;
+      r.items.forEach((it) => { const c = relCols[0].offsetHeight <= relCols[1].offsetHeight ? relCols[0] : relCols[1]; c.append(relCard(it)); });
+      relOff += r.items.length; relMore.hidden = !r.more;
+    } catch { relMore.hidden = true; } finally { relBusy = false; relMore.disabled = false; relMore.textContent = "더보기"; }
+  };
+  relMore.onclick = loadRel;
+  const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
   panel.replaceChildren(
-    h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
-      h("button", { class: "back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, icon("arrowLeft", 24)),
-      h("button", { class: "close", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, icon("close", 24)),
-      h("div", { class: "imgact" }, h("button", { type: "button", class: "palbtn", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, icon("person", 20)), palBtn)),
-    h("div", { class: "pbody" },
-      h("div", { class: "who" }, o ? avatarEl(o, 36, "av") : h("span", { class: "av" }, (d.author || "?").slice(0, 1)),
-        h("div", {}, o ? h("a", { class: "pname", href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid} · 조회 ${d.views.toLocaleString()}` : `조회 ${d.views.toLocaleString()} · ${d.w}×${d.h}`)),
-        o && !o.me ? h("button", { class: "btn" + (o.following ? "" : " primary"), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "Following" : "Follow") : null,
-        h("button", { class: "icon-btn more-post", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
-          { ic: "save", label: "북에 추가", fn: () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) }) },
-          { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) },
-          ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }] : [])]); } }, icon("more", 24))),
-      h("h2", { class: "ptitle" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
-      h("div", { class: "prow" },
-        h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 20), String(so.likes)),
-        h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, icon("comment", 20), String(so.comments.length)),
+    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
+      h("div", { class: "dp-top" },
+        h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, icon("arrowLeft", 24)),
         h("span", { class: "sp" }),
-        h("button", { class: "btn", type: "button", onclick: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) }, so.kept ? "킵 해제" : "킵에 담기"),
-        h("button", { class: "btn primary", type: "button", onclick: () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) }) }, "북에 저장")),
-      h("div", { class: "sec" },
-        h("div", { class: "sec-h" }, h("h3", {}, "태그"), so.editable ? h("button", { class: "btn sm", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
+        h("button", { class: "dp-ib", type: "button", "aria-label": "공유하기", title: "공유하기", onclick: () => sharePost(d) }, icon("share", 24)),
+        h("button", { class: "dp-ib", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: postMenu }, icon("more", 24)),
+        h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, icon("close", 24))),
+      h("div", { class: "dp-fab" },
+        h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, icon("pose", 24)),
+        h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, icon("palette", 24)))),
+    h("div", { class: "dp-info" },
+      h("div", { class: "dp-head" },
+        h("div", { class: "dp-user" }, o ? avatarEl(o, 40, "dp-av40") : h("span", { class: "dp-av40 avt" }, (d.author || "?").slice(0, 1)),
+          h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
+          o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
+        h("div", { class: "dp-tr" },
+          h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
+          h("div", { class: "dp-react" },
+            h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 20), String(so.likes)),
+            h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, icon("comment", 20), String(so.comments.length))))),
+      h("div", { class: "dp-sec" },
+        head("태그", so.editable ? h("button", { class: "dp-link", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
         h("div", { class: "tags" }, act_.length ? act_.map(tagEl) : h("span", { class: "hint" }, "아직 태그가 없어요.")),
         edit ? h("div", { class: "tags", style: "margin-top:10px" }, pickButton(box, (t) => save(d, { add: [t.ikey] }, t), () => new Set(d.tags.filter((x) => x.active).map((x) => x.ikey))),
-          off.map((t) => h("button", { class: "tag off", type: "button", title: "눌러서 되돌리기", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null,
-        edit ? h("p", { class: "hint" }, "AI가 붙인 태그를 눌러 지우거나, 흐린 태그를 눌러 되살릴 수 있어요. 같은 축의 ‘하나만’ 항목은 하나만 남겨 주세요.") : h("p", { class: "hint" }, "태그를 누르면 같은 태그의 레퍼런스를 모아 볼 수 있어요."),
-      ),
-      materialsSec(d),
-      h("div", { class: "sec" },
-        h("div", { class: "sec-h" }, h("h3", {}, `댓글 ${so.comments.length}`)),
-        h("div", { class: "cform" }, comment, h("button", { class: "btn primary", type: "button", onclick: send }, "등록")),
-        h("ul", { class: "clist" }, so.comments.map((c) => h("li", {}, h("span", { class: "av lg" }, c.nick.slice(0, 1)),
-          h("div", { class: "ct" }, h("b", {}, c.nick, h("small", {}, ago(c.created))), h("span", {}, c.body)),
-          c.mine ? h("button", { class: "linkbtn", type: "button", "aria-label": "댓글 삭제", onclick: () => act(d, "DELETE", `/api/comments/${c.id}`, null, edit) }, "삭제") : null))))));
+          off.map((t) => h("button", { class: "tag off", type: "button", title: "눌러서 되돌리기", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null),
+      mats.length ? h("div", { class: "dp-sec" }, head("사용 소재", mats.length > 3 ? h("button", { class: "dp-link", type: "button", onclick: (e) => { drawMats(true); e.currentTarget.remove(); } }, "더보기") : null), matList) : null,
+      h("div", { class: "dp-sec dp-cmt" },
+        h("div", { class: "dp-cw" }, head(`댓글 ${so.comments.length}`),
+          h("div", { class: "dp-cin" }, ME ? avatarEl(ME, 24, "dp-cav") : h("span", { class: "dp-cav avt" }), comment, postBtn)),
+        so.comments.length ? clist : null, allBtn),
+      h("div", { class: "dp-sec dp-rel" }, head("연관 이미지"), h("div", { class: "dp-grid" }, relCols), relMore)));
+  loadRel();
 }
 async function removePost(d) {
   if (!(await confirmDialog("게시물을 삭제할까요?", "삭제한 게시물은 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소", danger: true }))) return;
