@@ -430,7 +430,7 @@ async function profilePage(uid) {
       : u.blocked ? h("div", { class: "pf-acts" }, btn("차단 해제", "", unblock))
       : h("div", { class: "pf-acts" }, btn(u.isFollowing ? "팔로잉" : "팔로우", u.isFollowing ? "" : "primary", async () => { if (!ME) return needLogin(); try { await toggleFollow(u.uid, u.isFollowing); await loadAll(); draw(); } catch (e) { toast(e.message); } }));
     const tabBtn = (k, l, sc = "") => { const on = tab === k && (k !== "posts" || scope === sc); return h("button", { class: "pf-tab" + (on ? " on" : ""), type: "button", role: "tab", "aria-selected": String(on), onclick: async () => { tab = k; if (k === "posts" && scope !== sc) { scope = sc; try { await loadAll(); } catch (e) { toast(e.message); } } draw(); } }, l); };
-    const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => goPost(it.id) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
+    const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => (isM() ? goPost(it.id) : postModal(it.id, async () => { await loadAll(); draw(); })) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
     const grid = u.blocked ? notice("차단한 유저예요", `차단을 해제하면 ${u.nick}님의 게시물을 다시 볼 수 있어요.`) : tab === "posts"
       ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
         : notice(scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
@@ -706,4 +706,72 @@ function accountMenu(anchor) {
   setTimeout(() => document.addEventListener("click", close), 0);
   const esc = (e) => { if (e.key === "Escape") { m.remove(); document.removeEventListener("keydown", esc); anchor.focus(); } };
   document.addEventListener("keydown", esc);
+}
+
+/* ---------------------------------------------------------------- 게시물 모달 · PC (HOM_0501_05 / COM_0102 / COM_0102_04)
+   마이페이지 등에서 게시물을 누르면 페이지를 떠나지 않고 가운데 모달로 보여 줌 */
+async function postModal(id, onChange) {
+  let d;
+  try { const [a, so] = await Promise.all([api("/api/images/" + id), api("/api/images/" + id + "/social")]); d = a; d.so = so; }
+  catch (e) { return toast(e.message); }
+  const m = h("div", { class: "modal pm-wrap", onmousedown: (e) => e.target === m && m.remove() });
+  const right = h("div", { class: "pm-r" });
+  const box = h("div", { class: "pm", role: "dialog", "aria-modal": "true", "aria-label": d.title || "게시물" },
+    h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }))), right);
+  m.append(box);
+  const refresh = async () => { try { d.so = await api(`/api/images/${d.id}/social`); draw(); } catch (e) { toast(e.message); } };
+  const act = async (method, url, body, msg) => {
+    if (!needLogin()) return;
+    try { await api(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined }); if (msg) toast(msg); await refresh(); } catch (e) { toast(e.message); }
+  };
+  const removeIt = async () => {
+    if (!(await confirmDialog("게시물을 삭제할까요?", "삭제한 게시물은 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소", danger: true }))) return;
+    try { await api("/api/images/" + d.id, { method: "DELETE" }); m.remove(); toast("게시물을 삭제했어요"); if (onChange) onChange(); reload(); } catch (e) { toast(e.message); }
+  };
+  let allMats = false, allCmts = false;
+  function draw() {
+    const so = d.so, o = so.owner || {};
+    const menu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
+      { ic: "save", label: "북에 추가", fn: () => needLogin() && saveToBook([d.id], { after: refresh }) },
+      { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, so.kept ? "킵에서 뺐어요" : "킵 스페이스에 담았어요") },
+      ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d, async () => { draw(); if (onChange) onChange(); }) }, { ic: "trash", label: "삭제하기", danger: true, fn: removeIt }]
+        : [{ ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]); };
+    const tags = (d.tags || []).filter((t) => t.active);
+    const mats = d.materials || [];
+    const cin = h("input", { class: "pm-cin", maxlength: "500", placeholder: "댓글을 작성해보세요.", "aria-label": "댓글 입력" });
+    const send = () => { const v = cin.value.trim(); if (v) act("POST", `/api/images/${d.id}/comments`, { body: v }); };
+    cin.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
+    const cmts = so.comments || [];
+    const top = right.scrollTop;
+    const put = (...k) => right.replaceChildren(...k.filter((x) => x != null && x !== false));
+    put(
+      h("div", { class: "pm-head" },
+        h("a", { class: "pm-user", href: o.uid ? "#/u/" + o.uid : null, onclick: () => m.remove() }, avatarEl({ nick: o.nick || d.author, avatar: o.avatar }, 36), h("span", {}, h("b", {}, o.nick || d.author || ""), o.uid ? h("small", {}, "@" + o.uid) : null)),
+        h("div", { class: "pm-icons" },
+          h("button", { class: "icon-btn", type: "button", "aria-label": "공유하기", onclick: () => (typeof sharePost === "function" ? sharePost(d) : null) }, icon("share", 24)),
+          h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: menu }, icon("more", 24)),
+          h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24)))),
+      h("h2", { class: "pm-title" }, d.title || "제목 없음"),
+      h("div", { class: "pm-stats" },
+        h("button", { class: "pm-st" + (so.liked ? " on" : ""), type: "button", "data-like": "1", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`) }, icon(so.liked ? "heart:f" : "heart", 20), h("span", {}, String(so.likes || 0))),
+        h("span", { class: "pm-st" }, icon("comment", 20), h("span", {}, String(cmts.length))),
+        h("span", { class: "pm-sp" }),
+        h("button", { class: "pm-btn", type: "button", onclick: () => act(so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, so.kept ? "킵에서 뺐어요" : "킵 스페이스에 담았어요") }, so.kept ? "킵 해제" : "킵에 담기"),
+        h("button", { class: "pm-btn dark", type: "button", onclick: () => needLogin() && saveToBook([d.id], { after: refresh }) }, "북에 저장")),
+      h("hr", { class: "pm-hr" }),
+      tags.length ? h("section", { class: "pm-sec" }, h("h3", {}, "태그"), h("div", { class: "pm-tags" }, kindTag ? kindTag(d) : null, tags.map((t) => h("span", { class: "pm-tag" }, "#" + t.label)))) : null,
+      mats.length ? h("section", { class: "pm-sec" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용 소재"), mats.length > 3 ? h("button", { class: "pm-more", type: "button", onclick: () => { allMats = !allMats; draw(); } }, allMats ? "접기" : "더보기") : null),
+        h("div", { class: "pm-links" }, mats.slice(0, allMats ? mats.length : 3).map((l) => h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, icon("link", 15), h("span", {}, l))))) : null,
+      h("section", { class: "pm-sec" }, h("h3", {}, `댓글 ${cmts.length}`),
+        h("div", { class: "pm-cbox" }, cin, h("button", { class: "pm-send", type: "button", "aria-label": "댓글 등록", onclick: send }, icon("send", 20))),
+        h("div", { class: "pm-clist" }, cmts.slice(0, allCmts ? cmts.length : 5).map((c) => h("div", { class: "pm-c" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 28),
+          h("div", {}, h("div", { class: "pm-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body)),
+          h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
+            ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act("DELETE", `/api/comments/${c.id}`) }]
+            : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 18))))),
+        cmts.length > 5 && !allCmts ? h("button", { class: "pm-more", type: "button", onclick: () => { allCmts = true; draw(); } }, `댓글 ${cmts.length}개 모두 보기`) : null));
+    right.scrollTop = top;
+  }
+  draw(); document.body.append(m);
+  right.querySelector(".icon-btn")?.focus();
 }

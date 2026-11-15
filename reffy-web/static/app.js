@@ -433,14 +433,14 @@ async function pullPose() {
   toast("3D 포즈 검색은 준비 중이에요. 구도를 보고 포즈를 만들어 보세요");
 }
 /* 게시물 수정 (MYP_0200 수정 모드): 제목 · 사용 소재 · 공개 설정. 태그는 상세 화면의 ‘태그 수정’에서 */
-function editPost(d) {
+function editPost(d, after) {
   const st = { title: d.title || "", materials: [...(d.materials || [])], private: !!d.private };
   const m = h("div", { class: "modal" + (isM() ? " mfull" : ""), onmousedown: (e) => !isM() && e.target === m && m.remove() });
   const save_ = async () => {
     try {
       await api(`/api/images/${d.id}/meta`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(st) });
       m.remove(); toast("게시물을 수정했어요");
-      const fresh = await api(`/api/images/${d.id}`); fresh.so = d.so; Object.assign(d, fresh); drawDetail(d); reload();
+      const fresh = await api(`/api/images/${d.id}`); fresh.so = d.so; Object.assign(d, fresh); if (after) after(d); else { drawDetail(d); reload(); }
     } catch (e) { toast(e.message); }
   };
   const draw = () => m.replaceChildren(h("div", { class: "dlg bk edit", role: "dialog", "aria-modal": "true", "aria-label": "게시물 수정" },
