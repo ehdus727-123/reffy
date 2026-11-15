@@ -945,3 +945,11 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 .qclear{flex:none;width:20px;height:20px;padding:0;border:0;background:none;color:var(--t3);display:grid;place-items:center}
 .qclear[hidden]{display:none}
 .search input::-webkit-search-cancel-button{display:none}
+
+/* 필터 패널 스크롤바: 얇게 (4px, 회색 막대 · 배경 없음 · 화살표 없음) */
+.side ::-webkit-scrollbar,.side::-webkit-scrollbar{width:4px;height:4px}
+.side ::-webkit-scrollbar-track,.side::-webkit-scrollbar-track{background:transparent}
+.side ::-webkit-scrollbar-thumb,.side::-webkit-scrollbar-thumb{background:#c3c2c5;border-radius:2px}
+.side ::-webkit-scrollbar-thumb:hover{background:#9e9da1}
+.side ::-webkit-scrollbar-button{display:none;height:0}
+@supports not selector(::-webkit-scrollbar){.side,.side *{scrollbar-width:thin;scrollbar-color:#c3c2c5 transparent}}
