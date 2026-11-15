@@ -1120,3 +1120,94 @@ html:not(.m) .avatar#me{width:32px;height:32px}
   /* 토스트 */
   .toast{transition:opacity var(--t2) var(--ease),transform var(--t2) var(--ease)}
 }
+
+/* ================================================================ Reffy Typography Design System v1.0 (Web 1440 · Mobile 390)
+   Pretendard · 행간 px 고정 · 11px 미만 금지 · 이름 Role/Size. 아래 변수(--type-*)를 쓰고, 예전 --t-* 도 새 값으로 맞춤 */
+:root{--ff:"Pretendard",-apple-system,system-ui,sans-serif;
+  --type-display-s:700 36px/44px var(--ff);--type-headline-l:700 32px/40px var(--ff);--type-headline-m:700 28px/36px var(--ff);--type-headline-s:600 24px/32px var(--ff);
+  --type-title-l:600 22px/28px var(--ff);--type-title-ml:600 20px/28px var(--ff);--type-title-m:600 16px/24px var(--ff);--type-title-ms:600 15px/22px var(--ff);--type-title-s:600 14px/20px var(--ff);--type-title-xs:600 13px/18px var(--ff);
+  --type-body-l:400 16px/24px var(--ff);--type-body-ml:400 15px/22px var(--ff);--type-body-m:400 14px/20px var(--ff);--type-body-ms:400 13px/18px var(--ff);--type-body-s:400 12px/16px var(--ff);--type-body-xs:400 11px/16px var(--ff);
+  --type-label-xl:500 16px/24px var(--ff);--type-label-l:500 14px/20px var(--ff);--type-label-m:500 12px/16px var(--ff);--type-label-s:500 11px/16px var(--ff);
+  --type-nav-gnb:600 16px/24px var(--ff);--type-nav-gnb-active:700 16px/24px var(--ff);--type-nav-snb:500 15px/20px var(--ff);--type-nav-snb-active:600 15px/20px var(--ff);
+  /* 예전 변수 → 새 스타일 (Deprecated 표) */
+  --t-display-s:var(--type-display-s);--t-headline-l:var(--type-headline-l);--t-headline-s:var(--type-headline-s);--t-title-l:var(--type-title-l);--t-title-m:var(--type-title-m);
+  --t-body-l:var(--type-body-l);--t-body-m:var(--type-body-m);--t-label-l:var(--type-label-xl);--t-label-m:var(--type-label-l);--t-label-s:var(--type-label-m);
+  --text-primary:#18171a;--text-secondary:#5b595f;--text-tertiary:#6f6d72;--status-error:#c43a49}
+.m{--type-title-xs:600 11px/16px var(--ff)}
+body{font-family:var(--ff)}
+
+/* ---------- Web (3-4 Patterns) ---------- */
+html:not(.m) .nav a{font:var(--type-nav-gnb);letter-spacing:-.08px;color:var(--text-tertiary)}
+html:not(.m) .nav a.on{font:var(--type-nav-gnb-active);color:var(--text-primary)}
+html:not(.m) .search input{font:var(--type-body-m);letter-spacing:-.07px}
+html:not(.m) .card .meta .tx b{font:var(--type-title-xs);letter-spacing:0;color:var(--text-primary)}
+html:not(.m) .card .meta .lk{font:var(--type-label-m);letter-spacing:0}
+html:not(.m) .ptitle{font:var(--type-title-ml);letter-spacing:-.2px}
+html:not(.m) .pname,html:not(.m) .who b{font:var(--type-title-s);letter-spacing:-.07px}
+html:not(.m) .who span{font:var(--type-body-s);letter-spacing:0;color:var(--text-secondary)}
+html:not(.m) .sec-h h3{font:var(--type-title-m);letter-spacing:-.08px}
+html:not(.m) .panel .tag{font:var(--type-label-m);letter-spacing:0}
+html:not(.m) .panel .hint{font:var(--type-body-s);letter-spacing:0}
+html:not(.m) .panel .mat-list a,html:not(.m) .panel li a{font:var(--type-body-ml);letter-spacing:-.075px}
+html:not(.m) .dnav h2{font:var(--type-title-l);letter-spacing:-.22px}
+html:not(.m) .dnav a{font:var(--type-nav-snb);letter-spacing:0;color:var(--text-secondary)}
+html:not(.m) .dnav a.on{font:var(--type-nav-snb-active);color:var(--text-primary)}
+html:not(.m) .dnav small{font:var(--type-title-xs);letter-spacing:0;color:var(--text-tertiary)}
+html:not(.m) .drawer h1{font:var(--type-display-s);letter-spacing:-.72px}
+html:not(.m) .drawer .sub{font:var(--type-body-l);letter-spacing:-.08px;color:var(--text-secondary)}
+html:not(.m) .notice h2{font:var(--type-headline-m);letter-spacing:-.42px;color:var(--text-primary)}
+html:not(.m) .notice p{font:var(--type-body-m);letter-spacing:-.07px}
+html:not(.m) .zero-res h2{font:var(--type-headline-s);letter-spacing:-.24px}
+html:not(.m) .pf-name h1{font:var(--type-title-l);letter-spacing:-.22px}
+html:not(.m) .pf-name span{font:var(--type-body-s);letter-spacing:0;color:var(--text-secondary)}
+html:not(.m) .pf-stat b{font:var(--type-title-m);letter-spacing:-.08px}
+html:not(.m) .pf-stat span{font:var(--type-body-l);letter-spacing:-.08px;color:var(--text-secondary)}
+html:not(.m) .pf-bio{font:var(--type-body-m);letter-spacing:-.07px}
+html:not(.m) .pf-links a{font:var(--type-label-m);letter-spacing:0}
+html:not(.m) .pf-acts .btn{font:var(--type-title-s);letter-spacing:-.07px}
+html:not(.m) .pf-tab{font:var(--type-label-l);letter-spacing:0}
+html:not(.m) .pf-tab.on{font:var(--type-title-s);letter-spacing:-.07px}
+html:not(.m) .mpage .mbar h1,html:not(.m) .set h1{font:var(--type-headline-s);letter-spacing:-.24px}
+html:not(.m) .sgroup{font:var(--type-title-xs);letter-spacing:0;color:var(--text-tertiary)}
+html:not(.m) .srow2>span{font:var(--type-body-ml);letter-spacing:-.075px}
+html:not(.m) .srow2>small{font:var(--type-body-ms);letter-spacing:0;color:var(--text-secondary)}
+html:not(.m) .dlg.confirm.wf h2{font:var(--type-title-ml);letter-spacing:-.2px}
+html:not(.m) .dlg>header h2,html:not(.m) .upd-h h2{font:var(--type-title-l);letter-spacing:-.22px}
+html:not(.m) .dlg .csub{font:var(--type-body-m);letter-spacing:-.07px}
+html:not(.m) .toast{font:var(--type-body-l);letter-spacing:-.08px}
+html:not(.m) .chk{font:var(--type-label-l);letter-spacing:0}
+html:not(.m) .ftype h4,html:not(.m) .axis h4{font:var(--type-label-m);letter-spacing:0}
+html:not(.m) #reset{font:var(--type-label-m)}
+
+/* ---------- Mobile (4-4 Patterns) ---------- */
+html.m body .card .meta .tx b{font:var(--type-title-xs);letter-spacing:0;color:var(--text-primary)}
+html.m body .card .meta .lk{font:var(--type-label-s);letter-spacing:0}
+html.m body #mtab a span,html.m body #mtab a.on span{font:var(--type-label-m);letter-spacing:0}
+html.m body .search input{font:var(--type-body-s)}
+html.m body .fbtn,html.m body .sortbtn{font:var(--type-label-m)}
+html.m body .ptitle{font:var(--type-title-l);letter-spacing:-.22px}
+html.m body .who .pname,html.m body .who b{font:var(--type-title-s);letter-spacing:-.07px}
+html.m body .who span{font:var(--type-label-s);letter-spacing:0;color:var(--text-secondary)}
+html.m body .sec-h h3{font:var(--type-title-m);letter-spacing:-.08px}
+html.m body .panel .tag{font:var(--type-label-m);letter-spacing:0}
+html.m body .stat{font:var(--type-label-l)}
+html.m body .mbar.big h1{font:var(--type-headline-s);letter-spacing:-.24px}
+html.m body .mbar:not(.big) h1{font:var(--type-title-ml);letter-spacing:-.2px}
+html.m body .notice h2{font:var(--type-title-ml);letter-spacing:-.2px;color:var(--text-primary)}
+html.m body .notice p{font:var(--type-body-m);letter-spacing:-.07px}
+html.m body .drawer .sub{font:var(--type-body-m);letter-spacing:-.07px}
+html.m body .pf-name h1{font:var(--type-title-m);letter-spacing:-.08px}
+html.m body .pf-name span{font:var(--type-body-xs);letter-spacing:0;color:var(--text-secondary)}
+html.m body .pf-stat b{font:var(--type-title-m);letter-spacing:-.08px}
+html.m body .pf-stat span{font:var(--type-body-s);letter-spacing:0}
+html.m body .pf-bio,html.m body .pf-links a{font:var(--type-label-s);letter-spacing:0}
+html.m body .pf-acts .btn{font:var(--type-label-l);letter-spacing:0}
+html.m body .pf-tab{font:var(--type-label-l)}.m .pf-tab.on{font:var(--type-title-s);letter-spacing:-.07px}
+html.m body .sgroup{font:var(--type-label-m);letter-spacing:0}
+html.m body .srow2>span{font:var(--type-title-m);letter-spacing:-.08px}
+html.m body .srow2>small{font:var(--type-body-m);letter-spacing:-.07px}
+html.m body .m-sheet-h h2,html.m body .side .m-sheet-h h2{font:var(--type-title-l);letter-spacing:-.22px}
+html.m body .dlg.confirm.wf h2{font:var(--type-title-ml);letter-spacing:-.2px}
+html.m body .dlg .csub{font:var(--type-body-m)}
+html.m body .smenu .srow,html.m body #apply,html.m body #mReset,html.m body .btn.block,html.m body .upl .foot .btn{font:var(--type-label-xl);letter-spacing:-.08px}
+html.m body .toast{font:var(--type-label-l)}
