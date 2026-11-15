@@ -1566,5 +1566,5 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
 /* 필터 창: 왼쪽에서 미끄러져 들어오고, 닫을 때는 왼쪽으로 미끄러져 나감 */
 @keyframes rf-side-in{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes rf-side-out{from{transform:none}to{transform:translateX(-100%)}}
-html:not(.m) .layout.f-closing:not(.f-open) .side{display:flex;position:fixed;left:0;top:88px;z-index:15;animation:rf-side-out .3s var(--ease-in) both;pointer-events:none}
+html:not(.m) .layout.f-closing:not(.f-open) .side{display:flex;position:fixed;left:0;top:88px;z-index:15;animation:rf-side-out .34s var(--ease) both;pointer-events:none}
 html:not(.m) .layout{overflow-x:clip}

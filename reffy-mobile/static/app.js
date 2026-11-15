@@ -112,7 +112,7 @@ function setFilterOpen(o) {
   const L = $("#layout"), was = L.classList.contains("f-open");
   clearTimeout(fCloseT);
   // PC에서 닫을 때: 필터 창을 바로 없애지 않고 왼쪽으로 미끄러져 사라지게 (그동안 피드는 왼쪽으로 채워짐)
-  if (was && !o && !isM() && !RM.matches) { L.classList.add("f-closing"); fCloseT = setTimeout(() => L.classList.remove("f-closing"), 300); }
+  if (was && !o && !isM() && !RM.matches) { L.classList.add("f-closing"); fCloseT = setTimeout(() => L.classList.remove("f-closing"), 340); }
   else L.classList.remove("f-closing");
   L.classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o));
 }
