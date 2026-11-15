@@ -1405,3 +1405,7 @@ html.m body .side .cpanel{padding-top:4px;margin-top:-4px}
 .pf-banner{position:relative;overflow:hidden}
 .pf-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .m .pe-cvimg{height:96px}
+
+/* 피드 배치: 왼쪽→오른쪽 순서 (열 간격은 기존 column-gap 그대로) */
+#grid.mas{display:flex;align-items:flex-start}
+#grid.mas .mcol{flex:1 1 0;min-width:0}

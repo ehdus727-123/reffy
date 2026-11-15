@@ -224,9 +224,33 @@ function card(it) {
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
 const moreIc = () => icon("more", 24);
+/* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽, 그다음 가장 짧은 열에 채움 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
+const MAS = { cols: [], hs: [], n: 0 };
+function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }
+function masReset() {
+  const g = $("#grid"); MAS.n = masCount();
+  MAS.cols = Array.from({ length: MAS.n }, () => h("div", { class: "mcol" })); MAS.hs = Array(MAS.n).fill(0);
+  g.replaceChildren(...MAS.cols);
+}
+function masAdd(items) {
+  if (!MAS.cols.length || MAS.cols[0].parentNode !== $("#grid")) masReset();
+  for (const it of items) {
+    let k = 0;
+    for (let i = 1; i < MAS.n; i++) if (MAS.hs[i] < MAS.hs[k] - 0.01) k = i;
+    MAS.cols[k].append(card(it));
+    MAS.hs[k] += (it.w && it.h ? it.h / it.w : 1.25) + 0.2;
+  }
+}
+function masRelayout() {
+  const g = $("#grid"); if (!g.classList.contains("mas") || !MAS.cols.length) return;
+  const n = masCount(); if (n === MAS.n) return;
+  masReset(); masAdd(S.items);
+}
+let masT; window.addEventListener("resize", () => { clearTimeout(masT); masT = setTimeout(masRelayout, 120); });
+new MutationObserver(() => { clearTimeout(masT); masT = setTimeout(masRelayout, 30); }).observe(document.querySelector(".layout") || document.body, { attributes: true, attributeFilter: ["class"] });
 function skeleton() { const g = $("#grid"); for (let i = 0; i < 10; i++) g.append(h("div", { class: "card skel" }, h("span", { class: "im", style: `aspect-ratio:3/${3 + (i % 3)}` }))); }
 async function reload() {
-  S.items = []; S.total = 0; S.done = false; $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
+  S.items = []; S.total = 0; S.done = false; $("#grid").classList.remove("mas"); MAS.cols = []; $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
   await more(true);
 }
 async function more(first) {
@@ -240,9 +264,9 @@ async function more(first) {
   try {
     const d = await api("/api/images?" + p);
     if (my !== S.req) return;
-    if (first) $("#grid").replaceChildren();
+    if (first) { MAS.cols = []; masReset(); }
     S.items.push(...d.items); S.total = d.total;
-    $("#grid").append(...d.items.map(card));
+    masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;
     drawBar(d);
     if (first && d.total === 0) drawZero();
