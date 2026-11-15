@@ -196,12 +196,21 @@ async function drawSuggest() {
   let pop = [];
   try { pop = await api("/api/popular"); } catch { /* 인기 태그 없이 표시 */ }
   box.append(h("h3", {}, "인기 태그"));
-  box.append(pop.length ? h("ol", { class: "pop" }, pop.map((p, i) => h("li", {}, h("button", { type: "button", onmousedown: (e) => { e.preventDefault(); runQuery(p.label); } }, h("b", {}, String(i + 1)), p.label)))) : h("p", { class: "none" }, "아직 태그가 붙은 이미지가 없어요. 이미지를 올려 보세요."));
+  box.append(pop.length ? h("ol", { class: "pop" }, pop.map((p, i) => h("li", {}, h("button", { type: "button", onmousedown: (e) => { e.preventDefault(); applyTag(p.ikey, p.label); } }, h("b", {}, String(i + 1)), p.label)))) : h("p", { class: "none" }, "아직 태그가 붙은 이미지가 없어요. 이미지를 올려 보세요."));
 }
 const qEl = $("#q");
 qEl.addEventListener("focus", () => { $("#suggest").hidden = false; drawSuggest(); });
 qEl.addEventListener("blur", () => setTimeout(() => ($("#suggest").hidden = true), 120));
 function runQuery(q) { document.documentElement.classList.remove("m-search"); S.q = q.trim(); qEl.value = S.q; if (S.q) pushRecent(S.q); $("#suggest").hidden = true; qEl.blur(); S.sort = ""; reload(); }
+/* 인기 태그 · 추천 키워드: 글자 검색이 아니라 그 태그 하나만 필터로 적용 (칩의 ✕로 바로 해제) */
+function applyTag(ikey, label) {
+  if (!ikey || !S.labels[ikey]) return runQuery(label || "");
+  document.documentElement.classList.remove("m-search");
+  S.q = ""; qEl.value = ""; $("#qClear").hidden = true; $("#suggest").hidden = true; qEl.blur();
+  if (!S.applied.includes(ikey)) S.applied = [...S.applied, ikey];
+  S.picked.add(ikey); S.sort = "";
+  drawGroups(); reload();
+}
 $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); runQuery(qEl.value); });
 const SORTS = [["recent", "최근 순"], ["popular", "인기 순"], ["relevance", "관련도 순"]];
 let curSort = "recent";
@@ -290,7 +299,7 @@ async function drawZero() {
   try {
     const p = await api("/api/popular");
     const list = (Array.isArray(p) ? p : p.items || []).slice(0, 6);
-    if (list.length) kw.replaceChildren(h("span", { class: "z-lb" }, "추천 키워드"), h("div", { class: "z-chips" }, list.map((t) => h("button", { class: "pill", type: "button", onclick: () => runQuery(t.label || t.keyword || t) }, t.label || t.keyword || t))));
+    if (list.length) kw.replaceChildren(h("span", { class: "z-lb" }, "추천 키워드"), h("div", { class: "z-chips" }, list.map((t) => h("button", { class: "pill", type: "button", onclick: () => (t.ikey ? applyTag(t.ikey, t.label) : runQuery(t.label || t.keyword || t)) }, t.label || t.keyword || t))));
   } catch { /* 없으면 생략 */ }
   if (!any) return;
   try {
@@ -307,7 +316,8 @@ function drawBar(d) {
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
   const seen = new Set();
-  [...d.matched.map((m) => ({ ...m, dark: true })), ...S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k }))].forEach((m) => {
+  if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, "✕")));
+  S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k })).forEach((m) => {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
     chips.append(h("span", { class: "chip dark" }, "#" + m.label, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, "✕") : null));
   });
