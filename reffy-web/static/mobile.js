@@ -125,7 +125,7 @@ function drawDetailM(d, edit = false) {
     h("div", { class: "mbar" },
       h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: () => (S.hist.length ? goBack() : closeDetail()) }, icon("back", 24)),
       h("h1", {}, ""), h("div", { class: "mbar-r" }, h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: closeDetail }, icon("close", 24)))),
-    h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
+    h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", onclick: () => openLightbox(d.full, d.title) }),
       h("div", { class: "imgtop" }, circ("share", "공유하기", () => sharePost(d)), h("span", { class: "vdots" }, circ("more", "더보기", menu))),
       h("div", { class: "imgact" }, circ("person", "이 이미지의 구도로 3D 포즈 찾기", () => pullPose()), circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id))),
       o ? h("a", { class: "imgwho", href: "#/u/" + o.uid }, avatarEl(o, 20), "@" + o.uid) : null),

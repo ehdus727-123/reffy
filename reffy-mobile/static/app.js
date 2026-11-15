@@ -422,7 +422,7 @@ function drawDetail(d, edit = false) {
   relMore.onclick = loadRel;
   const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
   panel.replaceChildren(
-    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }),
+    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title) }),
       h("div", { class: "dp-top" },
         h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, icon("arrowLeft", 24)),
         h("span", { class: "sp" }),
@@ -463,6 +463,30 @@ function kindTag(d, edit, redraw) {
     onclick: async () => { if (v === k) return; try { await api(`/api/images/${d.id}/kind`, jsonOpt("PUT", { kind: v })); d.kind = v; toast(`종류를 ‘${l}’로 바꿨어요`); redraw(); } catch (e) { toast(e.message); } } }, l)));
   return h("button", { class: "tag kind", type: "button", title: `${label}만 보기`, onclick: () => {
     S.pickedKind = new Set([k]); S.kinds = [k]; S.picked = new Set(); S.applied = []; S.q = ""; qEl.value = ""; drawGroups(); if (isM() && !$("#panel").hidden) closeDetail(); reload(); } }, "#" + label);
+}
+/* 이미지 크게 보기: 상세 이미지를 누르면 화면 가운데에 크게 · +/− 버튼, 휠, 더블클릭(두 번 탭)으로 확대 · 확대하면 끌어서 이동 · Esc/×/바깥 누르면 닫힘 */
+function openLightbox(src, title) {
+  let z = 1, x = 0, y = 0, drag = null;
+  const img = h("img", { src, alt: title || "레퍼런스 이미지", draggable: "false" });
+  const stage = h("div", { class: "lb-stage" }, img);
+  const apply = () => { img.style.transform = `translate(${x}px, ${y}px) scale(${z})`; stage.classList.toggle("zoomed", z > 1); minus.disabled = z <= 1; plus.disabled = z >= 4; };
+  const zoomTo = (nz) => { z = Math.max(1, Math.min(4, Math.round(nz * 100) / 100)); if (z === 1) { x = 0; y = 0; } apply(); };
+  const plus = h("button", { class: "lb-z", type: "button", "aria-label": "확대", onclick: () => zoomTo(z + 0.5) }, icon("plus", 28));
+  const minus = h("button", { class: "lb-z", type: "button", "aria-label": "축소", onclick: () => zoomTo(z - 0.5) }, h("span", { class: "lb-minus" }));
+  const close = () => { m.remove(); document.removeEventListener("keydown", key); };
+  const key = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } else if (e.key === "+" || e.key === "=") zoomTo(z + 0.5); else if (e.key === "-") zoomTo(z - 0.5); };
+  const m = h("div", { class: "modal lightbox", role: "dialog", "aria-modal": "true", "aria-label": "이미지 크게 보기",
+    onclick: (e) => { if (e.target === m || e.target === stage) close(); } },
+    h("button", { class: "lb-close", type: "button", "aria-label": "닫기", onclick: close }, icon("close", 28)),
+    stage, h("div", { class: "lb-zoom" }, plus, minus));
+  img.addEventListener("dblclick", (e) => { e.stopPropagation(); zoomTo(z > 1 ? 1 : 2); });
+  stage.addEventListener("wheel", (e) => { e.preventDefault(); zoomTo(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)); }, { passive: false });
+  img.addEventListener("pointerdown", (e) => { if (z <= 1) return; drag = { sx: e.clientX - x, sy: e.clientY - y, moved: false }; img.setPointerCapture(e.pointerId); });
+  img.addEventListener("pointermove", (e) => { if (!drag) return; x = e.clientX - drag.sx; y = e.clientY - drag.sy; drag.moved = true; apply(); });
+  img.addEventListener("pointerup", () => { drag = null; });
+  img.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("keydown", key);
+  document.body.append(m); apply();
 }
 async function removePost(d) {
   if (!(await confirmDialog("게시물을 삭제할까요?", "삭제한 게시물은 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소", danger: true }))) return;
