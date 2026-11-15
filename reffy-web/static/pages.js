@@ -582,7 +582,7 @@ async function settingsPC(sub) {
   sub = sub || "notif";
   if (sub === "security") sub = "account";
   const main = h("div", { class: "st-main" });
-  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("div", { class: "pc-head" }, pcBack("#/me"), h("h1", {}, "내 설정")),
+  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("div", { class: "pc-head" }, h("button", { class: "pc-back", type: "button", "aria-label": "홈으로", title: "홈으로", onclick: () => (location.hash = "#/") }, icon("back", 24)), h("h1", {}, "내 설정")),
     SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, l)),
     h("i", { class: "st-div" }), h("a", { href: "#/settings/leave", class: "st-leave" + (sub === "leave" ? " on" : ""), "aria-current": sub === "leave" ? "page" : null }, "탈퇴하기"));
   const root = h("div", { class: "st" }, snb, main);
