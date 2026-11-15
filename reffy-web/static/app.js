@@ -69,6 +69,8 @@ async function loadVocab() {
 }
 const openState = store.get("reffy.open", {});
 const KINDS = [["photo", "사진"], ["illust", "일러스트"]];
+/* PC: 필터 패널에서 태그를 고르면 바로 적용 → 상단에 칩으로 나타남 (모바일은 시트의 '적용하기'로) */
+function liveApply() { if (isM()) return; clearTimeout(liveApply.t); liveApply.t = setTimeout(() => $("#apply").click(), 200); }
 function drawGroups() {
   const root = $("#groups"); root.replaceChildren();
   S.pickedKind = S.pickedKind || new Set();
@@ -80,7 +82,7 @@ function drawGroups() {
   groups.forEach((g, gi) => {
     if (!isM() && gi === 0) {   // Web 2차: '종류'는 접히지 않는 작은 제목 + 구분선
       root.append(h("div", { class: "ftype" }, h("h4", {}, "종류"), h("div", { class: "ftype-items" }, g.axes[0].tags.map((t) => h("label", { class: "chk" },
-        h("input", { type: "checkbox", checked: S.pickedKind.has(t.kind), onchange: (e) => { e.target.checked ? S.pickedKind.add(t.kind) : S.pickedKind.delete(t.kind); } }), t.label)))));
+        h("input", { type: "checkbox", checked: S.pickedKind.has(t.kind), onchange: (e) => { e.target.checked ? S.pickedKind.add(t.kind) : S.pickedKind.delete(t.kind); liveApply(); } }), t.label)))));
       return;
     }
     const open = openState[g.name] ?? gi < (isM() ? 3 : 2);
@@ -90,7 +92,7 @@ function drawGroups() {
     g.axes.forEach((a) => body.append(h("div", { class: "axis" },
       g.one || a.name === g.name ? null : h("h4", {}, a.name),
       a.tags.map((t) => h("label", { class: "chk" },
-        h("input", { type: "checkbox", checked: t.kind ? S.pickedKind.has(t.kind) : S.picked.has(t.ikey), onchange: (e) => { const set = t.kind ? S.pickedKind : S.picked; const v = t.kind || t.ikey; e.target.checked ? set.add(v) : set.delete(v); } }),
+        h("input", { type: "checkbox", checked: t.kind ? S.pickedKind.has(t.kind) : S.picked.has(t.ikey), onchange: (e) => { const set = t.kind ? S.pickedKind : S.picked; const v = t.kind || t.ikey; e.target.checked ? set.add(v) : set.delete(v); liveApply(); } }),
         t.label)))));
     box.append(btn, body); root.append(box);
   });
@@ -217,8 +219,7 @@ drawSort();
 function card(it) {
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => openDetail(it.id) },
-    h("span", { class: "im" }, img, h("span", { class: "palbtn", role: "button", tabindex: "0", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로",
-      onclick: (e) => { e.stopPropagation(); pullPalette(it.id); }, onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); pullPalette(it.id); } } }, icon("palette", 20))),
+    h("span", { class: "im" }, img),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
