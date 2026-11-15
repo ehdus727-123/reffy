@@ -131,7 +131,7 @@ input{font:inherit;color:inherit}
 .sec-h h3{margin:0;font-size:18px;font-weight:600;letter-spacing:-.09px}
 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .tag{background:var(--ph);color:var(--ink2);border-radius:4px;padding:6px 10px;font-size:12px;font-weight:500;line-height:16px;display:inline-flex;gap:4px;align-items:center}
-.tag.user{background:#ece4fd;color:#4d16b5}
+.tag.user{background:#f5eeff;color:#7425f6}
 .tag.off{background:#fff;border:1px dashed var(--line2);color:var(--ink3);text-decoration:line-through}
 .tag .pr{color:var(--ink3);font-size:11px}
 .tag x{font-style:normal}
@@ -158,7 +158,7 @@ input{font:inherit;color:inherit}
 .field input{width:100%;height:44px;border:1px solid var(--line2);border-radius:8px;padding:0 12px}
 .axisgrp h4{margin:10px 0 6px;font-size:12px;color:var(--ink2)}
 .note{background:var(--ph);border-radius:8px;padding:10px 12px;color:var(--ink2);font-size:13px}
-.note.warn{background:#fff4e5;color:#7a4a00}
+.note.warn{background:#fff8e6;color:#855300}
 .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .busy{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:-2px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -172,7 +172,7 @@ input{font:inherit;color:inherit}
 .actions{position:relative}
 .nav a{cursor:pointer}
 .linkbtn{font-size:12px;color:var(--ink2);text-decoration:underline}
-.linkbtn.danger{display:block;margin-top:16px;color:#c2272d}
+.linkbtn.danger{display:block;margin-top:16px;color:#c43a49}
 .stat{background:none;border:0;padding:0;display:flex;align-items:center;gap:3px;font:inherit;font-weight:500;color:var(--ink)}
 .stat.on svg{fill:#e5484d;stroke:#e5484d}
 .prow .btn{height:32px}
@@ -279,7 +279,7 @@ body.auth #page{min-height:100vh}
 .aside-art b{font-size:20px;font-weight:800;letter-spacing:-.3px;text-decoration:none;color:var(--ink)}
 .art{position:absolute;left:40px;right:40px;top:110px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
 .art div{display:flex;flex-direction:column;gap:14px}
-.art i{display:block;border-radius:6px;background:linear-gradient(to top right,transparent calc(50% - .5px),#d3d2d5 50%,transparent calc(50% + .5px)),linear-gradient(to bottom right,transparent calc(50% - .5px),#d3d2d5 50%,transparent calc(50% + .5px)),#f7f6f8}
+.art i{display:block;border-radius:6px;background:linear-gradient(to top right,transparent calc(50% - .5px),#e4e3e5 50%,transparent calc(50% + .5px)),linear-gradient(to bottom right,transparent calc(50% - .5px),#e4e3e5 50%,transparent calc(50% + .5px)),#f8f7f8}
 .art div:nth-child(2){margin-top:56px}.art div:nth-child(3){margin-top:24px}
 .formcol{display:grid;place-items:center;padding:32px}
 .fbox{width:min(400px,100%)}
@@ -288,8 +288,8 @@ body.auth #page{min-height:100vh}
 .fl{display:block;font-size:12px;color:var(--ink2);margin:18px 0 6px}
 .inp{width:100%;height:48px;border:1px solid var(--line2);border-radius:8px;padding:0 14px;font:inherit;background:#fff}
 .inp:focus{outline:2px solid var(--ink);outline-offset:-1px}
-.inp.bad{border-color:#c2272d}
-.msg{font-size:12px;margin:6px 0 0;min-height:16px;color:var(--ink2)}.msg.bad{color:#c2272d}.msg.ok{color:#1a7f4b}
+.inp.bad{border-color:#c43a49}
+.msg{font-size:12px;margin:6px 0 0;min-height:16px;color:var(--ink2)}.msg.bad{color:#c43a49}.msg.ok{color:#176b45}
 .rowline{display:flex;justify-content:space-between;align-items:center;margin:14px 0 22px;font-size:12px}
 .rowline label{display:flex;gap:8px;align-items:center;font-weight:500}
 .cbx{appearance:none;margin:0;width:18px;height:18px;border-radius:4px;border:1.2px solid var(--ink3);background:#fff;display:grid;place-items:center;flex:none}
@@ -508,7 +508,7 @@ button.chip{font:var(--t-label-s);padding:6px 12px;gap:6px}
 .dlg.bk .chd{margin-bottom:20px}
 .cvrow{display:flex;gap:20px;align-items:center;margin-bottom:24px}
 .cvprev{width:96px;height:96px;border-radius:8px;background:var(--ph);overflow:hidden;flex:none;position:relative;
-  background-image:linear-gradient(to top right,transparent calc(50% - .5px),#d3d2d5 50%,transparent calc(50% + .5px)),linear-gradient(to bottom right,transparent calc(50% - .5px),#d3d2d5 50%,transparent calc(50% + .5px))}
+  background-image:linear-gradient(to top right,transparent calc(50% - .5px),#e4e3e5 50%,transparent calc(50% + .5px)),linear-gradient(to bottom right,transparent calc(50% - .5px),#e4e3e5 50%,transparent calc(50% + .5px))}
 .cvprev img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .cvtx{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .cvtx b{font:var(--t-title-m);font-size:14px;line-height:20px}
@@ -657,7 +657,7 @@ button.pf-stat:hover span{text-decoration:underline}
 /* ---------------------------------------------------------------- Figma 1949:32958 홈 게시물 카드 */
 .card{background:#fff;border-radius:8px}
 .card .meta{display:flex;align-items:center;gap:5.469px;padding:8.75px 8.75px 8.75px 10.938px}
-.card .meta .av{width:17.5px;height:17.5px;border-radius:50%;background:#c9c8cb;flex:none;font-size:0}
+.card .meta .av{width:17.5px;height:17.5px;border-radius:50%;background:#e4e3e5;flex:none;font-size:0}
 .card .meta .tx{flex:1 1 0;min-width:0;display:block}
 .card .meta .tx b{display:block;font:600 14.219px/21.875px Pretendard,sans-serif;letter-spacing:-.0766px;color:#18171a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .meta .tx span{display:none}
@@ -680,7 +680,7 @@ button.pf-stat:hover span{text-decoration:underline}
 .pf-mid{margin-top:24px;display:flex;flex-direction:column;gap:23px}
 .pf-bio{margin:0;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a;overflow-wrap:anywhere;max-width:none}
 .pf-acts{display:flex;flex-direction:column;gap:6px}
-.pf-acts .btn{width:100%;height:40px;border-radius:3.486px;border:1px solid #dedede;background:#fff;color:#27272a;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+.pf-acts .btn{width:100%;height:40px;border-radius:3.486px;border:1px solid #c3c2c5;background:#fff;color:#18171a;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
 .pf-acts .btn.primary{background:#18171a;border-color:#18171a;color:#fff}
 .pf-links{margin-top:40px}
 .pf-links h2{margin:0 0 13px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
@@ -710,7 +710,7 @@ button.pf-stat:hover span{text-decoration:underline}
 .pe-nick .inp{flex:1;min-width:0}
 .pe-nick .btn{height:auto;min-height:48px;padding:0 20px;border:0;background:var(--ph);border-radius:10px;font:500 14px/20px Pretendard,sans-serif}
 .pe-hint{margin:0;font:400 12px/16px Pretendard,sans-serif;color:#6f6d72}
-.pe-hint.ok{color:#1f7a45}.pe-hint.err{color:#e5484d}
+.pe-hint.ok{color:#176b45}.pe-hint.err{color:#e5484d}
 .pe .inp.err{border-color:#e5484d}
 .pe-cnt{align-self:flex-end;font:400 11px/16px Pretendard,sans-serif;color:#6f6d72}
 .pe-add{background:transparent;border:1px dashed #c3c2c5}
@@ -951,7 +951,7 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 .side ::-webkit-scrollbar,.side::-webkit-scrollbar{width:4px;height:4px}
 .side ::-webkit-scrollbar-track,.side::-webkit-scrollbar-track{background:transparent}
 .side ::-webkit-scrollbar-thumb,.side::-webkit-scrollbar-thumb{background:#c3c2c5;border-radius:2px}
-.side ::-webkit-scrollbar-thumb:hover{background:#9e9da1}
+.side ::-webkit-scrollbar-thumb:hover{background:#8e8c91}
 .side ::-webkit-scrollbar-button{display:none;height:0}
 @supports not selector(::-webkit-scrollbar){.side,.side *{scrollbar-width:thin;scrollbar-color:#c3c2c5 transparent}}
 
@@ -977,10 +977,10 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 /* 2단계: 이미지 480 | 32 | 폼 472 */
 .upd-c{display:flex;gap:32px;flex:1;min-height:0}
 .upd-img{width:480px;flex:none;display:flex;flex-direction:column;gap:12px}
-.upd-pv{width:480px;height:480px;border-radius:8px;background:#f0f0f2;overflow:hidden;display:grid;place-items:center}
+.upd-pv{width:480px;height:480px;border-radius:8px;background:#f1f0f2;overflow:hidden;display:grid;place-items:center}
 .upd-pv img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .upd-thumbs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.upd-thumbs::-webkit-scrollbar{display:none}
-.upd-th,.upd-add{width:72px;height:72px;flex:none;border-radius:8px;padding:0;position:relative;overflow:hidden;background:#f0f0f2;border:1px solid transparent;cursor:pointer}
+.upd-th,.upd-add{width:72px;height:72px;flex:none;border-radius:8px;padding:0;position:relative;overflow:hidden;background:#f1f0f2;border:1px solid transparent;cursor:pointer}
 .upd-th img{width:100%;height:100%;object-fit:cover;display:block}
 .upd-th.on{border:2px solid #18171a}
 .upd-thx{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(24,23,26,.6);color:#fff;display:none;place-items:center}
@@ -1030,7 +1030,7 @@ html:not(.m) .chip.dark button{width:20px;height:20px;font-size:15px;line-height
 .ftype{display:flex;flex-direction:column;gap:16px}
 .ftype h4{margin:0;font:500 12px/16px Pretendard,sans-serif;color:#5b595f}
 .ftype-items{display:flex;flex-direction:column;gap:16px;margin-top:-6px}
-.ftype::after{content:"";height:1px;background:#dedede}
+.ftype::after{content:"";height:1px;background:#c3c2c5}
 .ftype .chk{min-height:20px;padding:0;gap:10px;font:500 14px/20px Pretendard,sans-serif;color:#18171a}
 
 /* ================================================================ Figma Common · Icon (Material Icons Round) — 채우기로 그리는 아이콘
@@ -1239,7 +1239,7 @@ html:not(.m) .panel{padding:0}
 .dp-name a:hover{text-decoration:underline}
 .dp-name span{font:var(--type-body-s);color:#6f6d72}
 .dp-follow{height:32px;min-width:64px;padding:0 12px;border-radius:6px;border:1px solid #7425f6;background:#7425f6;color:#fff;font:var(--type-label-l);flex:none}
-.dp-follow:hover{background:#6a1fe6}
+.dp-follow:hover{background:#6628d5}
 .dp-follow.ing{background:#fff;color:#18171a;border-color:#c3c2c5}
 .dp-tr{display:flex;flex-direction:column;gap:15px}
 .dp-title{margin:0;font:var(--type-title-m);letter-spacing:-.08px;color:#18171a;display:flex;align-items:center;gap:8px}
@@ -1300,7 +1300,7 @@ html:not(.m) .panel{padding:0}
 .panel::-webkit-scrollbar{width:4px}
 .panel::-webkit-scrollbar-track{background:transparent}
 .panel::-webkit-scrollbar-thumb{background:#c3c2c5;border-radius:2px}
-.panel::-webkit-scrollbar-thumb:hover{background:#9e9da1}
+.panel::-webkit-scrollbar-thumb:hover{background:#8e8c91}
 .panel::-webkit-scrollbar-button{display:none;height:0}
 @supports not selector(::-webkit-scrollbar){.panel{scrollbar-width:thin;scrollbar-color:#c3c2c5 transparent}}
 
@@ -1312,7 +1312,7 @@ html:not(.m) .panel{padding:0}
 
 /* 종류 태그(사진 · 일러스트): 다른 태그와 구분되게 보라 계열 */
 .tag.kind{background:#f5eeff;color:#7425f6}
-.tag.kind:hover{background:#ebdfff}
+.tag.kind:hover{background:#eadeff}
 .kind-seg{align-self:flex-start;margin-bottom:4px}
 .kind-seg button{height:32px;padding:0 14px;font:var(--type-label-l)}
 
@@ -1353,7 +1353,7 @@ html:not(.m) .panel{padding:0}
 .kc-th.on .kc-chk{display:grid}
 .kc-th .kc-chk .ic{width:14px;height:14px}
 .kp-empty{display:flex;flex-direction:column;align-items:center;gap:0;padding:200px 0 80px;text-align:center}
-.kp-ex{width:120px;height:120px;border-radius:50%;background:#f4f3f5;display:grid;place-items:center;font:700 40px/1 var(--ff,Pretendard);color:#18171a;margin-bottom:24px}
+.kp-ex{width:120px;height:120px;border-radius:50%;background:#f1f0f2;display:grid;place-items:center;font:700 40px/1 var(--ff,Pretendard);color:#18171a;margin-bottom:24px}
 .kp-empty h2{margin:0 0 24px;font:var(--type-headline-s);letter-spacing:-.24px;color:#18171a}
 .kp-empty .btn{height:44px;padding:0 24px;border-radius:8px}
 .kp-acts{display:flex;align-items:center;gap:16px}
@@ -1587,3 +1587,14 @@ html:not(.m) .layout.p-closing:not(.has-panel) .panel{display:block;position:fix
 
 /* 설정 · 서랍에서 왼쪽 메뉴를 바꿀 때는 화면 전체가 떠오르지 않게 (오른쪽 내용만 살짝 바뀜) */
 #page.same>*{animation:none}
+
+/* ================================================================ 디자인 시스템 점검 (Common · Components 2128:501) 맞춤 */
+/* Button M (Black · Contained / Outlined): 높이 40 · 모서리 8 · Medium 14/20 · 외곽선 #c3c2c5 */
+html:not(.m) .pf-acts .btn{border-radius:8px;border-color:#c3c2c5;color:#18171a;font:500 14px/20px var(--ff);letter-spacing:0}
+html:not(.m) .pf-acts .btn.primary{border-color:#18171a;color:#fff}
+/* Menu (정렬): 폭 200 · 모서리 12 · 위아래 8 · 항목 40 · 선택 항목은 브랜드 색 */
+html:not(.m) #sortMenu{width:200px;border-radius:12px;padding:8px 0;box-shadow:0 8px 24px rgba(24,23,26,.12)}
+#sortMenu button[aria-selected=true]{color:#7425f6}
+#sortMenu button[aria-selected=true] .ic{color:#7425f6}
+/* Avatar 기본 색 #e4e3e5 */
+.card .meta .av{background:#e4e3e5}
