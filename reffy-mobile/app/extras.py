@@ -10,7 +10,7 @@ from . import config, db
 from . import social as S
 
 router = APIRouter(prefix="/api")
-KINDS = ("follow", "comment", "like")
+KINDS = ("follow", "comment", "reply", "like")
 
 
 def _likes(items: list) -> list:
@@ -65,8 +65,19 @@ def unblock(uid: str, request: Request):
 @router.get("/me/blocks")
 def my_blocks(request: Request):
     u = S.need(request)
-    r = db.rows("SELECT x.uid, x.nick, x.avatar FROM blocks b JOIN users x ON x.id = b.blocked_id WHERE b.user_id = :u ORDER BY b.created_at DESC", u=u["id"])
-    return {"items": [{"uid": x["uid"], "nick": x["nick"], "avatar": S._avatar_url(x["uid"], x["avatar"])} for x in r]}
+    r = db.rows("SELECT x.uid, x.nick, x.avatar, b.created_at AS at FROM blocks b JOIN users x ON x.id = b.blocked_id WHERE b.user_id = :u ORDER BY b.created_at DESC", u=u["id"])
+    return {"items": [{"uid": x["uid"], "nick": x["nick"], "avatar": S._avatar_url(x["uid"], x["avatar"]),
+                       "at": x["at"].isoformat() if hasattr(x["at"], "isoformat") else str(x["at"] or "")} for x in r]}
+
+
+@router.get("/me/account")
+def my_account(request: Request):
+    """계정 관리: 아이디 · 가입일 (이메일 · 소셜 계정 연결은 아직 없음)"""
+    u = S.need(request)
+    r = db.rows("SELECT uid, nick, created_at FROM users WHERE id = :i", i=u["id"])[0]
+    c = r["created_at"]
+    return {"uid": r["uid"], "nick": r["nick"], "email": "", "created": c.isoformat() if hasattr(c, "isoformat") else str(c or ""),
+            "guest": config.NO_LOGIN}
 
 
 # ------------------------------------------------------------------ 신고 · 문의
@@ -90,20 +101,54 @@ def report(body: ReportIn, request: Request):
     return {"ok": True}
 
 
-class InquiryIn(BaseModel):
-    kind: str
-    body: str
+IQ_KINDS = ("계정", "게시물", "신고", "서비스 오류", "기타")
 
 
 @router.post("/inquiries")
-def inquiry(body: InquiryIn, request: Request):
+async def inquiry(request: Request):
+    """문의하기 — JSON {kind, body} 또는 폼(kind · email · title · body · photos 최대 3장)."""
+    import io
+    import json as _json
+    from PIL import Image
     u = S.need(request)
-    if not body.kind.strip():
+    files = []
+    if request.headers.get("content-type", "").startswith("multipart/"):
+        form = await request.form()
+        d = {k: str(form.get(k) or "") for k in ("kind", "email", "title", "body")}
+        files = [f for f in form.getlist("photos") if hasattr(f, "read")]
+    else:
+        raw = await request.json()
+        d = {k: str(raw.get(k) or "") for k in ("kind", "email", "title", "body")}
+    kind, body = d["kind"].strip(), d["body"].strip()
+    email, title = d["email"].strip()[:120], d["title"].strip()[:100]
+    if not kind:
         raise HTTPException(400, "문의 유형을 선택해 주세요.")
-    if len(body.body.strip()) < 5:
+    if email and ("@" not in email or "." not in email.split("@")[-1]):
+        raise HTTPException(400, "답변 받을 이메일을 확인해 주세요.")
+    if len(body) < 5:
         raise HTTPException(400, "문의 내용을 5자 이상 적어 주세요.")
+    if len(files) > 3:
+        raise HTTPException(400, "사진은 최대 3장까지 첨부할 수 있어요.")
+    imgs = []
+    for f in files:
+        data = await f.read()
+        if len(data) > 10 * 1024 * 1024:
+            raise HTTPException(400, "사진은 한 장에 10MB 이하로 올려 주세요.")
+        try:
+            im = Image.open(io.BytesIO(data)); im.load()
+        except Exception:  # noqa: BLE001
+            raise HTTPException(400, "사진 파일만 첨부할 수 있어요.")
+        imgs.append(im.convert("RGB"))
     with db.engine.begin() as c:
-        c.execute(db.inquiries.insert().values(user_id=u["id"], kind=body.kind.strip()[:40], body=body.body.strip()[:1000]))
+        iid = c.execute(db.inquiries.insert().values(user_id=u["id"], kind=kind[:40], body=body[:1000], email=email, title=title)).inserted_primary_key[0]
+        names = []
+        for n, im in enumerate(imgs):
+            im.thumbnail((1600, 1600))
+            name = f"iq_{iid}_{n}.jpg"
+            im.save(config.UPLOADS / name, "JPEG", quality=88)
+            names.append(name)
+        if names:
+            c.execute(text("UPDATE inquiries SET photos = :p WHERE id = :i"), {"p": _json.dumps(names), "i": iid})
     return {"ok": True}
 
 
@@ -117,19 +162,26 @@ def notif_off(user_id: int) -> Set[str]:
 def get_settings(request: Request):
     u = S.need(request)
     off = notif_off(u["id"])
-    return {"uid": u["uid"], "notif": {k: k not in off for k in KINDS}}
+    dnd = (db.rows("SELECT dnd FROM users WHERE id = :i", i=u["id"])[0]["dnd"] or "")
+    return {"uid": u["uid"], "notif": {k: k not in off for k in KINDS}, "dnd": dnd}
 
 
 class SettingsIn(BaseModel):
     notif: dict
+    dnd: Optional[str] = None     # "23:00-08:00" / "" (끄기) / None (그대로)
 
 
 @router.put("/me/settings")
 def put_settings(body: SettingsIn, request: Request):
     u = S.need(request)
     off = ",".join(k for k in KINDS if body.notif.get(k) is False)
+    import re as _re
     with db.engine.begin() as c:
         c.execute(text("UPDATE users SET notif_off = :o WHERE id = :i"), {"o": off, "i": u["id"]})
+        if body.dnd is not None:
+            if body.dnd and not _re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d", body.dnd):
+                raise HTTPException(400, "방해 금지 시간을 확인해 주세요.")
+            c.execute(text("UPDATE users SET dnd = :d WHERE id = :i"), {"d": body.dnd, "i": u["id"]})
     return {"notif": {k: k not in off.split(",") for k in KINDS}}
 
 
@@ -155,7 +207,7 @@ def change_password(body: PasswordIn, request: Request):
 
 
 class LeaveIn(BaseModel):
-    pw: str
+    pw: str = ""
     reason: str = ""
 
 
@@ -164,7 +216,7 @@ def leave(body: LeaveIn, request: Request, resp: Response):
     """탈퇴: 내 게시물·댓글·하트·북·킵을 모두 지우고 계정을 삭제한다. 되돌릴 수 없다."""
     u = S.need(request)
     row = db.rows("SELECT pw_hash, avatar FROM users WHERE id = :i", i=u["id"])[0]
-    if not S._verify(body.pw, row["pw_hash"]):
+    if not config.NO_LOGIN and not S._verify(body.pw, row["pw_hash"]):   # 게스트 모드는 비밀번호가 없음
         raise HTTPException(400, "비밀번호가 맞지 않아요.")
     imgs = db.rows("SELECT id, file FROM images WHERE user_id = :u", u=u["id"])
     books = [b["id"] for b in db.rows("SELECT id FROM books WHERE user_id = :u", u=u["id"])]

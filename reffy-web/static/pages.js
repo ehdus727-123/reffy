@@ -277,6 +277,7 @@ async function doLogout() { try { await api("/api/auth/logout", { method: "POST"
 $("#me").onclick = (e) => {
   e.stopPropagation();
   if (!ME) return needLogin();
+  if (!isM()) return accountMenu(e.currentTarget);
   popMenu(e.currentTarget, [["마이페이지", () => (location.hash = "#/me")], ["설정", () => (location.hash = "#/settings")], ...(NO_LOGIN ? [] : [["로그아웃", doLogout]])]);
 };
 
@@ -528,3 +529,155 @@ setInterval(() => { if (ME) loadMe().catch(() => {}); }, 60000);
   try { await loadVocab(); } catch (e) { $("#empty").hidden = false; $("#empty").replaceChildren(h("h2", {}, "서비스에 연결하지 못했어요"), h("p", {}, e.message)); }
   route();
 })();
+
+/* ---------------------------------------------------------------- 내 설정 · PC (HOM_0502_01 ~ 07) */
+const SET_DOCS = {
+  privacy: ["개인정보 처리 방침", [
+    ["1. 수집하는 개인정보", "REFFY는 회원가입과 서비스 제공을 위해 이메일, 닉네임, 프로필 이미지, 연결된 소셜 계정 식별자를 수집합니다. 서비스 이용 과정에서 게시물, 댓글, 접속 기록이 생성될 수 있습니다."],
+    ["2. 개인정보의 이용 목적", "수집한 정보는 회원 식별, 레퍼런스 검색과 추천, 알림 발송, 신고 처리 및 서비스 개선에만 이용합니다."],
+    ["3. 보관 및 파기", "회원 탈퇴 시 개인정보는 지체 없이 파기합니다. 단, 관계 법령에 따라 보관이 필요한 정보는 정해진 기간 동안 안전하게 보관한 뒤 파기합니다."],
+    ["4. 제3자 제공", "REFFY는 이용자의 동의 없이 개인정보를 외부에 제공하지 않습니다. 법령에 근거한 요청이 있는 경우에만 예외적으로 제공할 수 있습니다."],
+    ["5. 문의처", "개인정보 관련 문의는 내 설정 > 문의하기에서 접수할 수 있습니다."]]],
+  terms: ["서비스 약관", [
+    ["제1조 (목적)", "이 약관은 REFFY가 제공하는 레퍼런스 검색·공유 서비스의 이용 조건과 절차, 회원과 회사의 권리와 의무를 정하는 것을 목적으로 합니다."],
+    ["제2조 (게시물의 권리)", "회원이 올린 게시물의 저작권은 해당 회원에게 있습니다. 회원은 본인이 권리를 가진 이미지만 업로드해야 하며, 타인의 권리를 침해한 게시물은 삭제될 수 있습니다."],
+    ["제3조 (금지 행위)", "타인의 계정 도용, 무단 복제 및 재배포, 스팸 게시, 다른 이용자에 대한 괴롭힘 등 서비스 운영을 방해하는 행위를 금지합니다."],
+    ["제4조 (이용 제한)", "금지 행위가 확인되면 게시물 숨김, 이용 정지, 탈퇴 처리 등의 조치를 할 수 있습니다."],
+    ["제5조 (탈퇴)", "회원은 언제든지 내 설정 > 탈퇴하기에서 탈퇴할 수 있으며, 탈퇴 즉시 계정과 게시물이 삭제됩니다."]]],
+};
+const SET_MENU = [["notif", "알림 설정"], ["account", "계정 관리"], ["blocks", "차단 유저"], ["inquiry", "문의하기"], ["privacy", "개인정보 처리 방침"], ["terms", "서비스 약관"]];
+const ymd = (s) => { const d = new Date(s); return isNaN(d) ? "" : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; };
+const hm12 = (v) => { const [H, M] = v.split(":").map(Number); return `${H < 12 ? "오전" : "오후"} ${H % 12 || 12}:${String(M).padStart(2, "0")}`; };
+
+async function settingsPC(sub) {
+  sub = sub || "notif";
+  if (sub === "security") sub = "account";
+  const main = h("div", { class: "st-main" });
+  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("h1", {}, "내 설정"),
+    SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, l)),
+    h("i", { class: "st-div" }), h("a", { href: "#/settings/leave", class: "st-leave" + (sub === "leave" ? " on" : ""), "aria-current": sub === "leave" ? "page" : null }, "탈퇴하기"));
+  page(h("div", { class: "st" }, snb, main));
+  const head = (t, d) => h("div", { class: "st-head" }, h("h2", {}, t), d ? h("p", {}, d) : null);
+  const show = (...kids) => main.replaceChildren(h("div", { class: "st-c" }, ...kids.flat(3).filter((k) => k != null && k !== false)));
+  const toggle = (on, fn, label) => { const i = h("input", { type: "checkbox", class: "st-tg-in", role: "switch", checked: on, "aria-label": label, onchange: (e) => fn(e.target.checked) }); return h("label", { class: "st-tg" }, i, h("i", {})); };
+  const row = (t, d, right) => h("div", { class: "st-row" }, h("div", { class: "st-tx" }, h("b", {}, t), d ? h("small", {}, d) : null), right);
+  const group = (t, ...rows) => h("section", { class: "st-grp" }, h("h3", {}, t), ...rows);
+  try {
+    if (sub === "notif") {
+      const st = await api("/api/me/settings"); const n = st.notif; let dnd = st.dnd || "";
+      const save = async () => { try { await api("/api/me/settings", jsonOpt("PUT", { notif: n, dnd })); } catch (e) { toast(e.message); } };
+      const set = (k) => (v) => { n[k] = v; save(); };
+      const [f0, t0] = (dnd || "23:00-08:00").split("-");
+      const times = []; for (let m = 0; m < 1440; m += 30) times.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
+      const sel = (v, label) => h("span", { class: "st-time" }, h("select", { "aria-label": label, onchange: () => { if (dnd) { dnd = `${from.value}-${to.value}`; save(); } } }, times.map((t) => h("option", { value: t, selected: t === v }, hm12(t)))), icon("chevronDown", 18));
+      const fromW = sel(f0, "방해 금지 시작 시간"), toW = sel(t0, "방해 금지 끝 시간"); const from = fromW.querySelector("select"), to = toW.querySelector("select");
+      const range = h("div", { class: "st-range", hidden: !dnd }, fromW, h("span", {}, "~"), toW);
+      return show(head("알림 설정", "받고 싶은 알림을 선택하세요."),
+        group("활동 알림", row("팔로워", "누군가 나를 팔로우하면 알려드려요.", toggle(n.follow, set("follow"), "팔로워 알림")),
+          row("댓글", "내 게시물에 댓글이 달리면 알려드려요.", toggle(n.comment, set("comment"), "댓글 알림")),
+          row("대댓글", "내 댓글에 답글이 달리면 알려드려요.", toggle(n.reply !== false, set("reply"), "대댓글 알림")),
+          row("하트", "내 게시물에 하트가 눌리면 알려드려요.", toggle(n.like, set("like"), "하트 알림"))),
+        group("알림 수신 시간", row("방해 금지 시간", "설정한 시간에는 알림을 보내지 않아요.", toggle(!!dnd, (v) => { dnd = v ? `${from.value}-${to.value}` : ""; range.hidden = !v; save(); }, "방해 금지 시간")), range));
+    }
+    if (sub === "account") {
+      const a = await api("/api/me/account");
+      const info = (k, v) => h("div", { class: "st-row st-kv" }, h("b", {}, k), h("span", {}, v));
+      const sns = (name) => h("div", { class: "st-row st-sns" }, h("span", { class: "st-sic", "aria-hidden": "true" }), h("div", { class: "st-tx" }, h("b", {}, name), h("small", {}, "연결되지 않음")),
+        h("button", { class: "st-sbtn", type: "button", onclick: () => toast("소셜 계정 연결은 준비 중이에요") }, "연결하기"));
+      return show(head("계정 관리", "로그인에 연결된 계정 정보를 확인하세요."),
+        group("기본 정보", info("아이디", "@" + a.uid), info("이메일", a.email || "등록된 이메일이 없어요"), info("가입일", ymd(a.created))),
+        group("연결된 계정", ["Google", "카카오", "네이버", "X"].map(sns)),
+        h("p", { class: "st-note" }, "연결된 계정이 하나뿐이면 연결을 해제할 수 없어요."));
+    }
+    if (sub === "blocks") {
+      const d = await api("/api/me/blocks");
+      const un = async (x) => {
+        if (!(await confirmDialog(`${x.uid}님의 차단을 해제할까요?`, "차단을 해제하면 서로의 프로필과 게시물을 다시 볼 수 있어요.", { ok: "해제하기" }))) return;
+        try { await api(`/api/users/${x.uid}/block`, { method: "DELETE" }); toast("차단을 해제했어요"); settingsPC("blocks"); } catch (e) { toast(e.message); }
+      };
+      return show(head("차단 유저", "차단한 유저는 내 게시물과 프로필을 볼 수 없어요."),
+        d.items.length ? group(`차단한 유저 ${d.items.length}`, d.items.map((x) => h("div", { class: "st-row st-user" }, avatarEl(x, 40),
+          h("a", { class: "st-tx", href: "#/u/" + x.uid }, h("b", {}, x.uid), h("small", {}, [x.nick, x.at ? ymd(x.at) + " 차단" : ""].filter(Boolean).join(" · "))),
+          h("button", { class: "st-sbtn", type: "button", onclick: () => un(x) }, "차단 해제"))))
+          : h("div", { class: "st-empty" }, h("b", {}, "차단한 유저가 없어요"), h("p", {}, "프로필의 더보기 메뉴에서 차단할 수 있어요.")));
+    }
+    if (sub === "inquiry") {
+      let kind = ""; const photos = [];
+      const chips = h("div", { class: "st-chips", role: "radiogroup", "aria-label": "문의 유형" });
+      const drawChips = () => chips.replaceChildren(...["계정", "게시물", "신고", "서비스 오류", "기타"].map((k) => h("button", { type: "button", role: "radio", "aria-checked": String(kind === k), class: "st-chip" + (kind === k ? " on" : ""), onclick: () => { kind = k; drawChips(); } }, k)));
+      drawChips();
+      const email = h("input", { class: "st-inp", id: "iqMail", type: "email", placeholder: "답변 받을 이메일을 입력해 주세요", autocomplete: "email", maxlength: "120" });
+      const title = h("input", { class: "st-inp", id: "iqTitle", placeholder: "제목을 입력해 주세요", maxlength: "100" });
+      const body = h("textarea", { class: "st-ta", id: "iqBody", maxlength: "1000", placeholder: "문의 내용을 자세히 적어주세요. (최대 1,000자)" });
+      const file = h("input", { type: "file", accept: "image/*", multiple: true, hidden: true, onchange: () => { for (const f of file.files) { if (photos.length >= 3) { toast("사진은 최대 3장까지 첨부할 수 있어요."); break; } if (f.size > 10 * 1024 * 1024) { toast("사진은 한 장에 10MB 이하로 올려 주세요."); continue; } photos.push({ f, url: URL.createObjectURL(f) }); } file.value = ""; drawPh(); } });
+      const ph = h("div", { class: "st-photos" });
+      const drawPh = () => ph.replaceChildren(...photos.map((p, i) => h("span", { class: "st-ph" }, h("img", { src: p.url, alt: `첨부 사진 ${i + 1}` }), h("button", { type: "button", "aria-label": "사진 빼기", onclick: () => { photos.splice(i, 1); drawPh(); } }, icon("close", 14)))),
+        photos.length < 3 ? h("button", { class: "st-add", type: "button", "aria-label": "사진 첨부", onclick: () => file.click() }, icon("plus", 24)) : null, file);
+      drawPh();
+      const send = async (e) => {
+        e.preventDefault();
+        if (!kind) return toast("문의 유형을 선택해 주세요.");
+        if (body.value.trim().length < 5) return toast("문의 내용을 5자 이상 적어 주세요.");
+        const fd = new FormData(); fd.append("kind", kind); fd.append("email", email.value.trim()); fd.append("title", title.value.trim()); fd.append("body", body.value.trim());
+        photos.forEach((p) => fd.append("photos", p.f));
+        try { await api("/api/inquiries", { method: "POST", body: fd }); toast("문의를 보냈어요"); settingsPC("inquiry"); } catch (er) { toast(er.message); }
+      };
+      return show(head("문의하기", "답변은 입력한 이메일로 영업일 기준 3일 이내에 보내드려요."),
+        h("form", { class: "st-form", onsubmit: send },
+          h("div", { class: "st-f" }, h("span", { class: "st-lb" }, "문의 유형"), chips),
+          h("div", { class: "st-f" }, h("label", { class: "st-lb dk", for: "iqMail" }, "답변 받을 이메일"), email),
+          h("div", { class: "st-f" }, h("label", { class: "st-lb dk", for: "iqTitle" }, "제목"), title),
+          h("div", { class: "st-f" }, h("label", { class: "st-lb", for: "iqBody" }, "내용"), body),
+          h("div", { class: "st-f" }, h("span", { class: "st-lb" }, "사진 첨부", h("small", {}, "선택 · 최대 3장")), ph),
+          h("div", { class: "st-foot" }, h("button", { class: "st-btn", type: "submit" }, "문의 보내기"))));
+    }
+    if (sub === "privacy" || sub === "terms") {
+      const [t, items] = SET_DOCS[sub];
+      return show(head(t, "시행일 2026.11.01"), h("article", { class: "st-doc" }, items.map(([a, b]) => h("section", {}, h("h3", {}, a), h("p", {}, b)))),
+        h("button", { class: "st-prev", type: "button", onclick: () => toast("이전 버전이 없어요") }, "이전 버전 보기", icon("chevR", 16)));
+    }
+    if (sub === "leave") {
+      let posts = 0; try { posts = (await api("/api/users/" + encodeURIComponent(ME.uid))).posts || 0; } catch { /* 개수 없이 */ }
+      let why = ""; const ok = h("input", { type: "checkbox", class: "st-cbx", id: "lvOk", onchange: () => (go.disabled = !ok.checked) });
+      const pw = NO_LOGIN ? null : h("input", { class: "st-inp", id: "lvPw", type: "password", placeholder: "본인 확인을 위해 비밀번호를 입력해 주세요", autocomplete: "current-password" });
+      const radios = h("div", { class: "st-radios", role: "radiogroup", "aria-label": "떠나시는 이유" },
+        ["자주 사용하지 않아요", "원하는 레퍼런스를 찾기 어려워요", "다른 서비스를 이용해요", "개인정보가 걱정돼요", "기타"].map((r) =>
+          h("label", { class: "st-radio" }, h("input", { type: "radio", name: "lvWhy", value: r, onchange: () => (why = r) }), h("i", {}), r)));
+      const go = h("button", { class: "st-btn danger", type: "button", disabled: true, onclick: async () => {
+        if (!ok.checked) return toast("안내 사항을 확인해 주세요.");
+        if (pw && !pw.value) return toast("비밀번호를 입력해 주세요.");
+        if (!(await confirmDialog("정말 탈퇴할까요?", "탈퇴하면 계정과 게시물이 바로 삭제되며 다시 복구할 수 없어요.", { ok: "탈퇴하기", danger: true }))) return;
+        try { await api("/api/me/leave", jsonOpt("POST", { pw: pw ? pw.value : "", reason: why })); ME = null; UNREAD = 0; location.hash = "#/"; toast("탈퇴가 완료됐어요"); if (NO_LOGIN) setTimeout(() => location.reload(), 900); else drawMe(); } catch (er) { toast(er.message); }
+      } }, "탈퇴하기");
+      return show(head("탈퇴하기", "탈퇴하기 전에 아래 내용을 꼭 확인해 주세요."),
+        h("div", { class: "st-notice" }, h("b", {}, "탈퇴하면 이렇게 돼요"), h("p", {}, `· 내 게시물 ${posts}개, 북, 킵 스페이스에 담은 레퍼런스가 모두 삭제돼요.`), h("p", {}, "· 팔로워·팔로잉 관계와 알림 내역이 사라져요."), h("p", {}, "· 삭제된 정보는 다시 복구할 수 없어요.")),
+        h("div", { class: "st-reason" }, h("div", { class: "st-rh" }, h("b", {}, "떠나시는 이유를 알려주세요"), h("small", { "data-en": "Optional" }, "선택")), radios),
+        pw ? h("div", { class: "st-f" }, h("label", { class: "st-lb dk", for: "lvPw" }, "비밀번호"), pw) : null,
+        h("label", { class: "st-agree", for: "lvOk" }, ok, h("span", { class: "st-cbx-ui" }, icon("check", 14)), "위 안내 사항을 모두 확인했어요."),
+        h("div", { class: "st-foot" }, go));
+    }
+    location.hash = "#/settings/notif";
+  } catch (e) { show(h("div", { class: "st-empty" }, h("b", {}, "불러오지 못했어요"), h("p", {}, e.message))); }
+}
+
+/* ---------------------------------------------------------------- 프로필 메뉴 (HOM_0503: 마이페이지 · 설정 · 언어 · 로그아웃) */
+function accountMenu(anchor) {
+  const old = document.querySelector(".acct"); if (old) { old.remove(); return; }
+  const r = anchor.getBoundingClientRect();
+  const lang = (window.REFFY_LANG && REFFY_LANG.get()) || "ko";
+  const seg = h("span", { class: "acct-seg", role: "radiogroup", "aria-label": "언어" }, [["ko", "KOR"], ["en", "ENG"]].map(([k, l]) =>
+    h("button", { type: "button", role: "radio", "aria-checked": String(lang === k), class: lang === k ? "on" : "", "data-i18n-skip": "1", onclick: (e) => { e.stopPropagation(); seg.querySelectorAll("button").forEach((b) => { const on = b === e.currentTarget; b.classList.toggle("on", on); b.setAttribute("aria-checked", String(on)); }); if (window.REFFY_LANG) REFFY_LANG.set(k); } }, l)));
+  const go = (fn) => () => { m.remove(); fn(); };
+  const m = h("div", { class: "acct", role: "menu", style: `right:${Math.max(8, window.innerWidth - r.right)}px;top:${r.bottom + 12}px`, onclick: (e) => e.stopPropagation() },
+    h("div", { class: "acct-me" }, avatarEl(ME, 40), h("span", {}, h("b", {}, ME.nick), h("small", {}, "@" + ME.uid))),
+    h("button", { type: "button", role: "menuitem", class: "acct-it", onclick: go(() => (location.hash = "#/me")) }, icon("user", 20), "마이페이지"),
+    h("button", { type: "button", role: "menuitem", class: "acct-it", onclick: go(() => (location.hash = "#/settings")) }, icon("settings", 20), "설정"),
+    h("div", { class: "acct-lang" }, h("span", {}, "언어"), seg),
+    ...(NO_LOGIN ? [] : [h("i", { class: "acct-div" }), h("button", { type: "button", role: "menuitem", class: "acct-out", onclick: go(async () => { if (await confirmDialog("로그아웃할까요?", "다시 로그인하면 이어서 이용할 수 있어요.", { ok: "로그아웃" })) doLogout(); }) }, "로그아웃")]));
+  document.body.append(m);
+  window.addEventListener("hashchange", () => m.remove(), { once: true });
+  const close = (e) => { if (!m.contains(e.target)) { m.remove(); document.removeEventListener("click", close); } };
+  setTimeout(() => document.addEventListener("click", close), 0);
+  const esc = (e) => { if (e.key === "Escape") { m.remove(); document.removeEventListener("keydown", esc); anchor.focus(); } };
+  document.addEventListener("keydown", esc);
+}

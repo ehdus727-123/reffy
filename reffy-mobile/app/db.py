@@ -44,7 +44,8 @@ users = Table("users", md,
               Column("links", Text),                           # 외부 링크 JSON (최대 5개)
               Column("avatar", String(40)),                    # 프로필 사진 파일명 (없으면 NULL)
               Column("cover", String(40)),                     # 마이페이지 헤더(커버) 이미지 파일명 (없으면 NULL)
-              Column("notif_off", String(40), default=""),     # 끈 알림 종류 (follow,comment,like)
+              Column("notif_off", String(40), default=""),     # 끈 알림 종류 (follow,comment,reply,like)
+              Column("dnd", String(20), default=""),           # 방해 금지 시간 "23:00-08:00" (비우면 사용 안 함)
               Column("created_at", DateTime, default=datetime.now))
 sessions = Table("sessions", md,
                  Column("token", String(64), primary_key=True),
@@ -86,6 +87,7 @@ reports = Table("reports", md,
 inquiries = Table("inquiries", md,
                   Column("id", Integer, primary_key=True, autoincrement=True), Column("user_id", Integer, nullable=False),
                   Column("kind", String(40), nullable=False), Column("body", Text, nullable=False),
+                  Column("email", String(120), default=""), Column("title", String(100), default=""), Column("photos", Text),
                   Column("created_at", DateTime, default=datetime.now))
 
 ACTIVE = "((t.user_state = 'add') OR (t.user_state IS NULL AND t.ai_prob >= :thr))"
@@ -119,9 +121,13 @@ def init():
         if "pos" not in kcols:
             c.execute(text("ALTER TABLE keeps ADD COLUMN pos INTEGER"))
         ucols = {x["name"] for x in inspect(engine).get_columns("users")}
-        for name, ddl in (("bio", "VARCHAR(200) DEFAULT ''"), ("links", "TEXT"), ("avatar", "VARCHAR(40)"), ("cover", "VARCHAR(40)"), ("notif_off", "VARCHAR(40) DEFAULT ''")):
+        for name, ddl in (("bio", "VARCHAR(200) DEFAULT ''"), ("links", "TEXT"), ("avatar", "VARCHAR(40)"), ("cover", "VARCHAR(40)"), ("notif_off", "VARCHAR(40) DEFAULT ''"), ("dnd", "VARCHAR(20) DEFAULT ''")):
             if name not in ucols:
                 c.execute(text(f"ALTER TABLE users ADD COLUMN {name} {ddl}"))
+        qcols = {x["name"] for x in inspect(engine).get_columns("inquiries")}
+        for name, ddl in (("email", "VARCHAR(120) DEFAULT ''"), ("title", "VARCHAR(100) DEFAULT ''"), ("photos", "TEXT")):
+            if name not in qcols:
+                c.execute(text(f"ALTER TABLE inquiries ADD COLUMN {name} {ddl}"))
         bcols = {x["name"] for x in inspect(engine).get_columns("books")}
         if "cover" not in bcols:
             c.execute(text("ALTER TABLE books ADD COLUMN cover VARCHAR(40)"))

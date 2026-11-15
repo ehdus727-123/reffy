@@ -240,6 +240,7 @@ const TERMS = [["제1조 (목적)", "이 약관은 REFFY(이하 “서비스”)
 async function logoutAsk() { if (await confirmDialog("로그아웃할까요?", "", { ok: "로그아웃", cancel: "취소" })) doLogout(); }
 async function settingsPage(sub) {
   if (!needLogin()) return;
+  if (!isM()) return settingsPC(sub);
   const root = h("div", { class: "mpage set" }); page(root);
   const show = (title, ...kids) => root.replaceChildren(mbar(title, { back: () => (location.hash = sub ? "#/settings" : "#/me") }), ...kids.flat(4).filter((k) => k != null && k !== false));
   const row = (label, href, extra) => h("a", { class: "srow2", href }, h("span", {}, label), extra ? h("small", {}, extra) : null, icon("chevR", 20));
@@ -253,7 +254,7 @@ async function settingsPage(sub) {
     if (sub === "notif") {
       const st = await api("/api/me/settings"); const n = st.notif;
       const put = async (k, v) => { n[k] = v; try { await api("/api/me/settings", jsonOpt("PUT", { notif: n })); } catch (e) { toast(e.message); } };
-      return show("알림 설정", group("활동 알림"), sw("팔로워", "새로운 팔로워가 생기면 알려드려요", n.follow, (v) => put("follow", v)), sw("댓글", "내 게시물에 댓글이 달리면", n.comment, (v) => put("comment", v)), sw("하트", "내 게시물에 하트가 눌리면", n.like, (v) => put("like", v)),
+      return show("알림 설정", group("활동 알림"), sw("팔로워", "새로운 팔로워가 생기면 알려드려요", n.follow, (v) => put("follow", v)), sw("댓글", "내 게시물에 댓글이 달리면", n.comment, (v) => put("comment", v)), sw("대댓글", "내 댓글에 답글이 달리면", n.reply !== false, (v) => put("reply", v)), sw("하트", "내 게시물에 하트가 눌리면", n.like, (v) => put("like", v)),
         h("div", { class: "sgap" }), group("알림 수신 시간"), sw("방해 금지 시간 사용", "준비 중인 기능이에요", false, null, true));
     }
     if (NO_LOGIN && ["account", "security", "leave"].includes(sub)) { location.hash = "#/settings"; return; }
@@ -283,7 +284,7 @@ async function settingsPage(sub) {
     }
     if (sub === "privacy" || sub === "terms") {
       const t = sub === "privacy" ? "개인정보 처리 방침" : "서비스 약관";
-      return show(t, h("article", { class: "doc" }, h("h2", {}, t), h("p", { class: "date" }, "시행일 2026. 11. 01."), TERMS.map(([a, b]) => [h("h3", {}, a), h("p", {}, b)])));
+      return show(t, h("article", { class: "doc" }, h("h2", {}, t), h("p", { class: "date" }, "시행일 2026. 11. 01."), SET_DOCS[sub][1].map(([a, b]) => [h("h3", {}, a), h("p", {}, b)])));
     }
     if (sub === "leave") {
       const reason = h("select", { class: "inp", id: "lvWhy" }, h("option", { value: "" }, "이유를 선택하세요"), ["쓰지 않게 됐어요", "원하는 레퍼런스가 없어요", "쓰기 불편해요", "다른 서비스를 써요", "기타"].map((x) => h("option", {}, x)));

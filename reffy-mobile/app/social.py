@@ -222,11 +222,24 @@ def _image(image_id: int) -> dict:
     return r[0]
 
 
+def in_dnd(dnd: str, now: Optional[datetime] = None) -> bool:
+    """dnd = "23:00-08:00" 이면 그 사이 시간인지 (자정을 넘는 구간도 처리)."""
+    try:
+        a, b = dnd.split("-")
+        ah, am = map(int, a.split(":")); bh, bm = map(int, b.split(":"))
+    except ValueError:
+        return False
+    t = (now or datetime.now()); m = t.hour * 60 + t.minute; s, e = ah * 60 + am, bh * 60 + bm
+    return (s <= m < e) if s < e else (m >= s or m < e) if s != e else False
+
+
 def _notify(to: Optional[int], actor: int, kind: str, image_id: Optional[int] = None, body: str = "") -> None:
     if not to or to == actor:
         return
-    off = db.rows("SELECT notif_off FROM users WHERE id = :i", i=to)
+    off = db.rows("SELECT notif_off, dnd FROM users WHERE id = :i", i=to)
     if off and kind in (off[0]["notif_off"] or "").split(","):   # 받는 사람이 이 알림을 꺼 둠
+        return
+    if off and in_dnd(off[0].get("dnd") or ""):                     # 방해 금지 시간에는 보내지 않음
         return
     with db.engine.begin() as c:
         if kind in ("like", "follow"):   # 같은 알림을 반복해서 쌓지 않는다
