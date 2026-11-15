@@ -234,33 +234,50 @@ function card(it) {
 }
 const moreIc = () => icon("more", 24);
 /* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽, 그다음 가장 짧은 열에 채움 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
-const MAS = { cols: [], hs: [], n: 0, seq: 0 };
+const MAS = { cols: [], hs: [], n: 0, seq: 0, el: new Map() };
 function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }
 function masReset() {
   const g = $("#grid"); MAS.n = masCount();
   MAS.cols = Array.from({ length: MAS.n }, () => h("div", { class: "mcol" })); MAS.hs = Array(MAS.n).fill(0);
   g.replaceChildren(...MAS.cols);
 }
-function masAdd(items, still) {
+function masPlace(it, el) {
+  let k = 0;
+  for (let i = 1; i < MAS.n; i++) if (MAS.hs[i] < MAS.hs[k] - 0.01) k = i;
+  MAS.cols[k].append(el);
+  MAS.hs[k] += (it.w && it.h ? it.h / it.w : 1.25) + 0.2;
+}
+function masAdd(items) {
   if (!MAS.cols.length || MAS.cols[0].parentNode !== $("#grid")) masReset();
-  MAS.seq = 0; $("#grid").classList.toggle("still", !!still);
+  MAS.seq = 0;
   for (const it of items) {
-    let k = 0;
-    for (let i = 1; i < MAS.n; i++) if (MAS.hs[i] < MAS.hs[k] - 0.01) k = i;
-    const c = card(it); c.style.setProperty("--i", String(Math.min(MAS.seq++, 11))); MAS.cols[k].append(c);
-    MAS.hs[k] += (it.w && it.h ? it.h / it.w : 1.25) + 0.2;
+    const c = card(it); c.style.setProperty("--i", String(Math.min(MAS.seq++, 11)));
+    c.addEventListener("animationend", () => c.classList.add("in"), { once: true });
+    MAS.el.set(it.id, c); masPlace(it, c);
   }
 }
+/* 필터 · 상세 패널을 열고 닫아 줄 수가 바뀌면: 카드를 새로 만들지 않고 옮긴 뒤, 원래 자리에서 새 자리로 미끄러지게 (깜빡임 없음) */
+const RM = matchMedia("(prefers-reduced-motion: reduce)");
 function masRelayout() {
   const g = $("#grid"); if (!g.classList.contains("mas") || !MAS.cols.length) return;
   const n = masCount(); if (n === MAS.n) return;
-  masReset(); masAdd(S.items, true);
+  const before = new Map();
+  for (const it of S.items) { const c = MAS.el.get(it.id); if (c) { c.classList.add("in"); const r = c.getBoundingClientRect(); if (r.bottom > -200 && r.top < innerHeight + 200) before.set(c, r); } }
+  masReset();
+  for (const it of S.items) { const c = MAS.el.get(it.id) || card(it); MAS.el.set(it.id, c); masPlace(it, c); }
+  if (RM.matches) return;
+  before.forEach((r0, c) => {
+    const r1 = c.getBoundingClientRect(); if (!r1.width) return;
+    const dx = r0.left - r1.left, dy = r0.top - r1.top, sx = r0.width / r1.width;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < .01) return;
+    c.animate([{ transformOrigin: "0 0", transform: `translate(${dx}px,${dy}px) scale(${sx})` }, { transformOrigin: "0 0", transform: "none" }], { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" });
+  });
 }
 let masT; window.addEventListener("resize", () => { clearTimeout(masT); masT = setTimeout(masRelayout, 120); });
-new MutationObserver(() => { clearTimeout(masT); masT = setTimeout(masRelayout, 30); }).observe(document.querySelector(".layout") || document.body, { attributes: true, attributeFilter: ["class"] });
+new MutationObserver(() => masRelayout()).observe(document.querySelector(".layout") || document.body, { attributes: true, attributeFilter: ["class"] });
 function skeleton() { const g = $("#grid"); for (let i = 0; i < 10; i++) g.append(h("div", { class: "card skel" }, h("span", { class: "im", style: `aspect-ratio:3/${3 + (i % 3)}` }))); }
 async function reload() {
-  S.items = []; S.total = 0; S.done = false; $("#grid").classList.remove("mas"); MAS.cols = []; $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
+  S.items = []; S.total = 0; S.done = false; $("#grid").classList.remove("mas"); MAS.cols = []; MAS.el.clear(); $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
   await more(true);
 }
 async function more(first) {
@@ -274,7 +291,7 @@ async function more(first) {
   try {
     const d = await api("/api/images?" + p);
     if (my !== S.req) return;
-    if (first) { MAS.cols = []; masReset(); }
+    if (first) { MAS.cols = []; MAS.el.clear(); masReset(); }
     S.items.push(...d.items); S.total = d.total;
     masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;

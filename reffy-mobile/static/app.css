@@ -1529,12 +1529,10 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
 @media (prefers-reduced-motion:no-preference){
   /* 피드 카드: 새로 불러온 카드가 차례로 살짝 떠오름 (최대 12장까지 순서 지연) */
   #grid .card:not(.skel){animation:rf-rise .38s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms)}
-  #grid.still .card{animation:none}
+  #grid .card.in,#grid .card.in .im img{animation:none}
   /* 카드를 누르는 순간 살짝 눌림 · 마우스를 올리면 그림자 */
   .card{transition:transform var(--t1) var(--ease)}
   .card:active{transform:scale(.985)}
-  html:not(.m) .card .im{transition:box-shadow var(--t2) var(--ease)}
-  html:not(.m) .card:hover .im{box-shadow:0 6px 18px rgba(24,23,26,.12)}
   /* 하트: 누르면 톡 튀고 둥근 물결 */
   [data-like]{position:relative}
   [data-like].pop .ic{animation:rf-heart .5s var(--ease) both}
