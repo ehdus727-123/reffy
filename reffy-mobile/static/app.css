@@ -941,7 +941,7 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 .card{overflow:hidden}
 .card .im{border-radius:0}
 .card.sel{outline:0}
-.card.sel::after{content:"";position:absolute;inset:0;border:2px solid #18171a;border-radius:inherit;pointer-events:none;z-index:3}
+.card.sel::after{content:"";position:absolute;inset:0;border:1px solid #18171a;border-radius:inherit;pointer-events:none;z-index:3}
 /* 검색창 지우기(×) */
 .qclear{flex:none;width:20px;height:20px;padding:0;border:0;background:none;color:var(--t3);display:grid;place-items:center}
 .qclear[hidden]{display:none}
@@ -1569,3 +1569,12 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
 @keyframes rf-side-out{from{transform:none}to{transform:translateX(-100%)}}
 html:not(.m) .layout.f-closing:not(.f-open) .side{display:flex;position:fixed;left:0;top:88px;z-index:15;animation:rf-side-out .34s var(--ease) both;pointer-events:none}
 html:not(.m) .layout{overflow-x:clip}
+
+/* 선택한 카드 (Figma WF/Card 1675:30405): 테두리 1px · 하단 줄 높이 36 · 좌우 여백 10 · 아바타 16 · 하트 14 */
+.card .meta{transition:padding var(--d1,.16s) var(--ease,ease)}
+html body .card.sel .meta{height:36px;padding:0 10px;gap:5px}
+html body .card.sel .meta .av{width:16px;height:16px}
+html body .card.sel .meta .tx b{font:600 13px/18px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html body .card.sel .meta .like{gap:3px}
+html body .card.sel .meta .like svg,html body .card.sel .meta .like .ic{width:14px;height:14px}
+html body .card.sel .meta .lk{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
