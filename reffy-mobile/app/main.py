@@ -253,7 +253,7 @@ def edit_meta(image_id: int, body: MetaIn, request: Request):
     r = db.rows("SELECT user_id FROM images WHERE id = :i", i=image_id)
     if not r:
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
-    if r[0]["user_id"] not in (None, user["id"]):
+    if r[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 수정할 수 있어요.")
     with db.engine.begin() as c:
         c.execute(text("UPDATE images SET title = :t, materials = :m, private = :p WHERE id = :i"),
@@ -272,7 +272,7 @@ def edit_kind(image_id: int, body: KindIn, request: Request):
     r = db.rows("SELECT user_id FROM images WHERE id = :i", i=image_id)
     if not r:
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
-    if r[0]["user_id"] not in (None, user["id"]):
+    if r[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 수정할 수 있어요.")
     k = "photo" if body.kind == "photo" else "illust"
     with db.engine.begin() as c:
@@ -328,7 +328,7 @@ def edit_tags(image_id: int, body: TagEdit, request: Request):
     own = db.rows("SELECT user_id FROM images WHERE id = :i", i=image_id)
     if not own:
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
-    if own[0]["user_id"] not in (None, user["id"]):
+    if own[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 수정할 수 있어요.")
     with db.engine.begin() as c:
         for ik in body.add:
@@ -350,7 +350,7 @@ def delete_image(image_id: int, request: Request):
     r = db.rows("SELECT file, user_id FROM images WHERE id = :i", i=image_id)
     if not r:
         raise HTTPException(404)
-    if r[0]["user_id"] not in (None, user["id"]):
+    if r[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 삭제할 수 있어요.")
     with db.engine.begin() as c:
         for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications"):

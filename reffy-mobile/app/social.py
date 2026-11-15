@@ -47,6 +47,16 @@ def me(request: Request) -> Optional[dict]:
     return r[0] if r else None
 
 
+def is_admin(request: Request) -> bool:
+    """이 서버를 켠 컴퓨터에서 직접 접속(localhost)하면 관리자: 누가 올린 게시물이든 수정 · 삭제 가능.
+    공유 링크(Cloudflare)로 들어온 요청은 프록시 헤더가 붙어 있어서 관리자가 아님. LOCAL_ADMIN=0 이면 끔."""
+    if not config.LOCAL_ADMIN or not request.client:
+        return False
+    if any(h in request.headers for h in ("cf-connecting-ip", "cf-ray", "x-forwarded-for", "x-real-ip")):
+        return False
+    return request.client.host in ("127.0.0.1", "::1", "localhost")
+
+
 def need(request: Request) -> dict:
     u = me(request)
     if not u:
@@ -247,7 +257,7 @@ def social(image_id: int, request: Request):
             owner = {"uid": o[0]["uid"], "nick": o[0]["nick"], "avatar": _avatar_url(o[0]["uid"], o[0]["avatar"]), "me": o[0]["id"] == uid,
                      "following": bool(db.rows("SELECT 1 AS x FROM follows WHERE follower_id=:a AND followee_id=:b", a=uid, b=o[0]["id"]))}
     cm = db.rows("SELECT c.id, c.body, c.created_at, c.user_id, u.nick FROM comments c JOIN users u ON u.id = c.user_id WHERE c.image_id = :i ORDER BY c.id", i=image_id)
-    return {"owner": owner, "editable": bool(u) and (img["user_id"] is None or img["user_id"] == uid),
+    return {"owner": owner, "editable": (bool(u) and (img["user_id"] is None or img["user_id"] == uid)) or is_admin(request), "admin": is_admin(request),
             "likes": db.rows("SELECT COUNT(*) AS n FROM likes WHERE image_id=:i", i=image_id)[0]["n"],
             "liked": bool(db.rows("SELECT 1 AS x FROM likes WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),
             "kept": bool(db.rows("SELECT 1 AS x FROM keeps WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),
