@@ -26,11 +26,11 @@ async function api(path, opt) {
 function toast(msg, link) { const t = $("#toast"); t.replaceChildren(msg, link ? h("a", { href: link[1], onclick: () => t.classList.remove("show") }, link[0]) : ""); t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), link ? 5000 : 2600); }
 
 /* 모바일(767px 이하) 여부. 모바일 전용 화면 조각은 mobile.js · mobile.css 에 있습니다. */
-const NO_LOGIN = !!window.REFFY_NO_LOGIN;          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
+const NO_LOGIN = window.REFFY_NO_LOGIN !== false;          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
 const LAYOUT = window.REFFY_LAYOUT || "auto";   // 서버 .env 의 LAYOUT: auto / pc / mobile
 const MQ = window.matchMedia("(max-width:767px)");
 const isM = () => LAYOUT === "mobile" || (LAYOUT !== "pc" && MQ.matches);
-{ const l = document.querySelector('link[href="mobile.css"]'); if (l) l.media = LAYOUT === "mobile" ? "all" : LAYOUT === "pc" ? "not all" : "(max-width:767px)"; }
+{ const l = document.querySelector('link[href^="mobile.css"]'); if (l) l.media = LAYOUT === "mobile" ? "all" : LAYOUT === "pc" ? "not all" : "(max-width:767px)"; }
 document.documentElement.classList.toggle("m", isM());
 document.documentElement.classList.toggle("m-force", LAYOUT === "mobile");
 

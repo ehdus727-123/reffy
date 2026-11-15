@@ -348,4 +348,13 @@ def config_js():
     return Response(f'window.REFFY_LAYOUT = "{config.LAYOUT}";\nwindow.REFFY_NO_LOGIN = {"true" if config.NO_LOGIN else "false"};\n', media_type="application/javascript", headers={"Cache-Control": "no-cache"})
 
 
+@app.middleware("http")
+async def _no_stale_static(request, call_next):
+    """화면 파일(js·css·html)을 브라우저·Cloudflare 가 옛것으로 들고 있지 않도록 매번 확인하게 한다."""
+    resp = await call_next(request)
+    if not request.url.path.startswith("/api/") and "cache-control" not in resp.headers:
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 app.mount("/", StaticFiles(directory=str(config.BASE / "static"), html=True), name="static")
