@@ -1559,3 +1559,5 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
   /* 키보드로 이동할 때 보이는 포커스 테두리가 부드럽게 */
   :focus-visible{transition:outline-offset var(--t1) var(--ease)}
 }
+
+#grid .card{transform-origin:0 0}

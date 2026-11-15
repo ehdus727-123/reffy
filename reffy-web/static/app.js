@@ -256,25 +256,41 @@ function masAdd(items) {
     MAS.el.set(it.id, c); masPlace(it, c);
   }
 }
-/* 필터 · 상세 패널을 열고 닫아 줄 수가 바뀌면: 카드를 새로 만들지 않고 옮긴 뒤, 원래 자리에서 새 자리로 미끄러지게 (깜빡임 없음) */
+/* 필터 · 상세 패널을 열고 닫아 줄 수나 폭이 바뀌면: 카드를 새로 만들지 않고 옮긴 뒤,
+   바뀌기 '직전' 자리에서 새 자리로 미끄러지게 (FLIP). 직전 자리는 바뀐 클래스를 잠깐 되돌려 재요 — 화면에 그려지기 전이라 보이지 않음 */
 const RM = matchMedia("(prefers-reduced-motion: reduce)");
-function masRelayout() {
-  const g = $("#grid"); if (!g.classList.contains("mas") || !MAS.cols.length) return;
+const LAY = document.querySelector(".layout");
+function masRects() {
+  const m = new Map();
+  for (const it of S.items) { const c = MAS.el.get(it.id); if (!c) continue; const r = c.getBoundingClientRect(); if (r.width && r.bottom > -300 && r.top < innerHeight + 300) m.set(c, r); }
+  return m;
+}
+function masRebuild() {
   const n = masCount(); if (n === MAS.n) return;
-  const before = new Map();
-  for (const it of S.items) { const c = MAS.el.get(it.id); if (c) { c.classList.add("in"); const r = c.getBoundingClientRect(); if (r.bottom > -200 && r.top < innerHeight + 200) before.set(c, r); } }
+  for (const c of MAS.el.values()) c.classList.add("in");
   masReset();
   for (const it of S.items) { const c = MAS.el.get(it.id) || card(it); MAS.el.set(it.id, c); masPlace(it, c); }
+}
+function masFlip(before) {
   if (RM.matches) return;
   before.forEach((r0, c) => {
     const r1 = c.getBoundingClientRect(); if (!r1.width) return;
     const dx = r0.left - r1.left, dy = r0.top - r1.top, sx = r0.width / r1.width;
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < .01) return;
-    c.animate([{ transformOrigin: "0 0", transform: `translate(${dx}px,${dy}px) scale(${sx})` }, { transformOrigin: "0 0", transform: "none" }], { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" });
+    c.classList.add("in");
+    c.animate([{ transform: `translate(${dx}px,${dy}px) scale(${sx})` }, { transform: "none" }], { duration: 340, easing: "cubic-bezier(.2,.8,.2,1)" });
   });
 }
+const masObs = new MutationObserver((recs) => {
+  const g = $("#grid"); const rec = recs.find((r) => r.attributeName === "class");
+  if (!rec || !g.classList.contains("mas") || !MAS.cols.length || $("#layout").hidden) return;
+  const now = LAY.className; if (rec.oldValue === now) return;
+  LAY.className = rec.oldValue; const before = masRects(); LAY.className = now; masObs.takeRecords();
+  masRebuild(); masFlip(before);
+});
+if (LAY) masObs.observe(LAY, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+function masRelayout() { const g = $("#grid"); if (!g.classList.contains("mas") || !MAS.cols.length) return; masRebuild(); }
 let masT; window.addEventListener("resize", () => { clearTimeout(masT); masT = setTimeout(masRelayout, 120); });
-new MutationObserver(() => masRelayout()).observe(document.querySelector(".layout") || document.body, { attributes: true, attributeFilter: ["class"] });
 function skeleton() { const g = $("#grid"); for (let i = 0; i < 10; i++) g.append(h("div", { class: "card skel" }, h("span", { class: "im", style: `aspect-ratio:3/${3 + (i % 3)}` }))); }
 async function reload() {
   S.items = []; S.total = 0; S.done = false; $("#grid").classList.remove("mas"); MAS.cols = []; MAS.el.clear(); $("#grid").replaceChildren(); $("#empty").hidden = true; $("#zero").hidden = true;
