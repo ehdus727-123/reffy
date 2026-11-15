@@ -1301,3 +1301,9 @@ html:not(.m) .panel{padding:0}
 .panel::-webkit-scrollbar-thumb:hover{background:#9e9da1}
 .panel::-webkit-scrollbar-button{display:none;height:0}
 @supports not selector(::-webkit-scrollbar){.panel{scrollbar-width:thin;scrollbar-color:#c3c2c5 transparent}}
+
+/* Figma 아이콘이 '선 2px'(Material Symbols Rounded)로 바뀜 → 1px 외곽선 모양에 테두리 1px을 더해 2px 굵기로 */
+.ic.icm .ico{stroke:currentColor;stroke-width:1;stroke-linejoin:round;paint-order:stroke}
+/* 이미지 위 원형 버튼: 흰색 60% + 배경 흐림 10 (Common/Floating icon button) */
+.dp-fb{background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.dp-fb:hover{background:rgba(255,255,255,.75)}
