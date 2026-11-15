@@ -1598,3 +1598,17 @@ html:not(.m) #sortMenu{width:200px;border-radius:12px;padding:8px 0;box-shadow:0
 #sortMenu button[aria-selected=true] .ic{color:#7425f6}
 /* Avatar 기본 색 #e4e3e5 */
 .card .meta .av{background:#e4e3e5}
+
+/* 서랍 PC (DRW_0302): 왼쪽 메뉴 · 반응한 게시물 */
+html:not(.m) .drawer .dnav{padding:24px 0 0;display:flex;flex-direction:column}
+html:not(.m) .drawer .dnav h2{margin:0 0 22px;padding-left:24px;font:600 24px/32px var(--ff);letter-spacing:-.24px;color:#18171a}
+html:not(.m) .drawer .dnav a{display:flex;align-items:center;height:43px;box-sizing:border-box;padding:10px 20px 10px 24px;border-radius:8px;font:600 16px/24px var(--ff);letter-spacing:-.08px;color:#5b595f}
+html:not(.m) .drawer .dnav a.on{margin-left:8px;width:216px;padding:10px 12px;background:#e7e6e9;color:#18171a}
+html:not(.m) .drawer .dnav a:not(.on):hover{background:#f1f0f2}
+html:not(.m) .drawer .dnav small{margin:59px 0 16px;padding-left:24px;font:500 12px/16px var(--ff);letter-spacing:0;color:#6f6d72}
+.dhead2{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.dhead2 .sub{margin:5px 0 0}
+.dchips{display:flex;gap:8px;flex:none}
+.dchip{height:37px;box-sizing:border-box;padding:7px 14px;border-radius:999px;border:1px solid #c3c2c5;background:#fff;font:500 14px/20px var(--ff);color:#18171a;cursor:pointer}
+.dchip.on{background:#18171a;border-color:#18171a;color:#fff}
+@media (prefers-reduced-motion:no-preference){.dchip{transition:background-color var(--d1) var(--ease),color var(--d1) var(--ease),border-color var(--d1) var(--ease)}}

@@ -220,6 +220,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
 }
 
 /* ---------------------------------------------------------------- 서랍 */
+let drawerKind = "";
 async function drawerPage(sub, id) {
   if (!needLogin()) return;
   if (isM()) return drawerPageM(sub, id);
@@ -232,10 +233,23 @@ async function drawerPage(sub, id) {
   const stay = !$("#page").hidden && $("#page > .drawer");
   if (!stay) page(root);
   try {
-    if (sub === "recent" || sub === "liked") {
-      const d = await api(sub === "recent" ? "/api/me/viewed" : "/api/me/liked");
-      main.append(h("h1", {}, sub === "recent" ? "최근 본 게시물" : "반응한 게시물"), h("p", { class: "sub", style: "margin-bottom:28px" }, sub === "recent" ? "최근 일주일 동안 본 게시물이에요" : "하트를 누른 게시물이에요"),
-        d.items.length ? pgrid(d.items, {}, "c5") : notice(sub === "recent" ? "최근 본 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+    if (sub === "recent") {
+      const d = await api("/api/me/viewed");
+      main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "최근 본 게시물"), h("p", { class: "sub" }, "최근 일주일 동안 본 게시물이에요"))),
+        d.items.length ? pgrid(d.items, {}, "c5") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+    } else if (sub === "liked") {
+      // DRW_0302 반응한 게시물: 전체 · 하트 · 댓글 칩으로 거르기
+      const body = h("div", { class: "dbody" });
+      const chips = h("div", { class: "dchips", role: "radiogroup", "aria-label": "반응 종류" });
+      const load = async () => {
+        chips.replaceChildren(...[["", "전체"], ["like", "하트"], ["comment", "댓글"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(drawerKind === k), class: "dchip" + (drawerKind === k ? " on" : ""), onclick: () => { if (drawerKind !== k) { drawerKind = k; load(); } } }, l)));
+        const d = await api("/api/me/reacted" + (drawerKind ? "?kind=" + drawerKind : ""));
+        // 카드: 피드와 같은 WF/Card (프로필 · 닉네임 · 하트 수), 누르면 게시물 화면으로
+        const dcard = (it) => { const c = card(it); c.onclick = () => goPost(it.id); return c; };
+        body.replaceChildren(d.items.length ? h("div", { class: "grid c5 dgrid" }, d.items.map(dcard)) : notice(drawerKind === "comment" ? "아직 댓글을 단 게시물이 없어요" : drawerKind === "like" ? "아직 하트를 누른 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+      };
+      await load();
+      main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "반응한 게시물"), h("p", { class: "sub" }, "하트를 누르거나 댓글을 단 게시글이에요")), chips), body);
     } else if (sub === "book") await bookDetail(main, id); else await bookList(main);
   } catch (e) { main.replaceChildren(notice("불러오지 못했어요", e.message)); }
   if (stay && location.hash.startsWith("#/drawer")) page(root);
