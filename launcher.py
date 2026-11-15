@@ -117,19 +117,16 @@ def ensure_cloudflared():
     exe = find_cloudflared()
     if exe:
         return exe
-    say("  공유 프로그램(Cloudflare 공식 cloudflared) 설치 중... (처음 한 번)")
-    if WIN and shutil.which("winget"):
-        subprocess.call(["winget", "install", "-e", "--id", "Cloudflare.cloudflared", "--silent",
-                         "--accept-package-agreements", "--accept-source-agreements"])
-        exe = find_cloudflared()
-        if exe:
-            return exe
-    # winget 이 없으면 Cloudflare 공식 GitHub 릴리스에서 받기
+    # 관리자 권한이 필요 없도록 Cloudflare 공식 GitHub 릴리스의 실행 파일을 이 폴더(.tools)에 바로 받는다
+    # (winget 설치는 '사용자 계정 컨트롤' 창이 뒤에 숨어 멈춘 것처럼 보이는 경우가 있어 쓰지 않음)
+    say("  공유 프로그램(Cloudflare 공식 cloudflared) 받는 중... (처음 한 번, 약 20MB)")
     TOOLS.mkdir(exist_ok=True)
     dst = TOOLS / "cloudflared.exe"
+    tmp = TOOLS / "cloudflared.part"
     url = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
     try:
-        urllib.request.urlretrieve(url, dst)
+        urllib.request.urlretrieve(url, tmp)
+        tmp.replace(dst)
     except Exception as e:  # noqa: BLE001
         fail(f"공유 프로그램을 받지 못했어요: {e}")
     return str(dst)
