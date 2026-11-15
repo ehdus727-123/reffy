@@ -135,7 +135,7 @@ function drawDetailM(d, edit = false) {
         o && !o.me ? h("button", { class: "btn" + (o.following ? "" : " primary"), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
       h("h2", { class: "ptitle" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
       h("div", { class: "prow" },
-        h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 22), String(so.likes)),
+        h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 22), String(so.likes)),
         h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => commentsSheet(d, edit) }, icon("comment", 22), String(so.comments.length))),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, "태그"), so.editable ? h("button", { class: "btn sm", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),

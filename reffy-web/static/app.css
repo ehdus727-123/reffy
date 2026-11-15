@@ -1517,3 +1517,47 @@ html.m body .side .cpanel{padding-top:4px;margin-top:-4px}
 .acct-out:hover{background:#f1f0f2}
 
 html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
+
+/* ================================================================ 작은 반응 (마이크로 인터랙션) */
+@keyframes rf-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rf-heart{0%{transform:scale(1)}30%{transform:scale(1.32)}55%{transform:scale(.9)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes rf-ring{from{opacity:.55;transform:scale(.4)}to{opacity:0;transform:scale(1.9)}}
+@keyframes rf-wave{from{opacity:.22;transform:scale(0)}to{opacity:0;transform:scale(1)}}
+@keyframes rf-shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes rf-chip{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.rf-wave{position:absolute;border-radius:50%;background:currentColor;pointer-events:none;opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  /* 피드 카드: 새로 불러온 카드가 차례로 살짝 떠오름 (최대 12장까지 순서 지연) */
+  #grid .card:not(.skel){animation:rf-rise .38s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms)}
+  #grid.still .card{animation:none}
+  /* 카드를 누르는 순간 살짝 눌림 · 마우스를 올리면 그림자 */
+  .card{transition:transform var(--t1) var(--ease)}
+  .card:active{transform:scale(.985)}
+  html:not(.m) .card .im{transition:box-shadow var(--t2) var(--ease)}
+  html:not(.m) .card:hover .im{box-shadow:0 6px 18px rgba(24,23,26,.12)}
+  /* 하트: 누르면 톡 튀고 둥근 물결 */
+  [data-like]{position:relative}
+  [data-like].pop .ic{animation:rf-heart .5s var(--ease) both}
+  [data-like].pop::after{content:"";position:absolute;left:var(--hx,10px);top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2px solid #7425f6;animation:rf-ring .5s var(--ease) both;pointer-events:none}
+  /* 버튼을 누른 자리에서 퍼지는 잔물결 */
+  .rf-wave{animation:rf-wave .5s var(--ease) both}
+  /* 불러오는 중: 부드럽게 흐르는 빛 */
+  .skel .im{animation:none;background:linear-gradient(90deg,#f1f0f2 25%,#f8f7f8 50%,#f1f0f2 75%);background-size:200% 100%;animation:rf-shimmer 1.4s linear infinite}
+  /* 선택한 필터 칩이 톡 나타남 */
+  #chips .chip{animation:rf-chip .2s var(--ease) both}
+  /* 스위치 · 라디오 · 체크박스: 누를 때 살짝 눌림 */
+  .st-tg:active i::after,.sw-ui:active::after{width:24px}
+  .st-tg-in:checked:active+i::after{transform:translateX(14px)}
+  .st-radio i,.st-cbx-ui,.chk span,.cbx{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease),transform var(--t1) var(--ease)}
+  .st-radio:active i,.st-agree:active .st-cbx-ui{transform:scale(.88)}
+  .st-tg i::after{transition:transform .2s var(--ease),width .15s var(--ease)}
+  /* 설정 메뉴 · 프로필 메뉴 · 칩: 마우스 반응 */
+  .st-snb a,.acct-it,.acct-out,.st-chip,.st-sbtn,.st-btn,.acct-seg button{transition:background-color var(--t1) var(--ease),color var(--t1) var(--ease),border-color var(--t1) var(--ease),transform var(--t1) var(--ease),box-shadow var(--t1) var(--ease)}
+  .st-chip:active,.st-btn:active:not(:disabled),.st-sbtn:active,.acct-it:active{transform:scale(.97)}
+  .st-c{animation:rf-pop var(--t2) var(--ease) both}
+  /* 상세 패널 이미지 · 연관 이미지: 마우스를 올리면 살짝 확대 */
+  html:not(.m) .dp-card img{transition:transform var(--t3) var(--ease)}
+  html:not(.m) .dp-card:hover img{transform:scale(1.04)}
+  /* 키보드로 이동할 때 보이는 포커스 테두리가 부드럽게 */
+  :focus-visible{transition:outline-offset var(--t1) var(--ease)}
+}

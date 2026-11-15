@@ -225,26 +225,27 @@ function card(it) {
 }
 const moreIc = () => icon("more", 24);
 /* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽, 그다음 가장 짧은 열에 채움 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
-const MAS = { cols: [], hs: [], n: 0 };
+const MAS = { cols: [], hs: [], n: 0, seq: 0 };
 function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }
 function masReset() {
   const g = $("#grid"); MAS.n = masCount();
   MAS.cols = Array.from({ length: MAS.n }, () => h("div", { class: "mcol" })); MAS.hs = Array(MAS.n).fill(0);
   g.replaceChildren(...MAS.cols);
 }
-function masAdd(items) {
+function masAdd(items, still) {
   if (!MAS.cols.length || MAS.cols[0].parentNode !== $("#grid")) masReset();
+  MAS.seq = 0; $("#grid").classList.toggle("still", !!still);
   for (const it of items) {
     let k = 0;
     for (let i = 1; i < MAS.n; i++) if (MAS.hs[i] < MAS.hs[k] - 0.01) k = i;
-    MAS.cols[k].append(card(it));
+    const c = card(it); c.style.setProperty("--i", String(Math.min(MAS.seq++, 11))); MAS.cols[k].append(c);
     MAS.hs[k] += (it.w && it.h ? it.h / it.w : 1.25) + 0.2;
   }
 }
 function masRelayout() {
   const g = $("#grid"); if (!g.classList.contains("mas") || !MAS.cols.length) return;
   const n = masCount(); if (n === MAS.n) return;
-  masReset(); masAdd(S.items);
+  masReset(); masAdd(S.items, true);
 }
 let masT; window.addEventListener("resize", () => { clearTimeout(masT); masT = setTimeout(masRelayout, 120); });
 new MutationObserver(() => { clearTimeout(masT); masT = setTimeout(masRelayout, 30); }).observe(document.querySelector(".layout") || document.body, { attributes: true, attributeFilter: ["class"] });
@@ -464,7 +465,7 @@ function drawDetail(d, edit = false) {
         h("div", { class: "dp-tr" },
           h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
           h("div", { class: "dp-react" },
-            h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 20), String(so.likes)),
+            h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 20), String(so.likes)),
             h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, icon("comment", 20), String(so.comments.length))))),
       h("div", { class: "dp-sec" },
         head("태그", so.editable ? h("button", { class: "dp-link", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
@@ -731,3 +732,21 @@ async function puPublish() {
     if (location.hash.startsWith("#/me") || location.hash.startsWith("#/u/")) route(); else reload();
   } catch (e) { b.disabled = false; b.textContent = "등록"; toast(e.message); }
 }
+
+/* ---------------------------------------------------------------- 작은 반응 (마이크로 인터랙션)
+   하트를 누르면 톡 튀고, 누른 자리에 잔물결이 퍼짐. '동작 줄이기' 설정이면 CSS에서 모두 꺼짐 */
+document.addEventListener("click", (e) => {
+  const lk = e.target.closest("[data-like]");
+  if (lk) {
+    const box = lk.closest(".panel, .modal, #page, body"), wasOn = lk.classList.contains("on");
+    if (!wasOn) { let k = 0; const t = setInterval(() => { const n = box.querySelector("[data-like].on"); if (n || ++k > 25) { clearInterval(t); if (n) { n.classList.remove("pop"); void n.offsetWidth; n.classList.add("pop"); } } }, 50); }
+  }
+  const b = e.target.closest(".btn, .st-btn, .st-sbtn, .acct-it, .sortbtn");
+  if (b && !b.disabled && e.clientX) {
+    const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;
+    const w = document.createElement("span"); w.className = "rf-wave";
+    w.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+    if (getComputedStyle(b).position === "static") b.style.position = "relative";
+    b.style.overflow = "hidden"; b.append(w); setTimeout(() => w.remove(), 520);
+  }
+}, true);
