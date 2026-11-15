@@ -236,7 +236,7 @@ drawSort();
 /* ---------------------------------------------------------------- 피드(무한 스크롤) */
 function card(it) {
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
-  return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => openDetail(it.id) },
+  return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "im" }, img),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes ?? 0)))));
@@ -496,7 +496,7 @@ function drawDetail(d, edit = false) {
   const relCols = [h("div", { class: "dp-col" }), h("div", { class: "dp-col" })];
   const relMore = h("button", { class: "dp-more", type: "button", hidden: true }, "더보기");
   let relOff = 0, relBusy = false;
-  const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => openDetail(it.id) },
+  const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
     h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, icon("heart", 12), String(it.likes ?? 0))));
   const loadRel = async () => {
