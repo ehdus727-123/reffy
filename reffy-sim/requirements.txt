@@ -1,0 +1,7 @@
+numpy>=1.26
+scipy>=1.11
+PyMySQL>=1.1
+fastapi>=0.110
+uvicorn>=0.27
+# 선택: 데이터가 수십만 장이 되면
+# faiss-cpu>=1.8
