@@ -138,7 +138,7 @@ async function keepPage() {
     const n = picked.size;
     const delBtn = btn("삭제", "", async () => {
       if (!n) return toast("삭제할 이미지를 골라 주세요.");
-      if (!(await confirmDialog(`선택한 레퍼런스 ${n}개를 삭제할까요?`, "킵 스페이스에서 삭제돼요. 게시물 자체는 지워지지 않아요.", { ok: "삭제", danger: true }))) return;
+      if (!(await confirmDialog(`선택한 레퍼런스 ${n}개를 삭제할까요?`, "삭제한 레퍼런스는 되돌릴 수 없어요.", { ok: "네", cancel: "아니오" }))) return;
       try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [...picked] }) }); picked.clear(); sel = false; toast("킵 스페이스에서 삭제했어요"); load(); } catch (e) { toast(e.message); }
     });
     const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
@@ -148,13 +148,69 @@ async function keepPage() {
   function draw() {
     root.classList.toggle("selecting", sel);
     const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
-    const selBtn = data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
+    const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts" }, h("button", { class: "icon-btn", type: "button", disabled: true, "aria-label": "삭제" }, icon("trash", 24)), h("button", { class: "btn primary", type: "button", disabled: true }, "선택")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
     root.replaceChildren(isM() ? mbar("킵 스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? pgrid(data.items, (it) => ({ on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : goPost(it.id); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
-        : notice(kind ? "이 종류의 킵이 없어요" : isM() ? "킵 스페이스가 비어있어요" : "킵 스페이스가 비었어요", isM() ? "피드에서 마음에 드는 레퍼런스를 담아보세요" : "홈에서 마음에 드는 레퍼런스를 ‘킵에 담기’로 모아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))),
+      data.items.length ? pgrid(data.items, (it) => ({ on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); load(); }, load); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+        : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
+          : h("div", { class: "kp-empty" }, h("span", { class: "kp-ex" }, "!"), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("피드 둘러보기", "primary", () => (location.hash = "#/"))),
       bar());
   }
   load();
+}
+
+/* ---------------------------------------------------------------- 킵 스페이스 비교 보기 (KEP_0100 · 0101 · 0102)
+   레퍼런스를 하나씩 넘겨 가며 비교 · 체크해서 삭제하거나 북에 저장 · ←/→ 키, 화살표, 아래 썸네일로 이동 */
+function keepCompare(items, start, kind, setKind, onDone) {
+  const root = $("#page"); let idx = Math.max(0, start); const picked = new Set();
+  const full = (it) => (it.thumb || "").replace("s=thumb", "s=full");
+  const close = () => { document.removeEventListener("keydown", key); onDone(); };
+  const key = (e) => { if ($(".modal:not(.closing)")) return; if (e.key === "ArrowRight") go(idx + 1); else if (e.key === "ArrowLeft") go(idx - 1); else if (e.key === "Escape") close(); else if (e.key === " ") { e.preventDefault(); toggle(items[idx]); } };
+  document.addEventListener("keydown", key);
+  const track = h("div", { class: "kc-track" });
+  const strip = h("div", { class: "kc-strip" });
+  const count = h("b", { class: "kc-count" });
+  const toggle = (it) => { if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); paint(); };
+  const ids = () => (picked.size ? [...picked] : items[idx] ? [items[idx].id] : []);
+  const delBtn = h("button", { class: "icon-btn kc-del", type: "button", "aria-label": "선택한 레퍼런스 삭제", title: "삭제", onclick: async () => {
+    const list = ids(); if (!list.length) return;
+    if (!(await confirmDialog(`선택한 레퍼런스 ${list.length}개를 삭제할까요?`, "삭제한 레퍼런스는 되돌릴 수 없어요.", { ok: "네", cancel: "아니오" }))) return;
+    try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: list }) });
+      items = items.filter((x) => !list.includes(x.id)); list.forEach((x) => picked.delete(x)); toast("킵 스페이스에서 삭제했어요");
+      if (!items.length) return close(); idx = Math.min(idx, items.length - 1); build(); } catch (e) { toast(e.message); } } }, icon("trash", 24));
+  const saveBtn = h("button", { class: "btn primary kc-save", type: "button", onclick: () => saveToBook(ids(), { after: () => { picked.clear(); onDone(); } }) }, "북에 저장");
+  const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { document.removeEventListener("keydown", key); setKind(k); } }, l));
+  const prev = h("button", { class: "kc-nav prev", type: "button", "aria-label": "이전 레퍼런스", onclick: () => go(idx - 1) }, icon("chevR", 48));
+  const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, icon("chevR", 48));
+  function build() {
+    track.replaceChildren(...items.map((it, i) => h("div", { class: "kc-card", "data-i": i, onclick: () => (i === idx ? toggle(it) : go(i)) },
+      h("img", { src: full(it), alt: it.title || "레퍼런스 이미지", loading: Math.abs(i - idx) < 4 ? "eager" : "lazy" }),
+      h("span", { class: "kc-chk", role: "checkbox", "aria-label": "선택" }, icon("check", 18)))));
+    strip.replaceChildren(...items.map((it, i) => h("button", { class: "kc-th", type: "button", "aria-label": `${i + 1}번째 레퍼런스`, onclick: () => go(i) },
+      h("img", { src: it.thumb, alt: "", loading: "lazy" }), h("span", { class: "kc-chk" }, icon("check", 14)))));
+    go(idx, true);
+  }
+  function paint() {
+    track.querySelectorAll(".kc-card").forEach((c, i) => { c.classList.toggle("cur", i === idx); c.classList.toggle("on", picked.has(items[i]?.id)); c.querySelector(".kc-chk").setAttribute("aria-checked", String(picked.has(items[i]?.id))); });
+    strip.querySelectorAll(".kc-th").forEach((t, i) => { t.classList.toggle("cur", i === idx); t.classList.toggle("on", picked.has(items[i]?.id)); });
+    count.textContent = `${idx + 1}/${items.length}`;
+    prev.disabled = idx <= 0; next.disabled = idx >= items.length - 1;
+    saveBtn.textContent = picked.size ? `북에 저장 (${picked.size})` : "북에 저장";
+  }
+  function go(i, instant) {
+    if (!items.length) return; idx = Math.max(0, Math.min(items.length - 1, i));
+    const card = track.children[idx]; if (!card) return;
+    const vw = track.parentElement.clientWidth;
+    track.style.transition = instant ? "none" : "";
+    track.style.transform = `translateX(${Math.round(vw / 2 - (card.offsetLeft + card.offsetWidth / 2))}px)`;
+    const th = strip.children[idx]; if (th) strip.scrollTo({ left: th.offsetLeft - strip.clientWidth / 2 + th.offsetWidth / 2, behavior: instant ? "auto" : "smooth" });
+    paint();
+  }
+  root.replaceChildren(h("div", { class: "kc" },
+    h("div", { class: "kc-back" }, h("button", { class: "icon-btn", type: "button", "aria-label": "킵 스페이스로 돌아가기", onclick: close }, icon("chevR", 24))),
+    h("div", { class: "kc-bar" }, h("div", { class: "kc-chips" }, chips), count, h("div", { class: "kc-acts" }, delBtn, saveBtn)),
+    h("div", { class: "kc-stage" }, track, prev, next),
+    h("div", { class: "kc-dock" }, strip)));
+  requestAnimationFrame(build);
 }
 
 /* ---------------------------------------------------------------- 서랍 */

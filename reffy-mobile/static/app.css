@@ -1313,3 +1313,51 @@ html:not(.m) .panel{padding:0}
 .tag.kind:hover{background:#ebdfff}
 .kind-seg{align-self:flex-start;margin-bottom:4px}
 .kind-seg button{height:32px;padding:0 14px;font:var(--type-label-l)}
+
+/* ================================================================ 킵 스페이스 비교 보기 (KEP_0100) · 빈 화면 (KEP_0000)
+   뒤로 · 칩 | 4/16 | 삭제 · 북에 저장 / 카드 375×540 사이 36 · 현재 카드 2px 테두리 + 체크 / 큰 화살표 48 / 아래 떠 있는 썸네일 줄(72) */
+.kc{position:relative;height:calc(100vh - 88px);display:flex;flex-direction:column;overflow:hidden;padding:0}
+.kc-back{padding:20px 24px 0;height:44px;box-sizing:content-box}
+.kc-back .icon-btn .ic,.kc-nav.prev .ic{transform:rotate(180deg)}
+.kc-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 24px 0}
+.kc-chips{display:flex;gap:8px}
+.kc-count{font:var(--type-label-l);color:#18171a;letter-spacing:0}
+.kc-acts{display:flex;gap:16px;justify-content:flex-end;align-items:center}
+.kc-del{width:32px;height:32px;padding:4px}
+.kc-del .ic{width:24px;height:24px}
+.kc-save{height:40px;padding:0 16px;border-radius:8px}
+.kc-stage{position:relative;flex:1;min-height:0;overflow:hidden;margin-top:20px}
+.kc-track{position:absolute;top:0;left:0;height:min(544px,calc(100vh - 88px - 300px));min-height:280px;display:flex;gap:36px;transition:transform .32s var(--ease,ease)}
+.kc-card{position:relative;flex:none;height:100%;aspect-ratio:375/544;border-radius:12px;background:#f1f0f2;overflow:hidden;cursor:pointer;box-sizing:border-box;border:2px solid transparent;transition:border-color .16s,opacity .2s}
+.kc-card:not(.cur){opacity:.85}
+.kc-card.cur{border-color:#18171a;cursor:default}
+.kc-card img{width:100%;height:100%;object-fit:contain;display:block}
+.kc-chk{position:absolute;left:18px;top:18px;width:28px;height:28px;border-radius:6px;background:#fff;border:2px solid #18171a;box-sizing:border-box;display:none;place-items:center;color:#fff;cursor:pointer}
+.kc-card.cur .kc-chk{display:grid}
+.kc-card.on .kc-chk,.kc-th.on .kc-chk{background:#18171a;color:#fff}
+.kc-card:not(.on) .kc-chk .ic{visibility:hidden}
+.kc-nav{position:absolute;top:calc(min(544px,calc(100vh - 88px - 300px)) / 2 - 36px);width:72px;height:72px;padding:12px;border:0;background:none;color:#18171a;display:grid;place-items:center;z-index:2}
+.kc-nav .ic{width:48px;height:48px}
+.kc-nav.prev{left:24px}.kc-nav.next{right:24px}
+.kc-nav:disabled{opacity:.2}
+.kc-dock{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);width:min(1036px,calc(100% - 48px));background:#fff;border:1px solid #e4e3e5;border-radius:12px;box-shadow:0 8px 24px rgba(24,23,26,.12);padding:18px 0;box-sizing:border-box}
+.kc-strip{display:flex;gap:18px;overflow-x:auto;padding:0 80px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 80px,#000 calc(100% - 80px),transparent 100%)}
+.kc-strip::-webkit-scrollbar{display:none}
+.kc-th{position:relative;flex:none;width:72px;height:72px;padding:0;border-radius:6px;overflow:hidden;background:#f1f0f2;border:2px solid transparent;box-sizing:border-box;cursor:pointer}
+.kc-th img{width:100%;height:100%;object-fit:cover;display:block}
+.kc-th.on{border-color:#18171a}
+.kc-th.cur{outline:2px solid #7425f6;outline-offset:2px}
+.kc-th .kc-chk{left:6px;top:6px;width:18px;height:18px;border-radius:4px;border-width:0;display:none}
+.kc-th.on .kc-chk{display:grid}
+.kc-th .kc-chk .ic{width:14px;height:14px}
+.kp-empty{display:flex;flex-direction:column;align-items:center;gap:0;padding:200px 0 80px;text-align:center}
+.kp-ex{width:120px;height:120px;border-radius:50%;background:#f4f3f5;display:grid;place-items:center;font:700 40px/1 var(--ff,Pretendard);color:#18171a;margin-bottom:24px}
+.kp-empty h2{margin:0 0 24px;font:var(--type-headline-s);letter-spacing:-.24px;color:#18171a}
+.kp-empty .btn{height:44px;padding:0 24px;border-radius:8px}
+.kp-acts{display:flex;align-items:center;gap:16px}
+.kp-acts .icon-btn:disabled{opacity:1;color:#18171a}
+.kc-nav .ic{width:72px;height:72px}
+.kc-back .icon-btn .ic{width:32px;height:32px}
+.kc-strip{padding-top:4px;padding-bottom:4px}
+.kc-dock{padding:14px 0}
+.kp-acts .btn:disabled{opacity:1;background:#18171a;border-color:#18171a;color:#fff}
