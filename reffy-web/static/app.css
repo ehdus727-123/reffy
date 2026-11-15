@@ -92,7 +92,7 @@ input{font:inherit;color:inherit}
 .card{display:block;width:100%;break-inside:avoid;margin:0 0 14px;text-align:left;border:0;border-radius:8px;background:#fff;position:relative}
 .card .im{display:block;border-radius:8px;overflow:hidden;background:var(--ph)}
 .card img{display:block;width:100%;height:auto}
-.card.sel .im{outline:2px solid var(--ink);outline-offset:-2px}
+.card.sel .im{outline:0}
 .meta{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 2px}
 .av{width:16px;height:16px;border-radius:8px;background:var(--line2);font-size:9px;color:#fff;display:grid;place-items:center;flex:none;overflow:hidden}
 .tx{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -940,7 +940,8 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 /* 카드(WF/Card): 이미지와 정보 줄이 모서리 8 카드 안에서 함께 잘림 */
 .card{overflow:hidden}
 .card .im{border-radius:0}
-.card.sel{outline:2px solid var(--t1);outline-offset:-2px}
+.card.sel{outline:0}
+.card.sel::after{content:"";position:absolute;inset:0;border:2px solid #18171a;border-radius:inherit;pointer-events:none;z-index:3}
 /* 검색창 지우기(×) */
 .qclear{flex:none;width:20px;height:20px;padding:0;border:0;background:none;color:var(--t3);display:grid;place-items:center}
 .qclear[hidden]{display:none}
@@ -1074,7 +1075,7 @@ html:not(.m) .avatar#me{width:32px;height:32px}
 
 /* ================================================================ 모션 (부드러운 화면 전환)
    사용자가 연 것·닫은 것을 보여 주는 움직임만. 0.18~0.28초 · ease-out. '동작 줄이기' 설정이면 모두 끔 */
-:root{--ease:cubic-bezier(.2,.8,.2,1);--ease-in:cubic-bezier(.4,0,1,1);--t1:.16s;--t2:.24s;--t3:.32s}
+:root{--ease:cubic-bezier(.2,.8,.2,1);--ease-in:cubic-bezier(.4,0,1,1);--d1:.16s;--d2:.24s;--d3:.32s}
 @keyframes rf-fade{from{opacity:0}to{opacity:1}}
 @keyframes rf-fade-out{from{opacity:1}to{opacity:0}}
 @keyframes rf-pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
@@ -1087,39 +1088,39 @@ html:not(.m) .avatar#me{width:32px;height:32px}
 @keyframes rf-img{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:no-preference){
   /* 버튼 · 링크 · 입력: 색과 테두리가 부드럽게 바뀜 */
-  .btn,.icon-btn,.chip,.tag,.nav a,.tabs button,.sortbtn,.fbtn,.seg button,.menu button,.pop-menu button,.mcard button,.srow,.inp,.search,#mtab a,.upd-th,.upd-add,.upd-drop{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease),color var(--t1) var(--ease),box-shadow var(--t1) var(--ease),opacity var(--t1) var(--ease),transform var(--t1) var(--ease)}
+  .btn,.icon-btn,.chip,.tag,.nav a,.tabs button,.sortbtn,.fbtn,.seg button,.menu button,.pop-menu button,.mcard button,.srow,.inp,.search,#mtab a,.upd-th,.upd-add,.upd-drop{transition:background-color var(--d1) var(--ease),border-color var(--d1) var(--ease),color var(--d1) var(--ease),box-shadow var(--d1) var(--ease),opacity var(--d1) var(--ease),transform var(--d1) var(--ease)}
   .btn:active,.icon-btn:active,.chip:active,.fbtn:active,.sortbtn:active,#mtab a:active{transform:scale(.97)}
-  .chk input,.cbx{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease)}
-  .sw-ui,.sw-ui::after{transition:background-color var(--t2) var(--ease),transform var(--t2) var(--ease)}
+  .chk input,.cbx{transition:background-color var(--d1) var(--ease),border-color var(--d1) var(--ease)}
+  .sw-ui,.sw-ui::after{transition:background-color var(--d2) var(--ease),transform var(--d2) var(--ease)}
   /* 카드: 이미지가 천천히 나타나고, 마우스를 올리면 살짝 커짐 */
-  .card .im img{animation:rf-img var(--t3) var(--ease) both}
+  .card .im img{animation:rf-img var(--d3) var(--ease) both}
   .card .im{overflow:hidden}
-  .card .im img{transition:transform var(--t3) var(--ease)}
+  .card .im img{transition:transform var(--d3) var(--ease)}
   html:not(.m) .card:hover .im img{transform:scale(1.025)}
   /* PC 필터 패널 · 상세 패널: 열릴 때 옆에서 미끄러져 들어옴 */
   html:not(.m) .layout.f-open .side{animation:rf-side-in .34s var(--ease) both}
   html:not(.m) .layout.f-open .side>*{animation:rf-fade .28s .08s var(--ease) both}
-  html:not(.m) .layout.has-panel .panel{animation:rf-right var(--t2) var(--ease) both}
-  .fgroup[data-open=true] .fbody{animation:rf-drop var(--t2) var(--ease) both}
-  .fgroup>button .ic{transition:transform var(--t2) var(--ease)}
+  html:not(.m) .layout.has-panel .panel{animation:rf-right var(--d2) var(--ease) both}
+  .fgroup[data-open=true] .fbody{animation:rf-drop var(--d2) var(--ease) both}
+  .fgroup>button .ic{transition:transform var(--d2) var(--ease)}
   /* 메뉴 · 드롭다운 · 검색 제안 */
-  .menu:not([hidden]),.pop-menu,.suggest:not([hidden]),.notif:not([hidden]){animation:rf-drop var(--t1) var(--ease) both;transform-origin:top right}
+  .menu:not([hidden]),.pop-menu,.suggest:not([hidden]),.notif:not([hidden]){animation:rf-drop var(--d1) var(--ease) both;transform-origin:top right}
   /* 모달: 배경은 서서히, 창은 살짝 떠오르며 */
-  .modal{animation:rf-fade var(--t2) var(--ease) both}
-  .modal>.dlg,.modal>.sheet{animation:rf-pop var(--t2) var(--ease) both}
+  .modal{animation:rf-fade var(--d2) var(--ease) both}
+  .modal>.dlg,.modal>.sheet{animation:rf-pop var(--d2) var(--ease) both}
   .modal.closing{animation:rf-fade-out .18s var(--ease-in) both;pointer-events:none}
   .modal.closing>.dlg{animation:rf-pop-out .18s var(--ease-in) both}
   /* 모바일: 시트는 아래에서 올라오고, 상세 · 전체 화면 창은 옆에서 */
-  .m .modal.msheet>.sheet,.m .modal:not(.center):not(.upl):not(.mfull)>.dlg{animation:rf-up var(--t3) var(--ease) both}
+  .m .modal.msheet>.sheet,.m .modal:not(.center):not(.upl):not(.mfull)>.dlg{animation:rf-up var(--d3) var(--ease) both}
   .m .modal.msheet.closing>.sheet,.m .modal.closing:not(.center):not(.upl):not(.mfull)>.dlg{animation:rf-down .2s var(--ease-in) both}
-  .m .layout.f-open>.side{animation:rf-up var(--t3) var(--ease) both}
-  .m .layout.f-open>.m-ov{animation:rf-fade var(--t2) var(--ease) both}
-  .m .layout.has-panel .panel{animation:rf-right var(--t2) var(--ease) both}
-  .m .modal.upl,.m .modal.mfull{animation:rf-right var(--t2) var(--ease) both}
+  .m .layout.f-open>.side{animation:rf-up var(--d3) var(--ease) both}
+  .m .layout.f-open>.m-ov{animation:rf-fade var(--d2) var(--ease) both}
+  .m .layout.has-panel .panel{animation:rf-right var(--d2) var(--ease) both}
+  .m .modal.upl,.m .modal.mfull{animation:rf-right var(--d2) var(--ease) both}
   /* 화면(페이지) 바뀔 때 내용이 살짝 떠오름 */
-  #page:not([hidden])>*{animation:rf-pop var(--t2) var(--ease) both}
+  #page:not([hidden])>*{animation:rf-pop var(--d2) var(--ease) both}
   /* 토스트 */
-  .toast{transition:opacity var(--t2) var(--ease),transform var(--t2) var(--ease)}
+  .toast{transition:opacity var(--d2) var(--ease),transform var(--d2) var(--ease)}
 }
 
 /* ================================================================ Reffy Typography Design System v1.0 (Web 1440 · Mobile 390)
@@ -1532,7 +1533,7 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
   #grid .card:not(.skel){animation:rf-rise .38s var(--ease) both;animation-delay:calc(var(--i,0) * 35ms)}
   #grid .card.in,#grid .card.in .im img{animation:none}
   /* 카드를 누르는 순간 살짝 눌림 · 마우스를 올리면 그림자 */
-  .card{transition:transform var(--t1) var(--ease)}
+  .card{transition:transform var(--d1) var(--ease)}
   .card:active{transform:scale(.985)}
   /* 하트: 누르면 톡 튀고 둥근 물결 */
   [data-like]{position:relative}
@@ -1547,18 +1548,18 @@ html[lang=en] .pf-stats{flex-wrap:nowrap;gap:16px;white-space:nowrap}
   /* 스위치 · 라디오 · 체크박스: 누를 때 살짝 눌림 */
   .st-tg:active i::after,.sw-ui:active::after{width:24px}
   .st-tg-in:checked:active+i::after{transform:translateX(14px)}
-  .st-radio i,.st-cbx-ui,.chk span,.cbx{transition:background-color var(--t1) var(--ease),border-color var(--t1) var(--ease),transform var(--t1) var(--ease)}
+  .st-radio i,.st-cbx-ui,.chk span,.cbx{transition:background-color var(--d1) var(--ease),border-color var(--d1) var(--ease),transform var(--d1) var(--ease)}
   .st-radio:active i,.st-agree:active .st-cbx-ui{transform:scale(.88)}
   .st-tg i::after{transition:transform .2s var(--ease),width .15s var(--ease)}
   /* 설정 메뉴 · 프로필 메뉴 · 칩: 마우스 반응 */
-  .st-snb a,.acct-it,.acct-out,.st-chip,.st-sbtn,.st-btn,.acct-seg button{transition:background-color var(--t1) var(--ease),color var(--t1) var(--ease),border-color var(--t1) var(--ease),transform var(--t1) var(--ease),box-shadow var(--t1) var(--ease)}
+  .st-snb a,.acct-it,.acct-out,.st-chip,.st-sbtn,.st-btn,.acct-seg button{transition:background-color var(--d1) var(--ease),color var(--d1) var(--ease),border-color var(--d1) var(--ease),transform var(--d1) var(--ease),box-shadow var(--d1) var(--ease)}
   .st-chip:active,.st-btn:active:not(:disabled),.st-sbtn:active,.acct-it:active{transform:scale(.97)}
-  .st-c{animation:rf-pop var(--t2) var(--ease) both}
+  .st-c{animation:rf-pop var(--d2) var(--ease) both}
   /* 상세 패널 이미지 · 연관 이미지: 마우스를 올리면 살짝 확대 */
-  html:not(.m) .dp-card img{transition:transform var(--t3) var(--ease)}
+  html:not(.m) .dp-card img{transition:transform var(--d3) var(--ease)}
   html:not(.m) .dp-card:hover img{transform:scale(1.04)}
   /* 키보드로 이동할 때 보이는 포커스 테두리가 부드럽게 */
-  :focus-visible{transition:outline-offset var(--t1) var(--ease)}
+  :focus-visible{transition:outline-offset var(--d1) var(--ease)}
 }
 
 #grid .card{transform-origin:0 0}
