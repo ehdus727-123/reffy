@@ -1381,3 +1381,7 @@ html:not(.m) .panel{padding:0}
 .m .lb-z{width:48px;height:48px}
 .modal.lightbox>.lb-stage{animation:rf-pop .24s var(--ease,ease) both}
 .lb-close .ic,.lb-z .ic{width:32px;height:32px}
+/* 라이트박스: 이미지가 화면 정중앙에 오도록 (위아래 여백 같게) */
+.lb-stage{display:flex;align-items:center;justify-content:center;padding:0}
+.lb-stage img{max-width:calc(100vw - 192px);max-height:calc(100vh - 144px);max-height:calc(100dvh - 144px);width:auto;height:auto;object-fit:contain}
+.m .lb-stage img{max-width:calc(100vw - 24px);max-height:calc(100dvh - 160px)}
