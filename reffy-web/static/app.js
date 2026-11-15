@@ -435,10 +435,23 @@ async function pullPose() {
 /* 게시물 수정 (MYP_0200 수정 모드): 제목 · 사용 소재 · 공개 설정. 태그는 상세 화면의 ‘태그 수정’에서 */
 function editPost(d, after) {
   const st = { title: d.title || "", materials: [...(d.materials || [])], private: !!d.private };
+  const tags0 = new Map(d.tags.filter((t) => t.active).map((t) => [t.ikey, t.label]));
+  const tags = new Map(tags0);   // 수정 중인 태그 (저장할 때 원래와 비교해 더하고 뺌)
+  const onPick = (t) => {
+    // 한 개만 고르는 분류(예: 인원)는 같은 분류의 기존 태그를 바꿔 줌
+    const ax = S.labels[t.ikey]?.axis; const one = S.vocab && S.vocab.groups.flatMap((g) => g.axes).find((a) => a.name === ax && a.mode === "단일");
+    if (one) [...tags.keys()].forEach((k) => { if (S.labels[k]?.axis === ax) tags.delete(k); });
+    tags.set(t.ikey, t.label); draw();
+  };
   const m = h("div", { class: "modal" + (isM() ? " mfull" : ""), onmousedown: (e) => !isM() && e.target === m && m.remove() });
   const save_ = async () => {
     try {
       await api(`/api/images/${d.id}/meta`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(st) });
+      const add = [...tags.keys()].filter((k) => !tags0.has(k)), remove = [...tags0.keys()].filter((k) => !tags.has(k));
+      if (add.length || remove.length) {
+        const r = await api(`/api/images/${d.id}/tags`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ add, remove, restore: [] }) });
+        d.tags = r.tags; loadVocab().catch(() => {});
+      }
       m.remove(); toast("게시물을 수정했어요");
       const fresh = await api(`/api/images/${d.id}`); fresh.so = d.so; Object.assign(d, fresh); if (after) after(d); else { drawDetail(d); reload(); }
     } catch (e) { toast(e.message); }
@@ -449,9 +462,12 @@ function editPost(d, after) {
     h("div", { class: "ed-body" },
       h("div", { class: "ed-img" }, h("img", { src: d.full, alt: "" })),
       h("div", { class: "field" }, h("label", { for: "edTitle" }, "제목"), h("input", { class: "inp", id: "edTitle", maxlength: "120", value: st.title, placeholder: "게시물 제목을 입력하세요", oninput: (e) => (st.title = e.target.value) })),
+      h("div", { class: "field" }, h("label", {}, "태그"),
+        tags.size ? h("div", { class: "tags ed-tags" }, [...tags].map(([k, l]) => h("button", { class: "tag ed-tag", type: "button", title: "눌러서 빼기", "aria-label": `${l} 태그 빼기`, onclick: () => { tags.delete(k); draw(); } }, "#" + l, h("x", { "aria-hidden": "true" }, "×"))))
+          : h("p", { class: "hint" }, "붙은 태그가 없어요. 아래에서 추가하세요."),
+        pickButton(h("div", { class: "pick" }), onPick, () => new Set(tags.keys()))),
       materialsField(st.materials, draw),
-      privacyField(st.private, (v) => { st.private = v; }),
-      h("p", { class: "hint" }, "태그는 게시물 상세의 ‘태그 수정’에서 고칠 수 있어요.")),
+      privacyField(st.private, (v) => { st.private = v; })),
     h("div", { class: "cft" }, btn("취소", "", () => m.remove()), btn(isM() ? "수정 완료" : "저장", "primary", save_))));
   draw(); document.body.append(m);
 }

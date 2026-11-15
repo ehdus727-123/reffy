@@ -1666,5 +1666,23 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):
 /* 테두리 없는 칸(검색창 · 댓글 입력 등)은 감싸는 상자가 표시 */
 .search input:focus-visible,.fl-search input:focus-visible,.pe-link input:focus-visible,.dp-cin .cin:focus-visible,.pm-cin:focus-visible,.cin:focus-visible{box-shadow:none;outline:none}
 /* 게시물 수정 모달 미리보기: 이미지 전체가 보이게 */
-.ed-img{height:260px;display:flex;align-items:center;justify-content:center}
+.ed-img{height:260px;flex:none;display:flex;align-items:center;justify-content:center}
 .ed-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+
+/* 게시물 수정: 태그 (눌러서 빼기 · 추가) */
+.ed-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.ed-tag{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 8px 0 10px;border-radius:4px;border:0;background:#f1f0f2;font:500 12px/16px var(--ff);color:#5b595f;cursor:pointer}
+.ed-tag x{font-size:14px;line-height:1;color:#8e8c91}
+.ed-tag:hover{background:#e4e3e5}
+.ed-tag:hover x{color:#c43a49}
+
+/* PC 뒤로 버튼 */
+.pc-back{width:36px;height:36px;margin-left:-8px;border:0;border-radius:8px;background:none;display:grid;place-items:center;color:#18171a;cursor:pointer;flex:none}
+.pc-back:hover{background:#f1f0f2}
+.pc-head{display:flex;align-items:center;gap:4px}
+.pc-head h1{margin:0}
+.st-snb .pc-head{margin-bottom:20px}
+.st-snb .pc-head h1{margin:0}
+.pf-banner{position:relative}
+.pc-back.on-banner{position:absolute;left:24px;top:16px;margin:0;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pc-back.on-banner:hover{background:rgba(255,255,255,.85)}

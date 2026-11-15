@@ -7,6 +7,11 @@ function ago(iso) {
   if (s < 604800) return Math.floor(s / 86400) + "일 전"; return when(iso).toLocaleDateString("ko-KR");
 }
 const btn = (label, cls, fn, attrs) => h("button", { class: "btn " + (cls || ""), type: "button", onclick: fn, ...(attrs || {}) }, label);
+/* PC: 상단 메뉴(홈 · 킵 스페이스 · 서랍)로 바로 갈 수 없는 화면에 두는 뒤로 버튼 */
+function pcBack(fallback = "#/", cls = "") {
+  return h("button", { class: "pc-back " + cls, type: "button", "aria-label": "뒤로", title: "뒤로",
+    onclick: () => { const here = location.hash; if (history.length > 1) { history.back(); setTimeout(() => { if (location.hash === here) location.hash = fallback; }, 250); } else location.hash = fallback; } }, icon("back", 24));
+}
 function page(el) {
   $("#layout").hidden = true; const p = $("#page");
   // 같은 화면(설정 · 서랍) 안에서 왼쪽 메뉴만 바꾸면: 화면 전체가 떠오르지 않고 오른쪽 내용만 살짝 바뀜
@@ -440,7 +445,7 @@ async function profilePage(uid) {
     root.replaceChildren(
       isM() ? (u.me ? mbar("마이페이지", { big: true, right: [h("button", { class: "icon-btn", type: "button", "aria-label": "게시물 등록", onclick: () => openUpload() }, icon("plus", 26)), h("a", { class: "icon-btn", href: "#/settings", "aria-label": "설정" }, icon("settings", 24))] })
         : mbar("", { back: true, right: [moreBtn] })) : "",
-      h("div", { class: "pf-banner" + (u.cover ? " has" : "") }, u.cover ? h("img", { src: u.cover, alt: "" }) : null),
+      h("div", { class: "pf-banner" + (u.cover ? " has" : "") }, u.cover ? h("img", { src: u.cover, alt: "" }) : null, isM() ? null : pcBack("#/", "on-banner")),
       h("div", { class: "pf-body" },
         h("aside", { class: "pf-side" },
           avatarEl(u, 134, "pf-av"), isM() ? null : moreBtn,
@@ -512,7 +517,7 @@ async function profileEdit() {
     try { await api("/api/me/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nick: nick.value, bio: bio.value, links: links.filter((x) => x.trim()) }) }); await loadMe(); toast("프로필을 저장했어요"); location.hash = "#/me"; }
     catch (er) { toast(er.message); b.disabled = false; }
   };
-  root.replaceChildren(isM() ? mbar("프로필 수정", { back: () => (location.hash = "#/me"), right: [h("button", { class: "linkbtn", type: "button", onclick: save }, "저장")] }) : "", h("h1", {}, "프로필 편집"), cvBox, avBox,
+  root.replaceChildren(isM() ? mbar("프로필 수정", { back: () => (location.hash = "#/me"), right: [h("button", { class: "linkbtn", type: "button", onclick: save }, "저장")] }) : "", isM() ? h("h1", {}, "프로필 편집") : h("div", { class: "pc-head" }, pcBack("#/me"), h("h1", {}, "프로필 편집")), cvBox, avBox,
     h("div", { class: "pe-f" }, h("label", { for: "peNick" }, "닉네임"), h("div", { class: "pe-nick" }, nick, nickBtn), nickMsg),
     h("div", { class: "pe-f s" }, h("label", {}, "소개"), bio, bioCnt),
     h("div", { class: "pe-lh" }, h("h2", {}, "외부 링크"), linkCnt), linkBox,
@@ -577,7 +582,7 @@ async function settingsPC(sub) {
   sub = sub || "notif";
   if (sub === "security") sub = "account";
   const main = h("div", { class: "st-main" });
-  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("h1", {}, "내 설정"),
+  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("div", { class: "pc-head" }, pcBack("#/me"), h("h1", {}, "내 설정")),
     SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, l)),
     h("i", { class: "st-div" }), h("a", { href: "#/settings/leave", class: "st-leave" + (sub === "leave" ? " on" : ""), "aria-current": sub === "leave" ? "page" : null }, "탈퇴하기"));
   const root = h("div", { class: "st" }, snb, main);
