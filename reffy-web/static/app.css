@@ -953,3 +953,81 @@ a.srow2:hover,button.srow2:hover{background:var(--bg-sub)}
 .side ::-webkit-scrollbar-thumb:hover{background:#9e9da1}
 .side ::-webkit-scrollbar-button{display:none;height:0}
 @supports not selector(::-webkit-scrollbar){.side,.side *{scrollbar-width:thin;scrollbar-color:#c3c2c5 transparent}}
+
+/* ================================================================ PC 업로드 모달 (Web 2차 HOM_0505)
+   1단계 720 · 2단계 1040 · 모서리 16 · Padding 24/28 · 블록 간격 20 · 버튼 M 40 (r8) */
+.modal.upl-pc{background:rgba(24,23,26,.4)}
+.upd{width:720px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);padding:24px 28px;border-radius:16px;display:flex;flex-direction:column;gap:20px;overflow:hidden;box-sizing:border-box}
+.upd.s2{width:1040px;height:720px}
+.upd-h{display:flex;align-items:center;gap:8px;height:28px;flex:none}
+.upd-h h2{flex:1;margin:0;font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px;color:#18171a}
+.upd-h .icon-btn{width:24px;height:24px;padding:0}
+.upd .btn{height:40px;padding:0 16px;border-radius:8px;font:500 14px/20px Pretendard,sans-serif;border-color:#c3c2c5;color:#18171a}
+.upd .btn.primary{color:#fff;border-color:#18171a}
+.upd .btn:disabled{opacity:.4;cursor:default}
+.upd-f{display:flex;align-items:center;gap:8px;flex:none}.upd-f .sp{flex:1}
+/* 1단계: 드롭존 664×400 */
+.upd-drop{height:400px;flex:none;border:1px dashed #c3c2c5;border-radius:12px;background:#f8f7f8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;text-align:center}
+.upd-drop.over,.upd-drop.has{border-color:#18171a;background:#fff}
+.upd-drop .ic{width:32px;height:32px}
+.upd-dt b{display:block;font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.upd-dt p{margin:4px 0 0;font:400 14px/20px Pretendard,sans-serif;color:#6f6d72}
+.upd-file{background:#fff}
+/* 2단계: 이미지 480 | 32 | 폼 472 */
+.upd-c{display:flex;gap:32px;flex:1;min-height:0}
+.upd-img{width:480px;flex:none;display:flex;flex-direction:column;gap:12px}
+.upd-pv{width:480px;height:480px;border-radius:8px;background:#f0f0f2;overflow:hidden;display:grid;place-items:center}
+.upd-pv img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.upd-thumbs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.upd-thumbs::-webkit-scrollbar{display:none}
+.upd-th,.upd-add{width:72px;height:72px;flex:none;border-radius:8px;padding:0;position:relative;overflow:hidden;background:#f0f0f2;border:1px solid transparent;cursor:pointer}
+.upd-th img{width:100%;height:100%;object-fit:cover;display:block}
+.upd-th.on{border:2px solid #18171a}
+.upd-thx{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(24,23,26,.6);color:#fff;display:none;place-items:center}
+.upd-thx .ic{width:14px;height:14px;stroke:#fff}
+.upd-th:hover .upd-thx{display:grid}
+.upd-add{background:#f8f7f8;border:1px dashed #c3c2c5;display:grid;place-items:center}
+.upd-form{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;gap:24px;padding-right:4px;margin-right:-4px}
+.upd-sec{display:flex;flex-direction:column;gap:8px}
+.upd-sec>label{font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+.upd .inp{height:48px;border:1px solid #c3c2c5;border-radius:8px;padding:0 14px;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a;box-sizing:border-box}
+.upd .inp::placeholder{color:#8e8c91}
+.upd-mh{display:flex;align-items:baseline}.upd-mh label{flex:1;font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+.upd-mh small{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+.upd-mrow{display:flex;gap:8px;align-items:center}.upd-mrow .inp{flex:1;border-radius:10px}
+.upd-link{height:48px;box-sizing:border-box;border:1px solid #6f6d72;border-radius:8px;padding:0 14px;display:flex;align-items:center;gap:10px}
+.upd-link>.ic{width:18px;height:18px;flex:none}
+.upd-link span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.upd-link .icon-btn{width:18px;height:18px;padding:0}.upd-link .icon-btn .ic{width:18px;height:18px}
+.upd-vis{display:flex;align-items:center;gap:16px;position:relative;cursor:pointer}
+.upd-vis>span{flex:1;display:flex;flex-direction:column;gap:2px}
+.upd-vis b{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.upd-vis small{font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+.upd-vis .sw-in{right:0;width:44px;height:26px}
+.upd-vis .sw-ui{width:44px;height:26px;border-radius:13px}
+.upd-vis .sw-ui::after{width:20px;height:20px;top:3px;left:3px}
+.upd-vis .sw-in:checked+.sw-ui::after{transform:translateX(18px)}
+.upd .tags{display:flex;flex-wrap:wrap;gap:6px}
+.upd .hint{margin:0;font:400 13px/18px Pretendard,sans-serif;color:#6f6d72;display:flex;align-items:center;gap:6px}
+.upd .upd-h{margin:0;padding:0;border:0}.upd-pv{flex:none}
+.upd .seg{align-self:flex-start}
+
+/* ================================================================ Web 2차 홈 (HOM_0000 · 0201 · 0300 · 0601)
+   처음엔 필터를 닫은 채 시작 · 결과 제목 없음 · 정렬은 필터를 열었을 때만 · 칩은 검은 알약(34) · 필터 아이콘(슬라이더) */
+html:not(.m) .result{display:none}
+html:not(.m) .layout:not(.f-open) .sortwrap{display:none}
+html:not(.m) .sortfilter{gap:15px;align-items:center}
+html:not(.m) .sortbtn{height:32px;padding:0 8px 0 12px;gap:4px;border:1px solid #c3c2c5;border-radius:8px;font:500 14px/20px Pretendard,sans-serif;color:#18171a;background:#fff}
+html:not(.m) .sortbtn .ic{width:16px;height:16px}
+html:not(.m) #filterBtn>.ic{display:none}
+.fic-pc{fill:#18171a;stroke:none;display:block}
+.m .fic-pc{display:none}
+html:not(.m) #filterBtn{width:24px;height:24px;padding:0;border:0;background:none}
+html:not(.m) .chips{gap:8px}
+html:not(.m) .chip.dark{height:34px;box-sizing:border-box;padding:0 11px 0 14px;gap:10px;font:500 14px/20px Pretendard,sans-serif;background:#18171a;border-color:#18171a}
+html:not(.m) .chip.dark button{width:20px;height:20px;font-size:15px;line-height:20px;display:grid;place-items:center;color:#fff}
+/* 필터 패널: 종류 (작은 제목 12 · 항목 간격 16 · 구분선 #DEDEDE) */
+.ftype{display:flex;flex-direction:column;gap:16px}
+.ftype h4{margin:0;font:500 12px/16px Pretendard,sans-serif;color:#5b595f}
+.ftype-items{display:flex;flex-direction:column;gap:16px;margin-top:-6px}
+.ftype::after{content:"";height:1px;background:#dedede}
+.ftype .chk{min-height:20px;padding:0;gap:10px;font:500 14px/20px Pretendard,sans-serif;color:#18171a}

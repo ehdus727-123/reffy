@@ -41,5 +41,5 @@ if not CLASSIFIER.is_absolute():
 WD_THRESHOLD = float(os.getenv("WD_THRESHOLD", "0.35"))        # WD 태그를 키워드 추천에 쓰는 최소 확률
 TEAM_PROB = float(os.getenv("TEAM_PROB", "0.60"))               # 팀 분류기 최소 확률
 TAG_THRESHOLD = float(os.getenv("TAG_THRESHOLD", "0.35"))       # 최종 태그 인정 확률 (PRD 8.2)
-MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "15"))
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "20"))
 PAGE = 40
