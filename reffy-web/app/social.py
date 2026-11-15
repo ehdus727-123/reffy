@@ -586,7 +586,7 @@ def _clean_link(v: str) -> str:
 
 
 def _user_row(uid: str) -> dict:
-    r = db.rows("SELECT id, uid, nick, bio, links, avatar FROM users WHERE uid = :u", u=uid)
+    r = db.rows("SELECT id, uid, nick, bio, links, avatar, cover FROM users WHERE uid = :u", u=uid)
     if not r:
         raise HTTPException(404, "사용자를 찾을 수 없어요.")
     return r[0]
@@ -605,6 +605,7 @@ def profile(uid: str, request: Request):
     except Exception:
         links = []
     return {"uid": t["uid"], "nick": t["nick"], "bio": t["bio"] or "", "links": links, "avatar": _avatar_url(t["uid"], t["avatar"]),
+            "cover": f"/api/users/{t['uid']}/cover?v={t['cover']}" if t["cover"] else None,
             "posts": _count("SELECT COUNT(*) AS n FROM images WHERE user_id = :i" + ("" if (v and v["id"] == t["id"]) else " AND COALESCE(private,0) = 0"), i=t["id"]),
             "books": _count("SELECT COUNT(*) AS n FROM books WHERE user_id = :i", i=t["id"]) if v and v["id"] == t["id"] else None,
             "followers": _count("SELECT COUNT(*) AS n FROM follows WHERE followee_id = :i", i=t["id"]),
@@ -694,6 +695,44 @@ def clear_avatar(request: Request):
     with db.engine.begin() as c:
         c.execute(text("UPDATE users SET avatar = NULL WHERE id = :i"), {"i": u["id"]})
     return {"ok": True}
+
+
+@router.post("/me/cover")
+async def set_cover(request: Request, file: UploadFile = File(...)):
+    """마이페이지 헤더(커버) 이미지: 권장 1440 × 260, JPG · PNG, 10MB 이하. 가로 1440 으로 줄여 저장."""
+    u = need(request)
+    data = await file.read()
+    if len(data) > 10 << 20:
+        raise HTTPException(413, "10MB 이하의 이미지만 올릴 수 있어요.")
+    try:
+        im = Image.open(io.BytesIO(data))
+        if im.format not in ("JPEG", "PNG", "WEBP"):
+            raise ValueError
+        im = ImageOps.exif_transpose(im).convert("RGB")
+    except Exception:
+        raise HTTPException(400, "JPG · PNG 이미지만 올릴 수 있어요.")
+    im.thumbnail((1440, 1440))
+    name = secrets.token_hex(4)
+    im.save(config.UPLOADS / f"cv_{u['id']}_{name}.jpg", "JPEG", quality=88)
+    with db.engine.begin() as c:
+        c.execute(text("UPDATE users SET cover = :a WHERE id = :i"), {"a": name, "i": u["id"]})
+    return {"cover": f"/api/users/{u['uid']}/cover?v={name}"}
+
+
+@router.delete("/me/cover")
+def clear_cover(request: Request):
+    u = need(request)
+    with db.engine.begin() as c:
+        c.execute(text("UPDATE users SET cover = NULL WHERE id = :i"), {"i": u["id"]})
+    return {"ok": True}
+
+
+@router.get("/users/{uid}/cover")
+def cover_file(uid: str, v: str = ""):
+    t = _user_row(uid)
+    if not t["cover"]:
+        raise HTTPException(404, "헤더 이미지가 없어요.")
+    return FileResponse(config.UPLOADS / f"cv_{t['id']}_{t['cover']}.jpg", headers={"Cache-Control": "public, max-age=31536000"})
 
 
 @router.get("/users/{uid}/avatar")

@@ -43,6 +43,7 @@ users = Table("users", md,
               Column("bio", String(200), default=""),          # 한 줄 소개
               Column("links", Text),                           # 외부 링크 JSON (최대 5개)
               Column("avatar", String(40)),                    # 프로필 사진 파일명 (없으면 NULL)
+              Column("cover", String(40)),                     # 마이페이지 헤더(커버) 이미지 파일명 (없으면 NULL)
               Column("notif_off", String(40), default=""),     # 끈 알림 종류 (follow,comment,like)
               Column("created_at", DateTime, default=datetime.now))
 sessions = Table("sessions", md,
@@ -118,7 +119,7 @@ def init():
         if "pos" not in kcols:
             c.execute(text("ALTER TABLE keeps ADD COLUMN pos INTEGER"))
         ucols = {x["name"] for x in inspect(engine).get_columns("users")}
-        for name, ddl in (("bio", "VARCHAR(200) DEFAULT ''"), ("links", "TEXT"), ("avatar", "VARCHAR(40)"), ("notif_off", "VARCHAR(40) DEFAULT ''")):
+        for name, ddl in (("bio", "VARCHAR(200) DEFAULT ''"), ("links", "TEXT"), ("avatar", "VARCHAR(40)"), ("cover", "VARCHAR(40)"), ("notif_off", "VARCHAR(40) DEFAULT ''")):
             if name not in ucols:
                 c.execute(text(f"ALTER TABLE users ADD COLUMN {name} {ddl}"))
         bcols = {x["name"] for x in inspect(engine).get_columns("books")}

@@ -415,7 +415,7 @@ async function profilePage(uid) {
     root.replaceChildren(
       isM() ? (u.me ? mbar("마이페이지", { big: true, right: [h("button", { class: "icon-btn", type: "button", "aria-label": "게시물 등록", onclick: () => openUpload() }, icon("plus", 26)), h("a", { class: "icon-btn", href: "#/settings", "aria-label": "설정" }, icon("settings", 24))] })
         : mbar("", { back: true, right: [moreBtn] })) : "",
-      h("div", { class: "pf-banner" }),
+      h("div", { class: "pf-banner" + (u.cover ? " has" : "") }, u.cover ? h("img", { src: u.cover, alt: "" }) : null),
       h("div", { class: "pf-body" },
         h("aside", { class: "pf-side" },
           avatarEl(u, 134, "pf-av"), isM() ? null : moreBtn,
@@ -449,8 +449,23 @@ async function profileEdit() {
   const cam = h("input", { type: "file", accept: "image/*", capture: "user", hidden: true, onchange: pickAv });
   const avMenu = (e) => (isM() ? sheetMenu("프로필 사진", [{ ic: "image", label: "앨범에서 선택", fn: () => file.click() }, { ic: "camera", label: "사진 찍기", fn: () => cam.click() }, ...(avatar ? [{ ic: "trash", label: "기본 이미지로 변경", fn: delAv }] : [])])
     : avatar ? menuCard(e.currentTarget, [{ ic: "image", label: "앨범에서 선택", fn: () => file.click() }, { ic: "trash", label: "기본 이미지로 변경", fn: delAv }]) : file.click());
-  const drawAv = () => avBox.replaceChildren(h("button", { class: "pe-avb", type: "button", "aria-label": "프로필 사진 변경", onclick: avMenu }, avatarEl({ nick: nick.value || u.nick, avatar }, 96, "pe-avt"), h("i", {}, icon("camera", 16))), cam,
-    h("div", { class: "pe-avtx" }, h("div", { class: "pe-avbtns" }, btn("사진 변경", "", avMenu), avatar ? btn("삭제", "alt", delAv) : null), h("span", {}, "JPG · PNG, 5MB 이하"), file));
+  const drawAv = () => avBox.replaceChildren(h("button", { class: "pe-avb", type: "button", "aria-label": "프로필 사진 변경", onclick: avMenu }, avatarEl({ nick: nick.value || u.nick, avatar }, isM() ? 96 : 88, "pe-avt"), h("i", {}, icon("camera", 16))), cam,
+    h("div", { class: "pe-avtx" }, isM() ? null : h("span", { class: "pe-lbl" }, "프로필 이미지"), h("div", { class: "pe-avbtns" }, btn("사진 변경", "", avMenu), avatar ? btn("삭제", "alt", delAv) : null), h("span", {}, "JPG · PNG, 5MB 이하"), file));
+  /* 헤더(커버) 이미지 (HOM_0501_01 · 0501_02): 헤더 변경 → 앨범에서 선택 / 기본 이미지로 변경 */
+  let cover = u.cover;
+  const cvBox = h("div", { class: "pe-cv" });
+  const cvFile = h("input", { type: "file", accept: "image/jpeg,image/png", hidden: true, onchange: async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (f.size > 10 << 20) return toast("10MB 이하의 이미지만 올릴 수 있어요.");
+    const fd = new FormData(); fd.append("file", f);
+    try { cover = (await api("/api/me/cover", { method: "POST", body: fd })).cover; drawCv(); toast("헤더 이미지를 바꿨어요"); } catch (er) { toast(er.message); } } });
+  const delCv = async () => { try { await api("/api/me/cover", { method: "DELETE" }); cover = null; drawCv(); toast("기본 이미지로 바꿨어요"); } catch (er) { toast(er.message); } };
+  const cvMenu = (e) => (isM() ? sheetMenu("헤더 이미지", [{ ic: "image", label: "앨범에서 선택", fn: () => cvFile.click() }, ...(cover ? [{ ic: "trash", label: "기본 이미지로 변경", fn: delCv }] : [])])
+    : cover ? menuCard(e.currentTarget, [{ ic: "image", label: "앨범에서 선택", fn: () => cvFile.click() }, { ic: "trash", label: "기본 이미지로 변경", fn: delCv }]) : cvFile.click());
+  const drawCv = () => cvBox.replaceChildren(h("label", { class: "pe-lbl" }, "헤더 이미지"),
+    h("div", { class: "pe-cvimg" + (cover ? " has" : "") }, cover ? h("img", { src: cover, alt: "" }) : null,
+      h("button", { class: "pe-cvbtn", type: "button", onclick: cvMenu }, icon("camera", 16), "헤더 변경")),
+    h("span", { class: "pe-cap" }, "권장 1440 × 260px · JPG · PNG, 10MB 이하"), cvFile);
+  drawCv();
   const linkBox = h("div", { class: "pe-links" });
   const drawLinks = () => { linkCnt.textContent = `${links.length} / 5`; linkBox.replaceChildren(...links.map((l, i) => h("div", { class: "pe-link" }, icon("link", 20),
       h("input", { value: l, "aria-label": `외부 링크 ${i + 1}`, placeholder: "https://", maxlength: "120", oninput: (e) => (links[i] = e.target.value) }),
@@ -472,7 +487,7 @@ async function profileEdit() {
     try { await api("/api/me/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nick: nick.value, bio: bio.value, links: links.filter((x) => x.trim()) }) }); await loadMe(); toast("프로필을 저장했어요"); location.hash = "#/me"; }
     catch (er) { toast(er.message); b.disabled = false; }
   };
-  root.replaceChildren(isM() ? mbar("프로필 수정", { back: () => (location.hash = "#/me"), right: [h("button", { class: "linkbtn", type: "button", onclick: save }, "저장")] }) : "", h("h1", {}, "프로필 편집"), avBox,
+  root.replaceChildren(isM() ? mbar("프로필 수정", { back: () => (location.hash = "#/me"), right: [h("button", { class: "linkbtn", type: "button", onclick: save }, "저장")] }) : "", h("h1", {}, "프로필 편집"), cvBox, avBox,
     h("div", { class: "pe-f" }, h("label", { for: "peNick" }, "닉네임"), h("div", { class: "pe-nick" }, nick, nickBtn), nickMsg),
     h("div", { class: "pe-f s" }, h("label", {}, "소개"), bio, bioCnt),
     h("div", { class: "pe-lh" }, h("h2", {}, "외부 링크"), linkCnt), linkBox,
