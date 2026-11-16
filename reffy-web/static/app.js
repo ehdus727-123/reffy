@@ -219,10 +219,16 @@ function fpMarkCats() {
     const nb = b.querySelector(".fp-n"); nb.hidden = !n; nb.textContent = n ? String(n) : "";
   });
 }
+/* 플라이아웃 위치: 누른 카테고리 줄 바로 옆(위끝을 그 줄에 맞춤). 화면 아래로 넘치면 넘치는 만큼만 위로 올림 */
 function fpPlace() {
   if (!FP.el) return;
-  const r = $(".side").getBoundingClientRect(), top = Math.max(r.top, 0) + 16;
-  FP.el.style.left = `${r.right + 18}px`; FP.el.style.top = `${top}px`; FP.el.style.maxHeight = `${innerHeight - top - 16}px`;
+  const r = $(".side").getBoundingClientRect(), minTop = Math.max(r.top, 0) + 16;
+  const btn = document.querySelector(`.fp-cat[data-g="${CSS.escape(FP.open || "")}"]`);
+  const want = btn ? btn.getBoundingClientRect().top - 8 : minTop;
+  FP.el.style.left = `${r.right + 18}px`;
+  FP.el.style.maxHeight = `${innerHeight - minTop - 16}px`;
+  const h = FP.el.offsetHeight;
+  FP.el.style.top = `${Math.round(Math.max(minTop, Math.min(want, innerHeight - 16 - h)))}px`;
 }
 function fpOpen(g, redraw) {
   const cat = FP_CATS.find((c) => c[0] === g), grp = S.vocab.groups.find((x) => x.name === g);
@@ -247,6 +253,7 @@ function fpClose() {
   fpMarkCats();
 }
 addEventListener("resize", fpPlace);
+$("#groups").addEventListener("scroll", () => { if (FP.el) fpPlace(); }, { passive: true });   // 패널을 스크롤하면 창도 그 줄을 따라감
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && FP.el) fpClose(); });
 /* 창 바깥을 누르면 닫기 — 그 클릭으로 피드 이미지가 열리지 않게 한 번 막음 */
 document.addEventListener("pointerdown", (e) => {
