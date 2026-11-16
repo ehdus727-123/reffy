@@ -199,7 +199,7 @@ function drawFilterPC(root) {
   const kindAxis = { name: "종류", tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
   const style = g0.axes.filter((a) => a.name.split(" › ")[0] === "스타일"), basic = g0.axes.filter((a) => a.name.split(" › ")[0] !== "스타일");
   const top = h("div", { class: "fp-top" },
-    h("div", { class: "fp-sec" }, h("div", { class: "fp-hrow" }, h("h4", { class: "fp-ttl" }, "종류"), h("button", { class: "fp-reset", type: "button", onclick: () => $("#reset").click() }, "초기화")), fpTags(kindAxis)),
+    h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl fp-ttl1" }, "종류"), fpTags(kindAxis)),
     style.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "스타일"), style.length === 1 && style[0].name === "스타일" ? fpTags(style[0]) : h("div", { class: "fp-subs" }, style.map((a) => fpSection(a, true)))) : null,
     basic.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "기본 정보"), h("div", { class: "fp-subs" }, basic.map((a) => fpSection(a, true)))) : null);
   const cats = h("div", { class: "fp-cats" }, FP_CATS.filter(([g]) => S.vocab.groups.some((x) => x.name === g)).map(([g, label]) =>
@@ -278,6 +278,7 @@ function setFilterOpen(o) {
   L.classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o));
 }
 $("#filterBtn").onclick = () => setFilterOpen(!$("#layout").classList.contains("f-open"));
+$("#resetAll").onclick = () => $("#reset").click();   // 피드 위 초기화 아이콘 (HOM_0000)
 if (isTablet()) setFilterOpen(false);
 $("#home").onclick = (e) => { e.preventDefault(); $("#reset").click(); closeDetail(); };
 
@@ -309,7 +310,7 @@ function drawColorPanel() {
   } }, icon("eyedropper", 20));
   const circle = (c, fn, label) => h("button", { type: "button", class: "ccirc", style: `background:${c}`, title: label, "aria-label": `${c.toUpperCase()} ${label}`, onclick: fn });
   root.append(box, h("div", { class: "chrow" }, eye, hue),
-    h("div", { class: "ccode" }, h("span", {}, "Color Code"), h("div", { class: "cfield" }, hex, sw), h("button", { class: "btn", type: "button", onclick: () => saveColor(cur()) }, "저장")),
+    h("div", { class: "ccode" }, h("span", {}, isM() ? "Color Code" : "Hex"), h("div", { class: "cfield" }, hex, sw), h("button", { class: "btn", type: "button", onclick: () => saveColor(cur()) }, "저장")),
     h("hr", { class: "cdiv" }),
     h("h3", { class: "ctit" }, "현재 팔레트"),
     h("div", { class: "cpal" }, h("button", { type: "button", class: "ccirc plus", "aria-label": "현재 색 추가", title: "현재 색 추가", onclick: () => add(cur()) }, icon("plus", 20)), S.pickColors.map((c) => circle(c, () => { S.pickColors = S.pickColors.filter((x) => x !== c); drawColorPanel(); }, "삭제"))),
@@ -382,11 +383,13 @@ function applyTag(ikey, label) {
   drawGroups(); reload();
 }
 $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); runQuery(qEl.value); });
-const SORTS = [["recent", "최근 순"], ["popular", "인기 순"], ["relevance", "관련도 순"]];
+const SORTS = [["recent", "최근 순"], ["popular", "인기 순"], ["saved", "저장 많은 순"]];   // Figma 정렬 메뉴 (HOM_0300)
+const SORT_LABEL = { relevance: "관련도 순" };   // 검색어가 있을 때 서버가 고르는 기본 순서 (메뉴에는 없음)
+const MCHECK = () => { const t = document.createElement("template"); t.innerHTML = '<svg class="mck" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.95768 13.042L15.0202 5.97949C15.1868 5.81283 15.3813 5.72949 15.6035 5.72949C15.8257 5.72949 16.0202 5.81283 16.1869 5.97949C16.3535 6.14616 16.4368 6.34755 16.4368 6.58366C16.4368 6.80588 16.3535 7.00033 16.1869 7.16699L8.54102 14.8337C8.37435 15.0003 8.1799 15.0837 7.95768 15.0837C7.73546 15.0837 7.54102 15.0003 7.37435 14.8337L3.79102 11.2503C3.62435 11.0837 3.54102 10.8892 3.54102 10.667C3.5549 10.4309 3.64518 10.2295 3.81185 10.0628C3.97852 9.89616 4.17296 9.81283 4.39518 9.81283C4.63129 9.81283 4.83268 9.89616 4.99935 10.0628L7.95768 13.042Z" fill="#7425F6"/></svg>'; return t.content.firstChild; };
 let curSort = "recent";
 function drawSort() {
-  $("#sortLabel").textContent = SORTS.find((x) => x[0] === curSort)[1];
-  const m = $("#sortMenu"); m.replaceChildren(...SORTS.map(([k, l]) => h("button", { type: "button", role: "option", "aria-selected": String(k === curSort), onclick: () => { S.sort = k; curSort = k; m.hidden = true; $("#sortBtn").setAttribute("aria-expanded", "false"); drawSort(); reload(); } }, l, k === curSort ? icon("check") : null)));
+  $("#sortLabel").textContent = (SORTS.find((x) => x[0] === curSort) || [0, SORT_LABEL[curSort] || "최근 순"])[1];
+  const m = $("#sortMenu"); m.replaceChildren(...SORTS.map(([k, l]) => h("button", { type: "button", role: "option", "aria-selected": String(k === curSort), onclick: () => { S.sort = k; curSort = k; m.hidden = true; $("#sortBtn").setAttribute("aria-expanded", "false"); drawSort(); reload(); } }, h("span", {}, l), k === curSort ? (isM() ? icon("check") : MCHECK()) : null)));
 }
 $("#sortBtn").onclick = (e) => { e.stopPropagation();
   if (isM()) return sheetMenu("정렬", SORTS.map(([k, l]) => ({ label: l, on: k === curSort, fn: () => { S.sort = k; curSort = k; drawSort(); reload(); } })));
@@ -400,9 +403,11 @@ function card(it) {
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "im" }, img),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
-    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes ?? 0)))));
+    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
 const moreIc = () => icon("more", 24);
+/* 카드 하트: Figma Common/Card 의 채운 하트 16 (기본 #C3C2C5, 내가 누른 글은 보라) */
+function cardHeart() { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 16 16"); s.setAttribute("width", "16"); s.setAttribute("height", "16"); s.setAttribute("class", "ic chf"); s.setAttribute("aria-hidden", "true"); s.innerHTML = '<path d="M8.90611 13.4059C8.40611 13.8747 7.62486 13.8747 7.09361 13.4059L7.03111 13.3434C3.53111 10.1872 1.24985 8.09341 1.3436 5.53091C1.37485 4.37466 1.9686 3.31216 2.9061 2.65591C4.6561 1.46841 6.81236 2.03091 7.99986 3.40591C9.18736 2.03091 11.3436 1.46841 13.0936 2.65591C14.0311 3.31216 14.6249 4.37466 14.6561 5.53091C14.7499 8.09341 12.4686 10.1872 8.96861 13.3747L8.90611 13.4059Z" fill="currentColor"/>'; return s; }
 /* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽, 그다음 가장 짧은 열에 채움 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
 const MAS = { cols: [], hs: [], n: 0, seq: 0, el: new Map() };
 function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }

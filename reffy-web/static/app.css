@@ -1757,3 +1757,79 @@ html:not(.m) .side .apply .btn.primary:hover{background:#6a1fe4;border-color:#6a
 .fp-ic svg{width:32px;height:32px;display:block;transition:transform .12s var(--ease,ease)}
 .fp-ic:hover svg{transform:scale(1.08)}
 @media (prefers-reduced-motion:reduce){.flyout{transition:none}.flyout.swap .fp-body,.flyout.swap .fp-head h3{animation:none}}
+
+/* ===== 홈 화면 (Figma Web 2500:105311 — HOM_0000 · 0201 · 0203 · 0300) ===== */
+.resetbtn,.tic,.ftxt,.dic,.mck{display:none}
+html:not(.m) .main{padding-top:36px}
+html:not(.m) .bar{min-height:40px;margin-bottom:20px;align-items:flex-end;gap:12px}
+html:not(.m) .resetbtn{display:grid;place-items:center;width:28px;height:28px;padding:0;border-radius:6px;color:#6f6d72;flex:none}
+html:not(.m) .resetbtn:hover{color:#18171a;background:rgba(24,23,26,.04)}
+html:not(.m) .resetbtn:active .ric{transform:rotate(-90deg)}
+html:not(.m) .resetbtn .ric{transition:transform .2s var(--ease,ease)}
+html:not(.m) .bar .grow{align-self:center}
+html:not(.m) .sortfilter{gap:5px;align-items:flex-end}
+/* 정렬 드롭다운 (Common/Dropdown · Style=Text) */
+html:not(.m) .sortbtn{height:36px;border:0;border-radius:6px;padding:8px 8px 8px 12px;gap:4px;background:transparent;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html:not(.m) .sortbtn:hover{background:rgba(24,23,26,.04)}
+html:not(.m) .sortbtn[aria-expanded=true]{background:rgba(116,37,246,.08)}
+html:not(.m) .sortbtn .ic{display:none}
+html:not(.m) .sortbtn .dic{display:block}
+/* 정렬 메뉴 (Common/Menu/Menu) — 버튼 오른쪽 끝에 맞추고 아래 2 */
+html:not(.m) #sortMenu{top:38px;right:0;width:200px;padding:8px 0;border:1px solid #f1f0f2;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:12}
+html:not(.m) #sortMenu button{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:10px 16px;border-radius:0;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a;text-align:left;background:transparent}
+html:not(.m) #sortMenu button>span{flex:1;min-width:0}
+html:not(.m) #sortMenu button:hover{background:rgba(24,23,26,.04)}
+html:not(.m) #sortMenu button[aria-selected=true]{color:#7425f6}
+html:not(.m) #sortMenu .mck{display:block;flex:none}
+html:not(.m) #sortMenu .ic{display:none}
+/* 필터 버튼 (Common/Button · Brand · Contained · M 40) */
+html:not(.m) .fbtn,html:not(.m) .layout.f-open .fbtn{width:auto;min-width:64px;height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border:0;border-radius:8px;background:#7425f6!important;color:#fff}
+html:not(.m) .fbtn:hover{box-shadow:inset 0 0 0 999px rgba(255,255,255,.08)}
+html:not(.m) .fbtn:active{box-shadow:inset 0 0 0 999px rgba(255,255,255,.24)}
+html:not(.m) .fbtn .ic,html:not(.m) .fbtn .fic-pc{display:none}
+html:not(.m) .fbtn .tic{display:block}
+html:not(.m) .fbtn .ftxt{display:inline;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#fff}
+/* 피드: 필터 닫힘 6열 간격 18 · 열림 5열 간격 12 · 카드 사이 16 */
+html:not(.m) #grid.mas{column-gap:18px}
+html:not(.m) .layout.f-open #grid.mas{column-gap:12px}
+html:not(.m) .card{margin-bottom:16px}
+/* 카드 (Common/Card): 정보 줄 36 · 아바타 20 · 닉네임 Title/S · 채운 하트 16 */
+html:not(.m) .card:not(.sel) .meta{height:36px;padding:0 2px;gap:8px}
+html:not(.m) .card:not(.sel) .meta .av{width:20px;height:20px;background:#c3c2c5}
+html:not(.m) .card:not(.sel) .meta .tx b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .card .meta .like{gap:3px;color:#c3c2c5}
+html:not(.m) .card .meta .like .chf{width:16px;height:16px}
+html:not(.m) .card .meta .lk{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#8e8c91}
+html:not(.m) .card .meta.liked .like{color:#7425f6}
+html:not(.m) .card .meta.liked .lk{color:#7425f6}
+html:not(.m) .card.sel .meta .like .chf{width:14px;height:14px}
+/* 필터 패널: 탭 위 39 · '종류' 제목 줄높이 28 */
+html:not(.m) .side .tabs{margin-top:39px}
+html:not(.m) .fp-ttl1{line-height:28px;letter-spacing:-.2px}
+/* 무드 패널 (HOM_0203 PanelBody) */
+html:not(.m) .side .cpanel{gap:16px}
+html:not(.m) .side .cbox{height:200px;border-radius:8px;border:0}
+html:not(.m) .side .chrow{display:flex;align-items:center;gap:10px}
+html:not(.m) .side .ceye{width:20px;height:20px;padding:0;display:grid;place-items:center;opacity:.7}
+html:not(.m) .side .ceye .ic{width:20px;height:20px}
+html:not(.m) .side .chue{height:14px;border-radius:7px}
+html:not(.m) .side .ccode{display:flex;align-items:center;gap:8px;height:34px}
+html:not(.m) .side .ccode>span{font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+html:not(.m) .side .cfield{flex:none;display:flex;align-items:center;gap:6px;height:32px;width:102px;padding:6px 10px;border:1px solid #c3c2c5;border-radius:6px;background:#fff;box-sizing:border-box}
+html:not(.m) .side .cfield .chex{flex:none;width:62px;border:0;padding:0;height:20px;font:500 14px/20px Pretendard,sans-serif;color:#18171a;background:transparent}
+html:not(.m) .side .cfield .sw{width:14px;height:14px;border-radius:4px;border:0;flex:none}
+html:not(.m) .side .ccode .btn{margin-left:auto;height:32px;min-width:64px;padding:6px 12px;border:1px solid #c3c2c5;border-radius:6px;font:500 14px/20px Pretendard,sans-serif}
+html:not(.m) .side .cdiv{border:0;border-top:1px solid #e4e3e5;margin:0;height:0}
+html:not(.m) .side .ctit{margin:16px 0 0;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .side .cdiv+.ctit{margin-top:0}
+html:not(.m) .side .ctit+.cpal{margin-top:-4px}
+html:not(.m) .side .cpal{display:flex;flex-wrap:wrap;gap:8px}
+html:not(.m) .side .cpal .plus{display:none}
+html:not(.m) .side .ccirc{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(24,23,26,.1);border:0;padding:0}
+html:not(.m) .layout:not(.f-open) .sortwrap{display:block}
+html:not(.m) .search{flex:0 1 845px;max-width:845px}
+html:not(.m) .top{gap:47px}
+html:not(.m) .brand{gap:43px;width:auto}
+html:not(.m) .nav{gap:28px}
+html:not(.m) #filterBtn{width:auto;min-width:64px;height:40px;padding:10px 16px;border:0;border-radius:8px}
+html:not(.m) .actions{margin-left:auto}

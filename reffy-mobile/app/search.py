@@ -118,7 +118,8 @@ def search(q: str, tags: list, sort: str, offset: int, limit: int):
             found += [k for k in m if k not in found]
         ids = set(score) if ids is None else ids & set(score)
     if ids is None:
-        order = {"recent": "id DESC", "popular": "(SELECT COUNT(*) FROM likes l WHERE l.image_id = images.id) DESC, views DESC, id DESC", "relevance": "id DESC"}.get(sort, "id DESC")
+        order = {"recent": "id DESC", "popular": "(SELECT COUNT(*) FROM likes l WHERE l.image_id = images.id) DESC, views DESC, id DESC", "relevance": "id DESC",
+                 "saved": "(SELECT COUNT(*) FROM keeps k WHERE k.image_id = images.id) DESC, (SELECT COUNT(*) FROM likes l WHERE l.image_id = images.id) DESC, id DESC"}.get(sort, "id DESC")
         total = db.rows("SELECT COUNT(*) AS n FROM images")[0]["n"]
         page = db.rows(f"SELECT id FROM images ORDER BY {order} LIMIT :l OFFSET :o", l=limit, o=offset)
         return [r["id"] for r in page], total, found
@@ -130,6 +131,11 @@ def search(q: str, tags: list, sort: str, offset: int, limit: int):
         views = {r["id"]: r["views"] or 0 for r in db.rows("SELECT id, views FROM images")}
         likes = {r["image_id"]: r["n"] for r in db.rows("SELECT image_id, COUNT(*) AS n FROM likes GROUP BY image_id")}
         lst.sort(key=lambda i: (-likes.get(i, 0), -views.get(i, 0), -i))
+    elif sort == "saved":
+        # 저장 많은 순 = 킵(저장) 많은 순 → 같으면 좋아요 → 같으면 최신
+        keeps = {r["image_id"]: r["n"] for r in db.rows("SELECT image_id, COUNT(*) AS n FROM keeps GROUP BY image_id")}
+        likes = {r["image_id"]: r["n"] for r in db.rows("SELECT image_id, COUNT(*) AS n FROM likes GROUP BY image_id")}
+        lst.sort(key=lambda i: (-keeps.get(i, 0), -likes.get(i, 0), -i))
     else:
         lst.sort(reverse=True)
     return lst[offset:offset + limit], len(lst), found
