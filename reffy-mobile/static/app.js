@@ -889,12 +889,21 @@ function puAdd(files) {
     if (f.size > 20 * 1024 * 1024) { toast(`${f.name}: 20MB 이하만 올릴 수 있어요.`); return; }
     const it = { file: f, url: URL.createObjectURL(f), token: null, tags: new Map(), busy: true, err: "" };
     pu.items.push(it);
-    const fd = new FormData(); fd.append("file", f);
-    api("/api/analyze", { method: "POST", body: fd })
-      .then((r) => { it.token = r.token; it.tags = new Map(r.tags.map((t) => [t.ikey, t])); it.msg = r.message; })
-      .catch((e) => { it.err = e.message; })
-      .finally(() => { it.busy = false; if (pu && pu.step === 2) puDraw(); });
+    puQueue = puQueue.then(() => puAnalyze(it));   // 한 장씩 차례로 분석 (동시에 보내면 서버 메모리가 부족해짐)
   });
+}
+let puQueue = Promise.resolve();
+async function puAnalyze(it) {
+  for (let n = 0; n < 3; n++) {   // 서버가 잠깐 다시 켜지는 중이면 잠시 뒤 다시 시도
+    if (!pu || !pu.items.includes(it)) return;
+    try {
+      const fd = new FormData(); fd.append("file", it.file);
+      const r = await api("/api/analyze", { method: "POST", body: fd });
+      it.token = r.token; it.tags = new Map(r.tags.map((t) => [t.ikey, t])); it.msg = r.message; it.err = "";
+      break;
+    } catch (e) { it.err = e.message; if (/MB|읽을 수 없|파일만|해상도/.test(e.message)) break; await new Promise((ok) => setTimeout(ok, 5000 * (n + 1))); }
+  }
+  it.busy = false; if (pu && pu.step === 2) puDraw();
 }
 function openUploadPC() {
   if (!needLogin()) return;
