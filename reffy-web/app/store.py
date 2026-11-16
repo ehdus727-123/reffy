@@ -28,7 +28,9 @@ def _get_url(name: str) -> str:
 
 
 def _req(method: str, url: str, data: bytes | None = None, ctype: str | None = None):
-    h = {"Authorization": f"Bearer {config.SUPABASE_KEY}", "apikey": config.SUPABASE_KEY}
+    h = {"apikey": config.SUPABASE_KEY}
+    if not config.SUPABASE_KEY.startswith("sb_"):   # 예전 형식(JWT) service_role 키만 Authorization 에도 넣음 (새 sb_secret_ 키는 apikey 만)
+        h["Authorization"] = f"Bearer {config.SUPABASE_KEY}"
     if ctype:
         h["Content-Type"] = ctype
     if method in ("POST", "PUT"):
