@@ -1884,3 +1884,11 @@ html:not(.m) .actions{width:76px;height:32px;gap:20px;margin-left:auto;flex:none
 /* 피드 위 적용 칩은 검정 그대로 (Selected 모양은 필터 패널 안에서만) */
 /* 필터 패널에서 고른 칩: 같은 Selected 모양 (줄 높이가 흔들리지 않게 테두리는 안쪽 1px) */
 .fp-chip.on,.fp-chip.on:hover{background:#f5eeff;color:#7425f6;box-shadow:inset 0 0 0 1px #7425f6}
+/* ===== 필터 패널 (Figma FilterPanel 2559:100917) ===== */
+/* 탭 바: 패널 좌우 24 안쪽, 폭 252 */
+html:not(.m) .side .tabs{margin:39px 24px 0}
+/* 칩 높이 34 */
+.fp-chip{height:34px}
+/* 카테고리 메뉴 줄 사이 2 */
+.fp-cats{gap:2px}
+html:not(.m) .side .tabs [role=tab]{padding:9px 0 11px;white-space:nowrap}
