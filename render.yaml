@@ -1,0 +1,27 @@
+# Render 무료 웹 서비스 설정 (고정 주소: https://<서비스이름>.onrender.com)
+# Render 대시보드 → New → Blueprint → 이 GitHub 저장소를 고르면 아래 설정으로 만들어져요.
+# GitHub 에 push 할 때마다 자동으로 새 버전이 올라가요.
+services:
+  - type: web
+    name: reffy
+    runtime: python
+    plan: free
+    rootDir: reffy-web
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: HOST
+        value: 0.0.0.0
+      - key: LAYOUT
+        value: auto          # 화면 폭에 따라 PC / 모바일 화면 자동
+      - key: NO_LOGIN
+        value: "1"
+      - key: LOCAL_ADMIN
+        value: "0"           # 클라우드에서는 관리자(아무 글 삭제) 권한 끔
+      - key: TAGGER
+        value: "off"         # 무료 서버 메모리(512MB)로는 AI 태거 모델을 못 돌려서 끔 (업로드는 됨, 태그는 직접 추가)
+      - key: SEED_DIR
+        value: demo-data     # 켤 때마다 reffy-web/demo-data 의 게시물 · 이미지로 시작

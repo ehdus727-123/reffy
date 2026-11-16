@@ -2,6 +2,7 @@
 
   python launcher.py         웹(8100)·모바일(8200) 서버를 켜고 브라우저 열기
   python launcher.py share   + 인터넷 어디서나 열리는 공유 링크(Cloudflare) 만들기
+  python launcher.py demo    지금 이 컴퓨터의 게시물 · 이미지를 demo-data 폴더로 내보내기 (고정 주소 사이트용)
 
 처음 실행 때 .venv 와 패키지를 알아서 설치합니다.
 """
@@ -22,6 +23,7 @@ WIN = os.name == "nt"
 VENV_PY = ROOT / ".venv" / ("Scripts/python.exe" if WIN else "bin/python")
 TOOLS = ROOT / ".tools"
 SHARE = len(sys.argv) > 1 and sys.argv[1] == "share"
+DEMO = len(sys.argv) > 1 and sys.argv[1] == "demo"
 SERVERS = [("웹", "reffy-web", 8100), ("모바일", "reffy-mobile", 8200)]
 
 
@@ -200,7 +202,33 @@ def share():
         p.terminate()
 
 
+def export_demo():
+    """reffy-web/data 의 DB 와 업로드 이미지를 reffy-web/demo-data 로 복사 (서버가 켜져 있어도 안전하게 DB 를 떠냄)."""
+    import sqlite3
+    src = ROOT / "reffy-web" / "data"
+    dst = ROOT / "reffy-web" / "demo-data"
+    if not (src / "reffy.db").exists():
+        fail("내보낼 데이터가 없어요. 먼저 start.bat 으로 사이트를 켜고 게시물을 올려 주세요.")
+    if dst.exists():
+        shutil.rmtree(dst)
+    (dst / "uploads").mkdir(parents=True)
+    a = sqlite3.connect(str(src / "reffy.db")); b = sqlite3.connect(str(dst / "reffy.db"))
+    a.backup(b); b.close(); a.close()
+    n = 0
+    if (src / "uploads").is_dir():
+        for f in (src / "uploads").iterdir():
+            if f.is_file():
+                shutil.copy2(f, dst / "uploads" / f.name); n += 1
+    mb = sum(f.stat().st_size for f in dst.rglob("*") if f.is_file()) / 1024 / 1024
+    say(); say(f"  demo-data 폴더로 내보냈어요 (파일 {n}개, {mb:.1f}MB)")
+    say("  이제 GitHub Desktop(또는 git)으로 demo-data 를 커밋 · 푸시하면 고정 주소 사이트에 반영돼요.")
+    input("\n  Enter 를 누르면 닫혀요...")
+
+
 def main():
+    if DEMO:
+        export_demo()
+        return
     say(); say("  ================================================")
     say("    REFFY 실행" + (" + 인터넷 공유" if SHARE else ""))
     say("  ================================================"); say()
