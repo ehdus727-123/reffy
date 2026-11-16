@@ -4,7 +4,7 @@ import json
 import re
 
 from . import config, db
-from .tagmap import BY_IKEY, VOCAB, axis
+from .tagmap import BY_IKEY, FROM, VOCAB, axis
 
 # 말투를 그대로 친 검색어를 키워드로 연결하는 작은 동의어 (필요하면 계속 추가하세요)
 SYN = {"앉은": ["pose_sitting"], "앉아": ["pose_sitting"], "앉아있는": ["pose_sitting"], "앉기": ["pose_sitting"],
@@ -44,7 +44,9 @@ def match_tags(token: str) -> dict:
     out = {}
     for c in list(cands):
         for ik in SYN.get(c, []):
-            out[ik] = max(out.get(ik, 0), 1.0)
+            ik = FROM.get(ik, ik)   # 예전 기준표 key -> 사이트 태그
+            if ik in BY_IKEY:
+                out[ik] = max(out.get(ik, 0), 1.0)
     for ik, label, kw, parts, aliases, note in _index():
         for c in cands:
             if not c:

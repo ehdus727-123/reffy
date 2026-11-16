@@ -1,0 +1,2392 @@
+{
+ "version": "exposed-1 (SPECTRUM 라벨링 IA v2 · 사용자 노출 + Figma FilterPanel 2480:124768)",
+ "groups": [
+  "기본 정보",
+  "인물 외형",
+  "의상·장신구",
+  "얼굴 방향, 감정",
+  "앵글, 자세",
+  "분위기"
+ ],
+ "items": [
+  {
+   "key": "style_color",
+   "label": "컬러",
+   "keyword": "컬러",
+   "group": "기본 정보",
+   "path": [
+    "스타일"
+   ],
+   "mode": "단일",
+   "tags": "",
+   "from": [
+    "style_color"
+   ],
+   "note": "두 가지 이상의 색으로 표현됨",
+   "ord": 1,
+   "photo": false
+  },
+  {
+   "key": "style_monochrome",
+   "label": "흑백",
+   "keyword": "흑백",
+   "group": "기본 정보",
+   "path": [
+    "스타일"
+   ],
+   "mode": "단일",
+   "tags": "monochrome",
+   "from": [
+    "style_monochrome"
+   ],
+   "note": "흑백 또는 한 가지 색조로만 표현",
+   "ord": 2,
+   "photo": false
+  },
+  {
+   "key": "char_human",
+   "label": "인간",
+   "keyword": "인간",
+   "group": "기본 정보",
+   "path": [
+    "유형"
+   ],
+   "mode": "단일",
+   "tags": "",
+   "from": [],
+   "note": "인간의 몸을 기본으로 한 캐릭터 (일반 인물, 동물귀·꼬리만 달린 캐릭터, 엘프, 뿔 정도만 있는 캐릭터)",
+   "ord": 3,
+   "photo": true
+  },
+  {
+   "key": "char_furry",
+   "label": "퍼리",
+   "keyword": "퍼리",
+   "group": "기본 정보",
+   "path": [
+    "유형"
+   ],
+   "mode": "단일",
+   "tags": "furry furry_female furry_male",
+   "from": [],
+   "note": "동물 특징(털, 동물 얼굴)이 몸 전체에 있는 의인화 캐릭터 (수인, 의인화 동물)",
+   "ord": 4,
+   "photo": true
+  },
+  {
+   "key": "char_nonhuman",
+   "label": "인외",
+   "keyword": "인외",
+   "group": "기본 정보",
+   "path": [
+    "유형"
+   ],
+   "mode": "단일",
+   "tags": "nonhuman",
+   "from": [
+    "nonhuman_nonhuman"
+   ],
+   "note": "인간도 동물 의인화도 아닌 존재 (몬스터, 로봇, 슬라임, 이형 생명체)",
+   "ord": 5,
+   "photo": false
+  },
+  {
+   "key": "gender_male",
+   "label": "남성",
+   "keyword": "남성(외형)",
+   "group": "기본 정보",
+   "path": [
+    "성별"
+   ],
+   "mode": "다중",
+   "tags": "1boy",
+   "from": [
+    "gender_male"
+   ],
+   "note": "얼굴형·체형·헤어·의상 등 외형이 남성으로 보임",
+   "ord": 6,
+   "photo": true
+  },
+  {
+   "key": "gender_female",
+   "label": "여성",
+   "keyword": "여성(외형)",
+   "group": "기본 정보",
+   "path": [
+    "성별"
+   ],
+   "mode": "다중",
+   "tags": "1girl",
+   "from": [
+    "gender_female"
+   ],
+   "note": "얼굴형·체형·헤어·의상 등 외형이 여성으로 보임",
+   "ord": 7,
+   "photo": true
+  },
+  {
+   "key": "gender_unclear",
+   "label": "기타",
+   "keyword": "판단 어려움",
+   "group": "기본 정보",
+   "path": [
+    "성별"
+   ],
+   "mode": "다중",
+   "tags": "androgynous",
+   "from": [
+    "gender_unclear"
+   ],
+   "note": "외형만으로 판단하기 어려움 (중성적 외모, 뒷모습, 얼굴이 가려짐 등). 팀원끼리 의견이 갈리면 이 항목",
+   "ord": 8,
+   "photo": true
+  },
+  {
+   "key": "count_1",
+   "label": "1명",
+   "keyword": "1명",
+   "group": "기본 정보",
+   "path": [
+    "인원"
+   ],
+   "mode": "단일",
+   "tags": "solo",
+   "from": [
+    "count_1"
+   ],
+   "note": "주요 인물 1명",
+   "ord": 9,
+   "photo": true
+  },
+  {
+   "key": "count_2",
+   "label": "2명",
+   "keyword": "2명",
+   "group": "기본 정보",
+   "path": [
+    "인원"
+   ],
+   "mode": "단일",
+   "tags": "2girls 2boys 1girl+1boy",
+   "from": [
+    "count_2"
+   ],
+   "note": "주요 인물 2명",
+   "ord": 10,
+   "photo": true
+  },
+  {
+   "key": "count_3",
+   "label": "3명",
+   "keyword": "3명",
+   "group": "기본 정보",
+   "path": [
+    "인원"
+   ],
+   "mode": "단일",
+   "tags": "3girls 3boys (+성별 조합)",
+   "from": [
+    "count_3"
+   ],
+   "note": "주요 인물 3명",
+   "ord": 11,
+   "photo": true
+  },
+  {
+   "key": "count_4",
+   "label": "4명",
+   "keyword": "4명",
+   "group": "기본 정보",
+   "path": [
+    "인원"
+   ],
+   "mode": "단일",
+   "tags": "4girls 4boys (+성별 조합)",
+   "from": [
+    "count_4"
+   ],
+   "note": "주요 인물 4명",
+   "ord": 12,
+   "photo": true
+  },
+  {
+   "key": "count_5over",
+   "label": "5명 이상",
+   "keyword": "5명 이상",
+   "group": "기본 정보",
+   "path": [
+    "인원"
+   ],
+   "mode": "단일",
+   "tags": "5girls 5boys 6+girls 6+boys (+성별 조합)",
+   "from": [
+    "count_5over"
+   ],
+   "note": "주요 인물 5명 이상",
+   "ord": 13,
+   "photo": true
+  },
+  {
+   "key": "deform_sd",
+   "label": "SD",
+   "keyword": "SD",
+   "group": "기본 정보",
+   "path": [
+    "데포르메"
+   ],
+   "mode": "단일",
+   "tags": "chibi",
+   "from": [
+    "deform_sd"
+   ],
+   "note": "2등신. 머리가 크고 몸이 짧게 단순화된 캐릭터",
+   "ord": 14,
+   "photo": false
+  },
+  {
+   "key": "deform_md",
+   "label": "MD",
+   "keyword": "MD",
+   "group": "기본 정보",
+   "path": [
+    "데포르메"
+   ],
+   "mode": "단일",
+   "tags": "",
+   "from": [
+    "deform_md"
+   ],
+   "note": "3~5등신. 머리가 조금 크고 몸이 약간 짧게 표현됨. Safebooru 대응 태그 없음 → 팀 직접 라벨링",
+   "ord": 15,
+   "photo": false
+  },
+  {
+   "key": "deform_ld",
+   "label": "LD",
+   "keyword": "LD",
+   "group": "기본 정보",
+   "path": [
+    "데포르메"
+   ],
+   "mode": "단일",
+   "tags": "",
+   "from": [
+    "deform_ld"
+   ],
+   "note": "6등신 이상. 실제 사람에 가까운 비율. Safebooru 대응 태그 없음 → 팀 직접 라벨링",
+   "ord": 16,
+   "photo": false
+  },
+  {
+   "key": "shot_head",
+   "label": "두상",
+   "keyword": "두상",
+   "group": "기본 정보",
+   "path": [
+    "범위"
+   ],
+   "mode": "단일",
+   "tags": "portrait",
+   "from": [
+    "shot_head"
+   ],
+   "note": "얼굴·머리 중심. 어깨선 위까지만 보임 (얼굴 클로즈업 포함)",
+   "ord": 17,
+   "photo": true
+  },
+  {
+   "key": "shot_upper",
+   "label": "흉상",
+   "keyword": "흉상",
+   "group": "기본 정보",
+   "path": [
+    "범위"
+   ],
+   "mode": "단일",
+   "tags": "upper_body",
+   "from": [
+    "shot_upper"
+   ],
+   "note": "가슴~허리 위에서 잘림. 손이 보여도 허리 아래가 안 보이면 흉상",
+   "ord": 18,
+   "photo": true
+  },
+  {
+   "key": "shot_cowboy",
+   "label": "반신",
+   "keyword": "반신(허벅지 위)",
+   "group": "기본 정보",
+   "path": [
+    "범위"
+   ],
+   "mode": "단일",
+   "tags": "cowboy_shot",
+   "from": [
+    "shot_cowboy"
+   ],
+   "note": "허벅지 중간~무릎 위에서 잘림",
+   "ord": 19,
+   "photo": true
+  },
+  {
+   "key": "shot_full",
+   "label": "전신",
+   "keyword": "전신",
+   "group": "기본 정보",
+   "path": [
+    "범위"
+   ],
+   "mode": "단일",
+   "tags": "full_body",
+   "from": [
+    "shot_full"
+   ],
+   "note": "머리부터 발끝까지 보임. 발끝이 살짝 잘리거나 다른 물체에 조금 가려져도 전신",
+   "ord": 20,
+   "photo": true
+  },
+  {
+   "key": "hair_bangs",
+   "label": "앞머리",
+   "keyword": "앞머리",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "앞머리"
+   ],
+   "mode": "토글",
+   "tags": "fullbangs see-through bangs choppy hiden side",
+   "from": [
+    "hairstyle_fullbangs",
+    "hairstyle_see-through bangs",
+    "hairstyle_choppy bangs",
+    "hairstyle_hiden bangs",
+    "hairstyle_side bangs"
+   ],
+   "note": "풀뱅 / 시스루뱅 / 처피뱅 / 눈 가림 / 사이드뱅",
+   "ord": 21,
+   "photo": false
+  },
+  {
+   "key": "hair_very_short_hair",
+   "label": "숏컷",
+   "keyword": "숏컷",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리 길이"
+   ],
+   "mode": "단일",
+   "tags": "very_short_hair",
+   "from": [
+    "hair_very_short_hair"
+   ],
+   "note": "귀가 드러나거나 귀를 살짝 덮는 길이",
+   "ord": 22,
+   "photo": false
+  },
+  {
+   "key": "hair_short_hair",
+   "label": "단발",
+   "keyword": "단발",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리 길이"
+   ],
+   "mode": "단일",
+   "tags": "short_hair",
+   "from": [
+    "hair_short_hair"
+   ],
+   "note": "턱선 정도. 귀는 덮이고 목은 드러남",
+   "ord": 23,
+   "photo": false
+  },
+  {
+   "key": "hair_medium_hair",
+   "label": "중단발",
+   "keyword": "중단발",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리 길이"
+   ],
+   "mode": "단일",
+   "tags": "medium_hair",
+   "from": [
+    "hair_medium_hair"
+   ],
+   "note": "어깨에 닿는 길이",
+   "ord": 24,
+   "photo": false
+  },
+  {
+   "key": "hair_long_hair",
+   "label": "장발",
+   "keyword": "장발",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리 길이"
+   ],
+   "mode": "단일",
+   "tags": "long_hair",
+   "from": [
+    "hair_long_hair"
+   ],
+   "note": "어깨 아래부터 등 중간까지",
+   "ord": 25,
+   "photo": false
+  },
+  {
+   "key": "hair_red",
+   "label": "빨강",
+   "keyword": "빨강(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "red_hair",
+   "from": [
+    "hair_red"
+   ],
+   "note": "빨강~와인색",
+   "ord": 26,
+   "photo": false
+  },
+  {
+   "key": "hair_orange",
+   "label": "주황",
+   "keyword": "주황(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "orange_hair",
+   "from": [
+    "hair_orange"
+   ],
+   "note": "주황~구릿빛",
+   "ord": 27,
+   "photo": false
+  },
+  {
+   "key": "hair_blonde",
+   "label": "노랑",
+   "keyword": "노랑(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "blonde_hair",
+   "from": [
+    "hair_blonde"
+   ],
+   "note": "노란색~연한 금색",
+   "ord": 28,
+   "photo": false
+  },
+  {
+   "key": "hair_green",
+   "label": "초록",
+   "keyword": "초록(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "green_hair",
+   "from": [
+    "hair_green"
+   ],
+   "note": "연두~진녹색",
+   "ord": 29,
+   "photo": false
+  },
+  {
+   "key": "hair_blue",
+   "label": "파랑",
+   "keyword": "파랑(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "blue_hair",
+   "from": [
+    "hair_blue"
+   ],
+   "note": "두 가지 이상 색이 섞임 (투톤, 브릿지, 그라데이션). 주된 색도 함께 체크",
+   "ord": 30,
+   "photo": false
+  },
+  {
+   "key": "hair_purple",
+   "label": "보라",
+   "keyword": "보라(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "purple_hair",
+   "from": [
+    "hair_purple"
+   ],
+   "note": "연보라~진보라",
+   "ord": 31,
+   "photo": false
+  },
+  {
+   "key": "hair_black",
+   "label": "검정",
+   "keyword": "검정(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "black_hair",
+   "from": [
+    "hair_black"
+   ],
+   "note": "검정·짙은 남색처럼 거의 검게 보이는 색",
+   "ord": 32,
+   "photo": false
+  },
+  {
+   "key": "hair_white",
+   "label": "흰색",
+   "keyword": "흰색",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "white_hair",
+   "from": [
+    "hair_white"
+   ],
+   "note": "흰색·아주 옇은 은색",
+   "ord": 33,
+   "photo": false
+  },
+  {
+   "key": "hair_pink",
+   "label": "분홍",
+   "keyword": "분홍(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "pink_hair",
+   "from": [
+    "hair_pink"
+   ],
+   "note": "연분홍~진분홍",
+   "ord": 34,
+   "photo": false
+  },
+  {
+   "key": "hair_brown",
+   "label": "갈색",
+   "keyword": "갈색(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "brown_hair",
+   "from": [
+    "hair_brown"
+   ],
+   "note": "밝은 갈색~어두운 갈색",
+   "ord": 35,
+   "photo": false
+  },
+  {
+   "key": "hair_grey",
+   "label": "회색",
+   "keyword": "회색(머리색)",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "머리색"
+   ],
+   "mode": "단일",
+   "tags": "grey_hair",
+   "from": [
+    "hair_grey"
+   ],
+   "note": "회색·탁한 은색 (흰색보다 어두움)",
+   "ord": 36,
+   "photo": false
+  },
+  {
+   "key": "hairstyle_ponytail",
+   "label": "포니테일",
+   "keyword": "포니테일",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "묶음"
+   ],
+   "mode": "다중",
+   "tags": "ponytail",
+   "from": [
+    "hairstyle_ponytail"
+   ],
+   "note": "뒤통수에서 한 갈래로 묶음",
+   "ord": 37,
+   "photo": false
+  },
+  {
+   "key": "hairstyle_twintails",
+   "label": "트윈테일",
+   "keyword": "트윈테일",
+   "group": "인물 외형",
+   "path": [
+    "머리",
+    "묶음"
+   ],
+   "mode": "다중",
+   "tags": "twintails",
+   "from": [
+    "hairstyle_twintails"
+   ],
+   "note": "양쪽으로 나눠 두 갈래로 묶음",
+   "ord": 38,
+   "photo": false
+  },
+  {
+   "key": "eye_red",
+   "label": "빨강",
+   "keyword": "빨강(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "red_eyes",
+   "from": [
+    "eye_red"
+   ],
+   "note": "빨강~와인색 눈동자",
+   "ord": 39,
+   "photo": false
+  },
+  {
+   "key": "eye_orange",
+   "label": "주황",
+   "keyword": "주황(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "orange_eyes",
+   "from": [
+    "eye_orange"
+   ],
+   "note": "주황·구릿빛 눈동자",
+   "ord": 40,
+   "photo": false
+  },
+  {
+   "key": "eye_yellow",
+   "label": "노랑",
+   "keyword": "노랑(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "yellow_eyes",
+   "from": [
+    "eye_yellow"
+   ],
+   "note": "노랑·금색·호박색 눈동자",
+   "ord": 41,
+   "photo": false
+  },
+  {
+   "key": "eye_green",
+   "label": "초록",
+   "keyword": "초록(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "green_eyes",
+   "from": [
+    "eye_green"
+   ],
+   "note": "연두~진녹색 눈동자",
+   "ord": 42,
+   "photo": false
+  },
+  {
+   "key": "eye_blue",
+   "label": "파랑",
+   "keyword": "파랑(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "blue_eyes",
+   "from": [
+    "eye_blue"
+   ],
+   "note": "하늘색~남색 눈동자",
+   "ord": 43,
+   "photo": false
+  },
+  {
+   "key": "eye_purple",
+   "label": "보라",
+   "keyword": "보라(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "purple_eyes",
+   "from": [
+    "eye_purple"
+   ],
+   "note": "보라색 눈동자",
+   "ord": 44,
+   "photo": false
+  },
+  {
+   "key": "eye_black",
+   "label": "검정",
+   "keyword": "검정(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "black_eyes",
+   "from": [
+    "eye_black"
+   ],
+   "note": "검정 또는 거의 검게 보이는 눈동자",
+   "ord": 45,
+   "photo": false
+  },
+  {
+   "key": "eye_pink",
+   "label": "분홍",
+   "keyword": "분홍(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "pink_eyes",
+   "from": [
+    "eye_pink"
+   ],
+   "note": "분홍 눈동자",
+   "ord": 46,
+   "photo": false
+  },
+  {
+   "key": "eye_brown",
+   "label": "갈색",
+   "keyword": "갈색(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "brown_eyes",
+   "from": [
+    "eye_brown"
+   ],
+   "note": "갈색 눈동자",
+   "ord": 47,
+   "photo": false
+  },
+  {
+   "key": "eye_grey",
+   "label": "회색",
+   "keyword": "회색(눈 색)",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "눈 색"
+   ],
+   "mode": "다중",
+   "tags": "grey_eyes",
+   "from": [
+    "eye_grey"
+   ],
+   "note": "회색·은색 눈동자",
+   "ord": 48,
+   "photo": false
+  },
+  {
+   "key": "pupil_special",
+   "label": "특수동공",
+   "keyword": "특수동공",
+   "group": "인물 외형",
+   "path": [
+    "눈",
+    "특수동공"
+   ],
+   "mode": "토글",
+   "tags": "heart-shaped_pupils star-shaped_pupils slit_pupils horizontal_pupils black_sclera no_pupils empty_eyes",
+   "from": [
+    "pupil_heart",
+    "pupil_star",
+    "pupil_slit",
+    "pupil_horizontal",
+    "pupil_inverted",
+    "pupil_none"
+   ],
+   "note": "하트 / 별 / 세로형 / 가로형 / 동공 반전 / 동공 없음",
+   "ord": 49,
+   "photo": false
+  },
+  {
+   "key": "nonhuman_animal_ears",
+   "label": "동물 귀",
+   "keyword": "동물 귀",
+   "group": "인물 외형",
+   "path": [
+    "특수 특징"
+   ],
+   "mode": "다중",
+   "tags": "animal_ears",
+   "from": [
+    "nonhuman_animal_ears"
+   ],
+   "note": "머리에 동물 귀가 신체 일부로 달림",
+   "ord": 50,
+   "photo": false
+  },
+  {
+   "key": "nonhuman_tail",
+   "label": "꼬리",
+   "keyword": "꼬리",
+   "group": "인물 외형",
+   "path": [
+    "특수 특징"
+   ],
+   "mode": "다중",
+   "tags": "tail",
+   "from": [
+    "nonhuman_tail"
+   ],
+   "note": "몸에 꼬리가 달림",
+   "ord": 51,
+   "photo": false
+  },
+  {
+   "key": "nonhuman_wings",
+   "label": "날개",
+   "keyword": "날개",
+   "group": "인물 외형",
+   "path": [
+    "특수 특징"
+   ],
+   "mode": "다중",
+   "tags": "wings",
+   "from": [
+    "nonhuman_wings"
+   ],
+   "note": "등에 날개가 달림 (천사·악마·새 날개 등)",
+   "ord": 52,
+   "photo": false
+  },
+  {
+   "key": "nonhuman_horns",
+   "label": "뿔",
+   "keyword": "뿔",
+   "group": "인물 외형",
+   "path": [
+    "특수 특징"
+   ],
+   "mode": "다중",
+   "tags": "horns",
+   "from": [
+    "nonhuman_horns"
+   ],
+   "note": "머리에 뿔이 남",
+   "ord": 53,
+   "photo": false
+  },
+  {
+   "key": "nonhuman_pointy_ears",
+   "label": "엘프 귀",
+   "keyword": "엘프 귀",
+   "group": "인물 외형",
+   "path": [
+    "특수 특징"
+   ],
+   "mode": "다중",
+   "tags": "pointy_ears",
+   "from": [
+    "nonhuman_pointy_ears"
+   ],
+   "note": "사람 귀 자리에 끝이 뾰족한 귀",
+   "ord": 54,
+   "photo": false
+  },
+  {
+   "key": "outfit_sleeveless",
+   "label": "나시",
+   "keyword": "나시",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "상의"
+   ],
+   "mode": "다중",
+   "tags": "tank_top sleeveless_shirt",
+   "from": [
+    "outfit_sleeveless"
+   ],
+   "note": "소매 없이 어깨·팔이 드러나는 상의 (나시티, 민소매 셔츠, 캐미솔 등)",
+   "ord": 55,
+   "photo": true
+  },
+  {
+   "key": "outfit_tshirt",
+   "label": "티셔츠",
+   "keyword": "티셔츠",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "상의"
+   ],
+   "mode": "다중",
+   "tags": "t-shirt",
+   "from": [
+    "outfit_tshirt"
+   ],
+   "note": "깃 없는 반팔·긴팔 면 티셔츠",
+   "ord": 56,
+   "photo": true
+  },
+  {
+   "key": "outfit_shirt",
+   "label": "셔츠",
+   "keyword": "셔츠",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "상의"
+   ],
+   "mode": "다중",
+   "tags": "shirt",
+   "from": [
+    "outfit_shirt"
+   ],
+   "note": "깃과 단추가 있는 셔츠",
+   "ord": 57,
+   "photo": true
+  },
+  {
+   "key": "outfit_hoodie",
+   "label": "후드티",
+   "keyword": "후드티",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "상의"
+   ],
+   "mode": "다중",
+   "tags": "hoodie",
+   "from": [
+    "outfit_hoodie"
+   ],
+   "note": "모자가 달린 상의. 앞이 지퍼로 열리면 아우터의 집업으로 체크",
+   "ord": 58,
+   "photo": true
+  },
+  {
+   "key": "outfit_sweater",
+   "label": "니트",
+   "keyword": "니트",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "상의"
+   ],
+   "mode": "다중",
+   "tags": "sweater",
+   "from": [
+    "outfit_sweater"
+   ],
+   "note": "뜨개 짜임이 보이는 니트·스웨터. 앞이 단추로 열리면 아우터의 가디건으로 체크",
+   "ord": 59,
+   "photo": true
+  },
+  {
+   "key": "outfit_zipup",
+   "label": "집업",
+   "keyword": "집업",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "아우터"
+   ],
+   "mode": "다중",
+   "tags": "track_jacket hooded_jacket",
+   "from": [
+    "outfit_zipup"
+   ],
+   "note": "앞을 지퍼로 여닫는 가벼운 겉옷 (후드 집업, 트랙 재킷 등)",
+   "ord": 60,
+   "photo": true
+  },
+  {
+   "key": "outfit_coat",
+   "label": "코트",
+   "keyword": "코트",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "아우터"
+   ],
+   "mode": "다중",
+   "tags": "coat",
+   "from": [
+    "outfit_coat"
+   ],
+   "note": "엉덩이 아래로 내려오는 긴 겉옷",
+   "ord": 61,
+   "photo": true
+  },
+  {
+   "key": "outfit_padding",
+   "label": "패딩",
+   "keyword": "패딩",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "아우터"
+   ],
+   "mode": "다중",
+   "tags": "down_jacket puffer_jacket",
+   "from": [
+    "outfit_padding"
+   ],
+   "note": "충전재로 부풀어 오른 두꺼운 겉옷",
+   "ord": 62,
+   "photo": true
+  },
+  {
+   "key": "outfit_cardigan",
+   "label": "가디건",
+   "keyword": "가디건",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "아우터"
+   ],
+   "mode": "다중",
+   "tags": "cardigan",
+   "from": [
+    "outfit_cardigan"
+   ],
+   "note": "앞이 단추로 열리는 니트 겉옷. 앞을 잠그지 않은 니트 겉옷도 포함",
+   "ord": 63,
+   "photo": true
+  },
+  {
+   "key": "outfit_pants",
+   "label": "바지",
+   "keyword": "바지",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "하의"
+   ],
+   "mode": "다중",
+   "tags": "long_pants shorts_pants",
+   "from": [
+    "outfit_long_pants",
+    "outfit_shorts_pants"
+   ],
+   "note": "긴바지 / 반바지",
+   "ord": 64,
+   "photo": true
+  },
+  {
+   "key": "outfit_skirts",
+   "label": "치마",
+   "keyword": "치마",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "하의"
+   ],
+   "mode": "다중",
+   "tags": "skirt long_skirt",
+   "from": [
+    "outfit_skirt",
+    "outfit_long_skirt"
+   ],
+   "note": "스커트 / 롱스커트",
+   "ord": 65,
+   "photo": true
+  },
+  {
+   "key": "outfit_slippers",
+   "label": "슬리퍼",
+   "keyword": "슬리퍼",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "신발"
+   ],
+   "mode": "다중",
+   "tags": "slippers sandals",
+   "from": [
+    "outfit_slippers"
+   ],
+   "note": "뒤꿈치가 트이거나 발등이 드러나는 가벼운 신발 (슬리퍼·샌들·쪼리)",
+   "ord": 66,
+   "photo": true
+  },
+  {
+   "key": "outfit_sneakers",
+   "label": "운동화",
+   "keyword": "운동화",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "신발"
+   ],
+   "mode": "다중",
+   "tags": "sneakers",
+   "from": [
+    "outfit_sneakers"
+   ],
+   "note": "운동화·캔버스화",
+   "ord": 67,
+   "photo": true
+  },
+  {
+   "key": "outfit_boots",
+   "label": "부츠",
+   "keyword": "부츠",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "신발"
+   ],
+   "mode": "다중",
+   "tags": "boots",
+   "from": [
+    "outfit_boots"
+   ],
+   "note": "발목 위로 올라오는 신발",
+   "ord": 68,
+   "photo": true
+  },
+  {
+   "key": "outfit_dress_shoes",
+   "label": "구두",
+   "keyword": "구두",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "신발"
+   ],
+   "mode": "다중",
+   "tags": "loafers high_heels mary_janes",
+   "from": [
+    "outfit_dress_shoes"
+   ],
+   "note": "가죽·에나멜 소재의 구두 (로퍼, 하이힐, 메리제인 포함)",
+   "ord": 69,
+   "photo": true
+  },
+  {
+   "key": "outfit_onepiece",
+   "label": "원피스",
+   "keyword": "원피스",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "sundress shirt_dress sweater_dress",
+   "from": [
+    "outfit_onepiece"
+   ],
+   "note": "상의와 치마가 한 벌로 이어진 일상용 옷. 격식 있는 드레스는 드레스로 체크",
+   "ord": 70,
+   "photo": true
+  },
+  {
+   "key": "outfit_dress",
+   "label": "드레스",
+   "keyword": "드레스",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "dress",
+   "from": [
+    "outfit_dress"
+   ],
+   "note": "격식 있는 자리용 드레스 (파티 드레스, 웨딩드레스, 무도회 드레스 등). 일상용은 원피스로 체크",
+   "ord": 71,
+   "photo": true
+  },
+  {
+   "key": "outfit_school",
+   "label": "교복",
+   "keyword": "교복",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "school_uniform",
+   "from": [
+    "outfit_school"
+   ],
+   "note": "학교 교복 (세일러복, 블레이저 교복 등)",
+   "ord": 72,
+   "photo": true
+  },
+  {
+   "key": "outfit_suit",
+   "label": "정장",
+   "keyword": "정장",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "suit",
+   "from": [
+    "outfit_suit"
+   ],
+   "note": "재킷과 바지·치마를 맞춘 정장",
+   "ord": 73,
+   "photo": true
+  },
+  {
+   "key": "outfit_traditional_clothes",
+   "label": "전통의상",
+   "keyword": "전통의상",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "traditional_clothes",
+   "from": [
+    "outfit_traditional_clothes"
+   ],
+   "note": "한복·기모노 등 전통 복식",
+   "ord": 74,
+   "photo": true
+  },
+  {
+   "key": "outfit_maid",
+   "label": "메이드복",
+   "keyword": "메이드복",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "maid",
+   "from": [
+    "outfit_maid"
+   ],
+   "note": "앞치마와 머리 장식이 있는 메이드복",
+   "ord": 75,
+   "photo": true
+  },
+  {
+   "key": "outfit_swimsuit",
+   "label": "수영복",
+   "keyword": "수영복",
+   "group": "의상·장신구",
+   "path": [
+    "의상",
+    "세트 의상"
+   ],
+   "mode": "다중",
+   "tags": "swimsuit",
+   "from": [
+    "outfit_swimsuit"
+   ],
+   "note": "수영복·비키니 등 물놀이용 의상 (래시가드 포함)",
+   "ord": 76,
+   "photo": true
+  },
+  {
+   "key": "acc_hat",
+   "label": "모자",
+   "keyword": "모자",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "악세사리"
+   ],
+   "mode": "다중",
+   "tags": "hat",
+   "from": [
+    "acc_hat"
+   ],
+   "note": "머리에 쓴 모자 (후드는 제외)",
+   "ord": 77,
+   "photo": true
+  },
+  {
+   "key": "acc_glasses",
+   "label": "안경",
+   "keyword": "안경",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "악세사리"
+   ],
+   "mode": "다중",
+   "tags": "glasses",
+   "from": [
+    "acc_glasses"
+   ],
+   "note": "안경 (렌즈가 투명함)",
+   "ord": 78,
+   "photo": true
+  },
+  {
+   "key": "acc_sunglasses",
+   "label": "선글라스",
+   "keyword": "선글라스",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "악세사리"
+   ],
+   "mode": "다중",
+   "tags": "sunglasses",
+   "from": [
+    "acc_sunglasses"
+   ],
+   "note": "선글라스 (렌즈가 어두움)",
+   "ord": 79,
+   "photo": true
+  },
+  {
+   "key": "acc_mask",
+   "label": "마스크",
+   "keyword": "마스크",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "악세사리"
+   ],
+   "mode": "다중",
+   "tags": "mask",
+   "from": [
+    "acc_mask"
+   ],
+   "note": "얼굴 일부를 가리는 마스크·가면",
+   "ord": 80,
+   "photo": true
+  },
+  {
+   "key": "acc_eyepatch",
+   "label": "안대",
+   "keyword": "안대",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "악세사리"
+   ],
+   "mode": "다중",
+   "tags": "eyepatch",
+   "from": [
+    "acc_eyepatch"
+   ],
+   "note": "한쪽 눈을 가린 안대",
+   "ord": 81,
+   "photo": true
+  },
+  {
+   "key": "acc_piercing",
+   "label": "피어싱",
+   "keyword": "피어싱",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "piercing",
+   "from": [
+    "acc_piercing"
+   ],
+   "note": "귀 외 부위(입술·코·눈썹·배꼽 등)에 뚫어 단 장신구. 귀는 귀걸이(3.2.3.1)로 체크",
+   "ord": 82,
+   "photo": true
+  },
+  {
+   "key": "acc_bandaid",
+   "label": "반창고",
+   "keyword": "반창고",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "bandaid",
+   "from": [
+    "acc_bandaid"
+   ],
+   "note": "피부에 붙인 반창고 (부위 무관)",
+   "ord": 83,
+   "photo": true
+  },
+  {
+   "key": "acc_bandage",
+   "label": "붕대",
+   "keyword": "붕대",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "bandages",
+   "from": [
+    "acc_bandage"
+   ],
+   "note": "몸에 감은 붕대 (부위 무관)",
+   "ord": 84,
+   "photo": true
+  },
+  {
+   "key": "acc_scar",
+   "label": "흉터",
+   "keyword": "흉터",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "scar",
+   "from": [
+    "acc_scar"
+   ],
+   "note": "피부에 남은 흉터·상처 자국 (부위 무관)",
+   "ord": 85,
+   "photo": true
+  },
+  {
+   "key": "acc_tattoo",
+   "label": "타투",
+   "keyword": "타투",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "tattoo",
+   "from": [
+    "acc_tattoo"
+   ],
+   "note": "피부에 새긴 문신·타투 스티커 (부위 무관)",
+   "ord": 86,
+   "photo": true
+  },
+  {
+   "key": "acc_mole",
+   "label": "점",
+   "keyword": "점",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "기타"
+   ],
+   "mode": "다중",
+   "tags": "mole mole_under_eye",
+   "from": [
+    "acc_mole"
+   ],
+   "note": "피부에 보이는 점 (눈물점·입가 점 등, 부위 무관)",
+   "ord": 87,
+   "photo": true
+  },
+  {
+   "key": "prop_flower",
+   "label": "꽃",
+   "keyword": "꽃",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "flower",
+   "from": [
+    "prop_flower"
+   ],
+   "note": "꽃이 화면에서 눈에 띄거나 인물이 들고 있음",
+   "ord": 88,
+   "photo": false
+  },
+  {
+   "key": "prop_weapon",
+   "label": "무기",
+   "keyword": "무기",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "weapon",
+   "from": [
+    "prop_weapon"
+   ],
+   "note": "칼·총·활 등 무기",
+   "ord": 89,
+   "photo": false
+  },
+  {
+   "key": "prop_food",
+   "label": "음식",
+   "keyword": "음식",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "food",
+   "from": [
+    "prop_food"
+   ],
+   "note": "음식",
+   "ord": 90,
+   "photo": false
+  },
+  {
+   "key": "prop_book",
+   "label": "책",
+   "keyword": "책",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "book",
+   "from": [
+    "prop_book"
+   ],
+   "note": "책·노트",
+   "ord": 91,
+   "photo": false
+  },
+  {
+   "key": "prop_umbrella",
+   "label": "우산",
+   "keyword": "우산",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "umbrella",
+   "from": [
+    "prop_umbrella"
+   ],
+   "note": "우산·양산",
+   "ord": 92,
+   "photo": false
+  },
+  {
+   "key": "prop_phone",
+   "label": "휴대폰",
+   "keyword": "휴대폰",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "phone",
+   "from": [
+    "prop_phone"
+   ],
+   "note": "휴대폰",
+   "ord": 93,
+   "photo": false
+  },
+  {
+   "key": "prop_instrument",
+   "label": "악기",
+   "keyword": "악기",
+   "group": "의상·장신구",
+   "path": [
+    "장신구",
+    "소품"
+   ],
+   "mode": "다중",
+   "tags": "instrument",
+   "from": [
+    "prop_instrument"
+   ],
+   "note": "악기",
+   "ord": 94,
+   "photo": false
+  },
+  {
+   "key": "emo_joy",
+   "label": "기쁨",
+   "keyword": "기쁨",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "smile grin happy",
+   "from": [
+    "emo_joy"
+   ],
+   "note": "웃는 얼굴. 옅은 미소부터 활짝 웃음까지 포함",
+   "ord": 95,
+   "photo": false
+  },
+  {
+   "key": "emo_sad",
+   "label": "슬픔",
+   "keyword": "슬픔",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "sad crying tears",
+   "from": [
+    "emo_sad"
+   ],
+   "note": "처진 눈썹, 우는 얼굴, 눈물",
+   "ord": 96,
+   "photo": false
+  },
+  {
+   "key": "emo_angry",
+   "label": "화남",
+   "keyword": "화남",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "angry",
+   "from": [
+    "emo_angry"
+   ],
+   "note": "찡그린 눈썹, 노려보는 눈",
+   "ord": 97,
+   "photo": false
+  },
+  {
+   "key": "emo_surprised",
+   "label": "놀람",
+   "keyword": "놀람",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "surprised",
+   "from": [
+    "emo_surprised"
+   ],
+   "note": "크게 뜬 눈, 벌어진 입",
+   "ord": 98,
+   "photo": false
+  },
+  {
+   "key": "emo_embarrassed",
+   "label": "부끄러움",
+   "keyword": "부끄러움",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "embarrassed blush",
+   "from": [
+    "emo_embarrassed"
+   ],
+   "note": "볼 붉힘과 함께 시선을 피하거나 당황한 얼굴",
+   "ord": 99,
+   "photo": false
+  },
+  {
+   "key": "emo_expressionless",
+   "label": "무표정",
+   "keyword": "무표정",
+   "group": "얼굴 방향, 감정",
+   "path": [
+    "감정"
+   ],
+   "mode": "단일",
+   "tags": "expressionless",
+   "from": [
+    "emo_expressionless"
+   ],
+   "note": "감정이 드러나지 않음",
+   "ord": 100,
+   "photo": false
+  },
+  {
+   "key": "angle_eye_level",
+   "label": "아이레벨",
+   "keyword": "아이레벨",
+   "group": "앵글, 자세",
+   "path": [
+    "앵글"
+   ],
+   "mode": "단일",
+   "tags": "",
+   "from": [
+    "angle_eye_level"
+   ],
+   "note": "카메라가 인물 눈높이. 올려다보거나 내려다보는 느낌이 없음 (애매하면 아이레벨)",
+   "ord": 101,
+   "photo": true
+  },
+  {
+   "key": "angle_low",
+   "label": "로우앵글",
+   "keyword": "로우앵글",
+   "group": "앵글, 자세",
+   "path": [
+    "앵글"
+   ],
+   "mode": "단일",
+   "tags": "from_below",
+   "from": [
+    "angle_low"
+   ],
+   "note": "허리~가슴 높이에서 올려다봄. 턱 아래가 보이고 다리가 길어 보임",
+   "ord": 102,
+   "photo": true
+  },
+  {
+   "key": "angle_high",
+   "label": "하이앵글",
+   "keyword": "하이앵글",
+   "group": "앵글, 자세",
+   "path": [
+    "앵글"
+   ],
+   "mode": "단일",
+   "tags": "from_above",
+   "from": [
+    "angle_high"
+   ],
+   "note": "머리보다 조금 위에서 내려다봄. 정수리 쪽이 보이고 얼굴이 상대적으로 커 보임",
+   "ord": 103,
+   "photo": true
+  },
+  {
+   "key": "angle_dutch",
+   "label": "더치 앵글",
+   "keyword": "더치 앵글",
+   "group": "앵글, 자세",
+   "path": [
+    "앵글"
+   ],
+   "mode": "단일",
+   "tags": "dutch_angle",
+   "from": [
+    "angle_dutch"
+   ],
+   "note": "수평선·건물·바닥 선이 비스듬히 기울어짐. 높이 앵글과 함께 체크",
+   "ord": 104,
+   "photo": true
+  },
+  {
+   "key": "face_front",
+   "label": "정면",
+   "keyword": "정면",
+   "group": "앵글, 자세",
+   "path": [
+    "얼굴 방향"
+   ],
+   "mode": "단일",
+   "tags": "facing_viewer",
+   "from": [
+    "face_front"
+   ],
+   "note": "얼굴이 카메라를 정면으로 향함. 양쪽 귀가 거의 같게 보임",
+   "ord": 105,
+   "photo": true
+  },
+  {
+   "key": "face_three_quarter",
+   "label": "반측면",
+   "keyword": "반측면",
+   "group": "앵글, 자세",
+   "path": [
+    "얼굴 방향"
+   ],
+   "mode": "단일",
+   "tags": "three-quarter_view",
+   "from": [
+    "face_three_quarter"
+   ],
+   "note": "얼굴이 45도쯤 돌아감. 한쪽 볼이 더 넓게 보임",
+   "ord": 106,
+   "photo": true
+  },
+  {
+   "key": "face_profile",
+   "label": "측면",
+   "keyword": "측면",
+   "group": "앵글, 자세",
+   "path": [
+    "얼굴 방향"
+   ],
+   "mode": "단일",
+   "tags": "profile",
+   "from": [
+    "face_profile"
+   ],
+   "note": "얼굴이 90도 돌아가 옆모습만 보임. 눈이 하나만 보임",
+   "ord": 107,
+   "photo": true
+  },
+  {
+   "key": "face_back",
+   "label": "뒷모습",
+   "keyword": "뒷모습",
+   "group": "앵글, 자세",
+   "path": [
+    "얼굴 방향"
+   ],
+   "mode": "단일",
+   "tags": "from_behind facing_away",
+   "from": [
+    "face_back"
+   ],
+   "note": "뒤통수만 보이고 얼굴은 보이지 않음",
+   "ord": 108,
+   "photo": true
+  },
+  {
+   "key": "pose_standing",
+   "label": "서 있기",
+   "keyword": "서 있기",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "standing",
+   "from": [
+    "pose_standing"
+   ],
+   "note": "두 발로 서 있음",
+   "ord": 109,
+   "photo": true
+  },
+  {
+   "key": "pose_sitting",
+   "label": "앉기",
+   "keyword": "앉기",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "sitting",
+   "from": [
+    "pose_sitting"
+   ],
+   "note": "엉덩이를 바닥·의자에 대고 앉음",
+   "ord": 110,
+   "photo": true
+  },
+  {
+   "key": "pose_lying",
+   "label": "눕기",
+   "keyword": "눕기",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "lying",
+   "from": [
+    "pose_lying"
+   ],
+   "note": "바닥에 몸을 눕힘 (엎드림 포함)",
+   "ord": 111,
+   "photo": true
+  },
+  {
+   "key": "pose_walking",
+   "label": "걷기",
+   "keyword": "걷기",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "walking",
+   "from": [
+    "pose_walking"
+   ],
+   "note": "걷는 동작",
+   "ord": 112,
+   "photo": true
+  },
+  {
+   "key": "pose_running",
+   "label": "달리기",
+   "keyword": "달리기",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "running",
+   "from": [
+    "pose_running"
+   ],
+   "note": "뛰는 동작 (두 발이 떨어지거나 크게 벌어짐)",
+   "ord": 113,
+   "photo": true
+  },
+  {
+   "key": "pose_jumping",
+   "label": "점프",
+   "keyword": "점프",
+   "group": "앵글, 자세",
+   "path": [
+    "몸 자세"
+   ],
+   "mode": "단일",
+   "tags": "jumping",
+   "from": [
+    "pose_jumping"
+   ],
+   "note": "두 발이 모두 공중에 뜸",
+   "ord": 114,
+   "photo": true
+  },
+  {
+   "key": "season_spring",
+   "label": "봄",
+   "keyword": "봄",
+   "group": "분위기",
+   "path": [
+    "계절"
+   ],
+   "mode": "단일",
+   "tags": "spring_(season)",
+   "from": [
+    "season_spring"
+   ],
+   "note": "벚꽃·새싹·꽃이 핀 풍경, 가벼운 겉옷 차림 등 봄 단서가 보임",
+   "ord": 115,
+   "photo": true
+  },
+  {
+   "key": "season_summer",
+   "label": "여름",
+   "keyword": "여름",
+   "group": "분위기",
+   "path": [
+    "계절"
+   ],
+   "mode": "단일",
+   "tags": "summer",
+   "from": [
+    "season_summer"
+   ],
+   "note": "강한 햇빛·바다·반팔·수영복, 해바라기·불꽃놀이 등 여름 단서가 보임",
+   "ord": 116,
+   "photo": true
+  },
+  {
+   "key": "season_autumn",
+   "label": "가을",
+   "keyword": "가을",
+   "group": "분위기",
+   "path": [
+    "계절"
+   ],
+   "mode": "단일",
+   "tags": "autumn",
+   "from": [
+    "season_autumn"
+   ],
+   "note": "단풍·낙엽·은행잎, 니트·트렌치코트 차림 등 가을 단서가 보임",
+   "ord": 117,
+   "photo": true
+  },
+  {
+   "key": "season_winter",
+   "label": "겨울",
+   "keyword": "겨울",
+   "group": "분위기",
+   "path": [
+    "계절"
+   ],
+   "mode": "단일",
+   "tags": "winter",
+   "from": [
+    "season_winter"
+   ],
+   "note": "눈·서리, 코트·목도리·장갑 차림, 크리스마스 등 겨울 단서가 보임",
+   "ord": 118,
+   "photo": true
+  },
+  {
+   "key": "bg_morning",
+   "label": "낮",
+   "keyword": "낮",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "시간대"
+   ],
+   "mode": "단일",
+   "tags": "morning",
+   "from": [
+    "bg_morning"
+   ],
+   "note": "밝은 햇빛의 낮 시간대",
+   "ord": 119,
+   "photo": true
+  },
+  {
+   "key": "bg_sunset",
+   "label": "일몰",
+   "keyword": "일몰",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "시간대"
+   ],
+   "mode": "단일",
+   "tags": "sunset evening",
+   "from": [
+    "bg_sunset"
+   ],
+   "note": "해가 지며 하늘·빛이 주황·분홍빛을 띠는 저녁 무렵. 노을·황혼 포함",
+   "ord": 120,
+   "photo": true
+  },
+  {
+   "key": "bg_night",
+   "label": "밤",
+   "keyword": "밤",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "시간대"
+   ],
+   "mode": "단일",
+   "tags": "night",
+   "from": [
+    "bg_night"
+   ],
+   "note": "밤하늘·조명 등 밤 시간대",
+   "ord": 121,
+   "photo": true
+  },
+  {
+   "key": "bg_simple",
+   "label": "단색 배경",
+   "keyword": "단색 배경",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "장소"
+   ],
+   "mode": "다중",
+   "tags": "simple_background white_background",
+   "from": [
+    "bg_simple"
+   ],
+   "note": "흰색을 포함한 단색·그라데이션 등 장소를 알 수 없는 배경",
+   "ord": 122,
+   "photo": true
+  },
+  {
+   "key": "bg_indoor",
+   "label": "실내",
+   "keyword": "실내",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "장소"
+   ],
+   "mode": "다중",
+   "tags": "indoors",
+   "from": [
+    "bg_indoor"
+   ],
+   "note": "방·교실 등 실내 장소",
+   "ord": 123,
+   "photo": true
+  },
+  {
+   "key": "bg_sky",
+   "label": "하늘",
+   "keyword": "하늘",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "장소"
+   ],
+   "mode": "다중",
+   "tags": "sky",
+   "from": [
+    "bg_sky"
+   ],
+   "note": "배경의 대부분이 하늘",
+   "ord": 124,
+   "photo": true
+  },
+  {
+   "key": "bg_nature",
+   "label": "자연",
+   "keyword": "자연",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "장소"
+   ],
+   "mode": "다중",
+   "tags": "nature",
+   "from": [
+    "bg_nature"
+   ],
+   "note": "숲·바다·들판 등 자연 풍경",
+   "ord": 125,
+   "photo": true
+  },
+  {
+   "key": "bg_city",
+   "label": "도시",
+   "keyword": "도시·거리",
+   "group": "분위기",
+   "path": [
+    "배경",
+    "장소"
+   ],
+   "mode": "다중",
+   "tags": "city",
+   "from": [
+    "bg_city"
+   ],
+   "note": "건물·도로가 보이는 도시·거리",
+   "ord": 126,
+   "photo": true
+  },
+  {
+   "key": "weather_clear",
+   "label": "맑음",
+   "keyword": "맑음",
+   "group": "분위기",
+   "path": [
+    "날씨"
+   ],
+   "mode": "다중",
+   "tags": "blue_sky sunlight",
+   "from": [
+    "weather_clear"
+   ],
+   "note": "파란 하늘이나 강한 햇빛이 보이는 화창한 날. 하늘이 안 보이면 비워 둠",
+   "ord": 127,
+   "photo": true
+  },
+  {
+   "key": "weather_cloudy",
+   "label": "흐림",
+   "keyword": "흐림",
+   "group": "분위기",
+   "path": [
+    "날씨"
+   ],
+   "mode": "다중",
+   "tags": "cloudy_sky overcast",
+   "from": [
+    "weather_cloudy"
+   ],
+   "note": "구름이 하늘을 덮어 어둑함",
+   "ord": 128,
+   "photo": true
+  },
+  {
+   "key": "weather_rain",
+   "label": "비",
+   "keyword": "비",
+   "group": "분위기",
+   "path": [
+    "날씨"
+   ],
+   "mode": "다중",
+   "tags": "rain",
+   "from": [
+    "weather_rain"
+   ],
+   "note": "빗줄기·빗방울, 젖은 바닥이 보임. 우산만 보고 판단하지 않음",
+   "ord": 129,
+   "photo": true
+  },
+  {
+   "key": "weather_snow",
+   "label": "눈",
+   "keyword": "눈",
+   "group": "분위기",
+   "path": [
+    "날씨"
+   ],
+   "mode": "다중",
+   "tags": "snowing",
+   "from": [
+    "weather_snow"
+   ],
+   "note": "눈이 내리고 있음. 쌓인 눈만 있으면 계절(6.5)의 겨울로 판단",
+   "ord": 130,
+   "photo": true
+  },
+  {
+   "key": "event_holiday",
+   "label": "명절",
+   "keyword": "명절",
+   "group": "분위기",
+   "path": [
+    "기념일"
+   ],
+   "mode": "단일",
+   "tags": "new_year chinese_new_year",
+   "from": [
+    "event_holiday"
+   ],
+   "note": "설날·추석 등 명절 (명절 한복 차림, 복주머니, 연하장, 떡국·송편 등)",
+   "ord": 131,
+   "photo": false
+  },
+  {
+   "key": "event_valentine",
+   "label": "발렌타인데이",
+   "keyword": "발렌타인데이",
+   "group": "분위기",
+   "path": [
+    "기념일"
+   ],
+   "mode": "단일",
+   "tags": "valentine",
+   "from": [
+    "event_valentine"
+   ],
+   "note": "하트 초콜릿, 선물 상자, 하트 장식",
+   "ord": 132,
+   "photo": false
+  },
+  {
+   "key": "event_halloween",
+   "label": "할로윈",
+   "keyword": "할로윈",
+   "group": "분위기",
+   "path": [
+    "기념일"
+   ],
+   "mode": "단일",
+   "tags": "halloween",
+   "from": [
+    "event_halloween"
+   ],
+   "note": "호박 등불, 마녀·유령 코스튬, 사탕 바구니",
+   "ord": 133,
+   "photo": false
+  },
+  {
+   "key": "event_christmas",
+   "label": "크리스마스",
+   "keyword": "크리스마스",
+   "group": "분위기",
+   "path": [
+    "기념일"
+   ],
+   "mode": "단일",
+   "tags": "christmas",
+   "from": [
+    "event_christmas"
+   ],
+   "note": "트리, 산타 복장, 선물, 리스. 계절(6.5)의 겨울도 함께 체크",
+   "ord": 134,
+   "photo": false
+  },
+  {
+   "key": "event_birthday",
+   "label": "생일",
+   "keyword": "생일",
+   "group": "분위기",
+   "path": [
+    "기념일"
+   ],
+   "mode": "단일",
+   "tags": "birthday",
+   "from": [
+    "event_birthday"
+   ],
+   "note": "케이크, 촛불, 고깔모자, \"Happy Birthday\" 문구",
+   "ord": 135,
+   "photo": false
+  }
+ ]
+}

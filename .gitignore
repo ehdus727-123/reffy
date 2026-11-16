@@ -9,6 +9,7 @@ venv/
 # 실행하면 생기는 데이터: DB · 업로드 이미지 · 임시 파일 (태그 사전 ia.json 만 올립니다)
 **/data/*
 !**/data/ia.json
+!**/data/exposed.json
 
 # AI 모델 (수백 MB, 처음 실행 때 자동으로 내려받음)
 **/models/

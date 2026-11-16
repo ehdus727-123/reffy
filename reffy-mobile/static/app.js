@@ -109,12 +109,8 @@ const FP_CATS = [   // [vocab 그룹, 패널 메뉴 이름, 플라이아웃 제�
   ["앵글, 자세", "앵글/자세", "앵글/자세"],
   ["분위기", "분위기", "분위기"],
 ];
-const FP_ORDER = {   // 디자인에 나온 순서를 먼저, 나머지는 원래 순서대로
-  "인물 외형": ["머리 › 머리 모양 › 앞머리", "머리 › 머리 길이", "머리 › 머리색", "머리 › 머리 모양 › 묶음", "머리 › 머리 모양 › 머릿결", "눈 › 눈 색", "눈 › 동공 모양", "비인간 특징"],
-  "분위기": ["계절", "배경 › 시간대", "배경 › 장소", "날씨", "기념일"],
-};
-const FP_NAME = { "성별(외형)": "성별", "프레이밍": "범위", "비인간 특징": "특수 특징" };
-const FP_TOGGLE = { "머리 › 머리 모양 › 앞머리": "앞머리", "눈 › 동공 모양": "특수동공" };   // 스위치를 켜면 칩이 나타남
+/* 태그 목록·순서·이름은 서버의 exposed.json(사용자 노출 시트 + Figma)을 그대로 따름.
+   선택 방식이 '토글'인 축(앞머리 · 특수동공)은 스위치 하나 — 켜면 그 태그(해당 종류 중 하나라도 있는 이미지)를 고른 것 */
 const FP_SW = { "빨강": "#E5484D", "주황": "#F76B15", "노랑": "#FFD23F", "초록": "#30A46C", "파랑": "#3E63DD", "보라": "#8E4EC6", "검정": "#18171A", "흰색": "#FFFFFF", "분홍": "#F5A3C7", "갈색": "#8D5B3A", "회색": "#9E9E9E" };
 const FP_SW_X = { "여러 색": "conic-gradient(#E5484D,#FFD23F,#30A46C,#3E63DD,#8E4EC6,#E5484D)", "오드아이": "linear-gradient(90deg,#E5484D 50%,#3E63DD 50%)" };
 /* 감정 · 날씨 아이콘 (Figma icon/emotion · icon/weather, Gray 상태 SVG 그대로). 선택(Purple)은 선 #7425F6 + 채움 #F5EEFF 인 요소(f) */
@@ -161,7 +157,7 @@ function fpTags(axis) {
   }
   if (base === "머리색" || base === "눈 색") {   // 색 스와치
     return h("div", { class: "fp-sws" }, axis.tags.map((t) => {
-      const name = t.kw.replace(/\(.*\)$/, "").trim();
+      const name = t.label;
       const bg = FP_SW[name] || FP_SW_X[name] || "#fff";
       return h("button", { class: "fp-sw" + (fpHas(t) ? " on" : ""), type: "button", "aria-pressed": String(fpHas(t)), title: t.label, onclick: (e) => fpFlip(t, e.currentTarget) },
         h("i", { style: `background:${bg}` + (name === "흰색" ? ";--ring:#c3c2c5" : "") }), h("span", {}, name));
@@ -171,16 +167,14 @@ function fpTags(axis) {
 }
 /* 한 축(섹션). sub=true 면 작은 회색 소제목(14), 아니면 큰 제목(18) */
 function fpSection(axis, sub) {
-  const raw = axis.name.split(" › ").pop(), name = FP_NAME[axis.name] || FP_NAME[raw] || raw;
-  if (FP_TOGGLE[axis.name]) {
-    const on = FP.tog[axis.name] ?? axis.tags.some(fpHas);
-    const tags = fpTags(axis); tags.hidden = !on;
-    const sw = h("button", { class: "fp-switch" + (on ? " on" : ""), type: "button", role: "switch", "aria-checked": String(on), "aria-label": FP_TOGGLE[axis.name], onclick: () => {
-      const o = sw.getAttribute("aria-checked") !== "true";
-      FP.tog[axis.name] = o; sw.classList.toggle("on", o); sw.setAttribute("aria-checked", String(o)); tags.hidden = !o;
-      if (!o) { axis.tags.forEach((t) => fpSet(t).delete(fpVal(t))); tags.querySelectorAll(".on").forEach((b) => { b.classList.remove("on"); b.setAttribute("aria-pressed", "false"); }); fpMarkCats(); }
+  const name = axis.name.split(" › ").pop();
+  if (axis.mode === "토글") {
+    const t = axis.tags[0], on = fpHas(t);
+    const sw = h("button", { class: "fp-switch" + (on ? " on" : ""), type: "button", role: "switch", "aria-checked": String(on), "aria-label": t.label, onclick: () => {
+      const o = !fpHas(t); o ? fpSet(t).add(fpVal(t)) : fpSet(t).delete(fpVal(t));
+      sw.classList.toggle("on", o); sw.setAttribute("aria-checked", String(o)); fpMarkCats();
     } });
-    return h("div", { class: "fp-sec fp-tog" }, h("div", { class: "fp-togrow" }, h("span", { class: "fp-sub" }, FP_TOGGLE[axis.name]), sw), tags);
+    return h("div", { class: "fp-sec fp-tog" }, h("div", { class: "fp-togrow" }, h("span", { class: "fp-sub" }, t.label), sw));
   }
   return h("div", { class: "fp-sec" + (sub ? "" : " big") }, h(sub ? "span" : "h4", { class: sub ? "fp-sub" : "fp-ttl" }, name), fpTags(axis));
 }
@@ -203,10 +197,10 @@ function fpBlocks(axes, order) {
 function drawFilterPC(root) {
   const g0 = S.vocab.groups.find((g) => g.name === "기본 정보") || { axes: [] };
   const kindAxis = { name: "종류", tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
-  const style = g0.axes.filter((a) => a.name.startsWith("스타일 ›")), basic = g0.axes.filter((a) => !a.name.startsWith("스타일 ›"));
+  const style = g0.axes.filter((a) => a.name.split(" › ")[0] === "스타일"), basic = g0.axes.filter((a) => a.name.split(" › ")[0] !== "스타일");
   const top = h("div", { class: "fp-top" },
     h("div", { class: "fp-sec" }, h("div", { class: "fp-hrow" }, h("h4", { class: "fp-ttl" }, "종류"), h("button", { class: "fp-reset", type: "button", onclick: () => $("#reset").click() }, "초기화")), fpTags(kindAxis)),
-    style.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "스타일"), h("div", { class: "fp-subs" }, style.map((a) => fpSection(a, true)))) : null,
+    style.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "스타일"), style.length === 1 && style[0].name === "스타일" ? fpTags(style[0]) : h("div", { class: "fp-subs" }, style.map((a) => fpSection(a, true)))) : null,
     basic.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "기본 정보"), h("div", { class: "fp-subs" }, basic.map((a) => fpSection(a, true)))) : null);
   const cats = h("div", { class: "fp-cats" }, FP_CATS.filter(([g]) => S.vocab.groups.some((x) => x.name === g)).map(([g, label]) =>
     h("button", { class: "fp-cat", type: "button", "data-g": g, "aria-haspopup": "dialog", "aria-expanded": "false", onclick: () => (FP.open === g ? fpClose() : fpOpen(g)) },
@@ -240,7 +234,7 @@ function fpOpen(g, redraw) {
   el.setAttribute("aria-label", cat[2]);
   el.replaceChildren(
     h("div", { class: "fp-head" }, h("h3", {}, cat[2]), h("button", { class: "fp-x", type: "button", "aria-label": "닫기", onclick: fpClose }, icon("close", 24))),
-    h("div", { class: "fp-body" }, fpBlocks(grp.axes, FP_ORDER[g])));
+    h("div", { class: "fp-body" }, fpBlocks(grp.axes)));
   if (!FP.el) { FP.el = el; document.body.append(el); fpPlace(); requestAnimationFrame(() => el.classList.add("on")); }
   else { fpPlace(); if (swap) { el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); } }
   el.querySelector(".fp-body").scrollTop = keep;

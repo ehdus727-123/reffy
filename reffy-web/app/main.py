@@ -18,7 +18,7 @@ from . import colors as colormod, config, db, extras, social, store
 from .classifier import C
 from .search import match_tags, search
 from .tagger import T
-from .tagmap import BY_IKEY, IA, VOCAB, tag_image
+from .tagmap import BY_IKEY, FULL, VOCAB, migrate_tags, tag_image
 
 app = FastAPI(title="REFFY")
 app.include_router(social.router)
@@ -29,9 +29,10 @@ FORMATS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp", "GIF": "gif"}
 @app.on_event("startup")
 def _start():
     db.init()
+    migrate_tags()
     store.ensure_bucket()
     _backfill_colors()
-    T.start([v["aliases"] for v in VOCAB])
+    T.start([v["aliases"] for v in FULL + VOCAB])
     C.load()
 
 
