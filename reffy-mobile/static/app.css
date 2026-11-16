@@ -1861,3 +1861,8 @@ html:not(.m) .search>.ic{width:20px;height:20px}
 html:not(.m) .search input{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;height:20px}
 html:not(.m) .search input::placeholder{color:#5b595f;opacity:1}
 html:not(.m) .actions{margin-left:0;flex:none}
+/* 적용한 필터 칩: 초기화 아이콘 줄 위에 한 줄로 (칩이 없으면 자리 차지 안 함) */
+html:not(.m) .bar{flex-wrap:wrap;row-gap:12px}
+html:not(.m) .bar .grow{order:-1;flex:1 0 100%;align-self:auto}
+html:not(.m) .bar .grow:has(.chips:empty){display:none}
+html:not(.m) .bar .resetbtn{margin-right:auto}
