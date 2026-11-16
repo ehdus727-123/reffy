@@ -3,6 +3,13 @@ import uvicorn
 
 from app import config  # noqa: F401  (.env 를 먼저 읽어 HOST · PORT 가 적용되게 한다)
 
+# 메모리 512MB 서버용: 파이썬이 메모리 구역(arena)을 여러 개 만들어 쌓아 두지 않게 2개로 제한 (리눅스 glibc)
+try:
+    import ctypes
+    ctypes.CDLL("libc.so.6").mallopt(-8, 2)   # M_ARENA_MAX = 2
+except Exception:  # noqa: BLE001
+    pass
+
 def seed_demo_data():
     """SEED_DIR(예: demo-data)에 시연용 DB · 이미지가 있으면, 처음 켤 때 한 번 불러온다.
     - SQLite(기본): 이 서버의 data 에 DB 가 없을 때 복사

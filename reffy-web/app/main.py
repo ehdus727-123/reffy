@@ -1,6 +1,7 @@
 """REFFY — 레퍼런스 검색 서비스 (MVP): 업로드 -> AI 태깅 -> 태그·검색어로 찾기."""
 from __future__ import annotations
 import asyncio
+import gc
 import io
 import json
 import secrets
@@ -53,17 +54,64 @@ def _backfill_colors():
             c.execute(text("UPDATE images SET colors = :c WHERE id = :i"), {"c": colormod.dumps(cols), "i": r["id"]})
 
 
-def _open(data: bytes) -> Image.Image:
+MAX_PIXELS = 25_000_000   # 약 5000×5000. 이보다 큰 그림은 풀면 메모리를 수백 MB 써서 512MB 서버가 꺼짐
+
+
+def _open(data: bytes, load: bool = True) -> Image.Image:
     if len(data) > config.MAX_UPLOAD_MB << 20:
         raise HTTPException(413, f"이미지는 {config.MAX_UPLOAD_MB}MB 이하만 올릴 수 있어요.")
     try:
         im = Image.open(io.BytesIO(data))
-        im.load()
     except Exception:  # noqa: BLE001
         raise HTTPException(400, "이미지 파일을 읽을 수 없어요. JPG, PNG, WEBP, GIF 파일을 올려 주세요.")
     if im.format not in FORMATS:
         raise HTTPException(400, "JPG, PNG, WEBP, GIF 파일만 올릴 수 있어요.")
+    if im.width * im.height > MAX_PIXELS:
+        raise HTTPException(413, "이미지 해상도가 너무 커요. 5000×5000 픽셀(2500만 화소) 이하로 줄여서 올려 주세요.")
+    if load:
+        try:
+            im.load()
+        except Exception:  # noqa: BLE001
+            raise HTTPException(400, "이미지 파일을 읽을 수 없어요. JPG, PNG, WEBP, GIF 파일을 올려 주세요.")
     return im
+
+
+def _shrink(im: Image.Image, box) -> Image.Image:
+    """원본을 통째로 풀지 않고 작은 사본만 만든다 (JPEG 는 1/2·1/4·1/8 크기로 바로 풀림)."""
+    try:
+        rot = (im.getexif() or {}).get(0x0112, 1) in (5, 6, 7, 8)
+        bw, bh = (box[1], box[0]) if rot else box
+        with _HEAVY:   # 원본을 푸는 작업은 서버 전체에서 한 번에 하나만
+            im.draft("RGB", (bw, bh))      # JPEG: 처음부터 작게 풀림
+            im.load()
+            f = max(1, min(im.width // bw, im.height // bh))
+            if f > 1 and im.mode in ("RGB", "RGBA", "L", "LA"):
+                # 채널을 하나씩 줄여 합침 — 통째로 줄이면 RGBA 는 원본 크기 사본이 하나 더 생겨 메모리가 2배가 됨
+                mode, bands = im.mode, im.getbands()
+                small = []
+                for b in bands:
+                    ch = im.getchannel(b)
+                    small.append(ch.reduce(f))
+                    del ch
+                im.close(); del im
+                im = Image.merge(mode, small)
+            im.thumbnail((bw, bh))
+        im = ImageOps.exif_transpose(im)   # 작은 사본만 돌림
+    except HTTPException:
+        raise
+    except Exception:  # noqa: BLE001
+        raise HTTPException(400, "이미지 파일을 읽을 수 없어요. JPG, PNG, WEBP, GIF 파일을 올려 주세요.")
+    return im
+
+
+def _free():
+    """다 쓴 메모리를 운영체제에 바로 돌려줌 (리눅스 glibc). 큰 그림을 연달아 올려도 메모리가 쌓이지 않게."""
+    gc.collect()
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _public_tag(ikey: str, prob, src, state, active: bool) -> dict:
@@ -205,17 +253,33 @@ def image_file(image_id: int, request: Request, s: str = "thumb"):
 
 
 # ------------------------------------------------------------------ 업로드: 분석 -> (태그 수정) -> 게시
+import threading
+_PUBLISH = threading.Lock()
+_HEAVY = threading.Lock()
+_ANALYZE = asyncio.Semaphore(1)   # 분석은 한 번에 한 장씩 (여러 장을 동시에 풀면 메모리 512MB 서버가 꺼짐)
+
+
+def _small(im):
+    """태깅용 작은 사본(긴 변 1024). 원본 파일은 그대로 저장하고, 메모리는 작은 사본만 씀."""
+    return _shrink(im, (1024, 1024))
+
+
 @app.post("/api/analyze")
 async def analyze(file: UploadFile = File(...)):
-    data = await file.read()
-    im = _open(data)
-    ext = FORMATS[im.format]
-    token = secrets.token_hex(12)
-    (config.TMP / f"{token}.{ext}").write_bytes(data)
-    t0 = time.time()
-    if T.status == "idle" or T.status == "loading":
-        await asyncio.to_thread(T.ensure, 120)
-    res = await asyncio.to_thread(tag_image, ImageOps.exif_transpose(im)) if config.TAGGER_INT8 else tag_image(ImageOps.exif_transpose(im))
+    async with _ANALYZE:   # 파일 읽기부터 한 장씩 (여러 장의 원본을 동시에 메모리에 들고 있지 않게)
+        data = await file.read()
+        im = _open(data, load=False)
+        ext = FORMATS[im.format]
+        token = secrets.token_hex(12)
+        (config.TMP / f"{token}.{ext}").write_bytes(data)
+        t0 = time.time()
+        if T.status == "idle" or T.status == "loading":
+            await asyncio.to_thread(T.ensure, 120)
+        small = await asyncio.to_thread(_small, im)
+        del im
+        res = await asyncio.to_thread(tag_image, small)
+        del small, data
+        _free()
     tags = [_public_tag(t["ikey"], t["prob"], t["src"], None, t["prob"] >= config.TAG_THRESHOLD) for t in res["tags"]]
     (config.TMP / f"{token}.json").write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
     if store.ON:   # 클라우드: 분석 뒤 등록 전에 서버가 다시 켜져도 이어서 등록할 수 있게 임시 파일도 올려 둠
@@ -305,12 +369,20 @@ def publish(body: PublishIn, request: Request):
     if not tok or img_f is None:
         raise HTTPException(400, "업로드가 만료됐어요. 이미지를 다시 올려 주세요.")
     res = json.loads((config.TMP / f"{tok}.json").read_text(encoding="utf-8")) if (config.TMP / f"{tok}.json").exists() else {"tags": [], "wd": {}}
-    im = _open(img_f.read_bytes())
-    im = ImageOps.exif_transpose(im)
+    with _PUBLISH:   # 등록도 한 장씩
+        return _publish(body, user, tok, files, img_f, res)
+
+
+def _publish(body, user, tok, files, img_f, res):
+    im = _open(img_f.read_bytes(), load=False)
+    w, h = im.size
+    if (im.getexif() or {}).get(0x0112, 1) in (5, 6, 7, 8):
+        w, h = h, w   # 세로로 찍은 사진(EXIF 회전)
+    im = _shrink(im, (1400, 2800))   # 대표색 · 썸네일은 작은 사본으로 (원본 파일은 그대로 보관)
     with db.engine.begin() as c:
         rid = c.execute(db.images.insert().values(title=body.title.strip()[:120], author=user["nick"], user_id=user["id"], kind="photo" if body.kind == "photo" else "illust", file="pending",
                                                   private=1 if body.private else 0, materials=_clean_links(body.materials),
-                                                  w=im.width, h=im.height, views=0, wd_json=json.dumps(res.get("wd", {}), ensure_ascii=False)))
+                                                  w=w, h=h, views=0, wd_json=json.dumps(res.get("wd", {}), ensure_ascii=False)))
         iid = rid.inserted_primary_key[0]
         name = f"{iid}.{img_f.suffix[1:]}"
         c.execute(text("UPDATE images SET file = :f WHERE id = :i"), {"f": name, "i": iid})
@@ -330,6 +402,8 @@ def publish(body: PublishIn, request: Request):
     store.push(config.UPLOADS / name); store.push(config.UPLOADS / f"t_{iid}.jpg")
     for f in files:
         store.delete(f) if store.ON else f.unlink(missing_ok=True)
+    del im, thumb
+    _free()
     return {"id": iid}
 
 

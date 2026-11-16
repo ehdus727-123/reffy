@@ -13,6 +13,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
+      - key: MALLOC_ARENA_MAX     # 메모리 512MB: 메모리 구역을 2개로 제한해 사용량이 계속 늘지 않게
+        value: "2"
       - key: HOST
         value: 0.0.0.0
       - key: LAYOUT
