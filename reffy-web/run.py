@@ -28,8 +28,11 @@ def seed_demo_data():
     from sqlalchemy import create_engine, inspect, text
     from app import db, store
     db.init()
-    if db.rows("SELECT COUNT(*) AS n FROM users")[0]["n"]:
-        return   # 이미 데이터가 있음 (다시 켜져도 덮어쓰지 않음)
+    if db.rows("SELECT COUNT(*) AS n FROM images")[0]["n"]:
+        return   # 이미 게시물이 있음 (다시 켜져도 덮어쓰지 않음)
+    with db.engine.begin() as dc:   # 게시물이 하나도 없으면 (방문자 게스트 계정 등) 비우고 시연 데이터로 채움
+        for t in reversed(db.md.sorted_tables):
+            dc.execute(t.delete())
     se = create_engine(f"sqlite:///{(src / 'reffy.db').as_posix()}")
     have = set(inspect(se).get_table_names())
     with se.connect() as sc, db.engine.begin() as dc:
