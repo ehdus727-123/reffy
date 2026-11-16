@@ -1892,3 +1892,15 @@ html:not(.m) .side .tabs{margin:39px 24px 0}
 /* 카테고리 메뉴 줄 사이 2 */
 .fp-cats{gap:2px}
 html:not(.m) .side .tabs [role=tab]{padding:9px 0 11px;white-space:nowrap}
+
+/* ===== 피드 위 적용 칩 (Figma Common/Chip 2563:145046) =====
+   연보라 배경(테두리 없음) · 보라 글자 14 · 높이 34 · 지우기 아이콘(cancel) 18 · 칩 사이 8 */
+html:not(.m) .chips{gap:8px}
+html:not(.m) .chip.dark{height:34px;box-sizing:border-box;padding:0 8px 0 12px;gap:4px;border:0;border-radius:999px;background:#f5eeff;color:#7425f6;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .chip.dark button{width:18px;height:18px;padding:0;display:grid;place-items:center;color:#7425f6;border-radius:50%;font-size:0}
+html:not(.m) .chip.dark button svg{display:block}
+html:not(.m) .chip.dark button:hover{background:rgba(116,37,246,.12)}
+html:not(.m) .chip.dark .sw{border-color:rgba(116,37,246,.3)}
+
+/* ===== 필터 패널 (Figma FilterPanel 2460:122490): '분위기' 메뉴 아래 여백 — 적용하기 버튼과 붙어 보이지 않게 ===== */
+html:not(.m) body .side .groups{padding-bottom:40px}

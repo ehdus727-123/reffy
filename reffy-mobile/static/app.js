@@ -64,7 +64,7 @@ const goPost = (id) => { location.hash = "#/post/" + id; };
 /* ---------------------------------------------------------------- 필터 패널 */
 async function loadVocab() {
   S.vocab = await api("/api/vocab");
-  S.vocab.groups.forEach((g) => g.axes.forEach((a) => a.tags.forEach((t) => (S.labels[t.ikey] = { label: t.kw, axis: a.name, group: g.name }))));
+  S.vocab.groups.forEach((g) => g.axes.forEach((a) => a.tags.forEach((t) => (S.labels[t.ikey] = { label: t.kw, short: t.label, axis: a.name, group: g.name }))));
   drawGroups();
 }
 const openState = store.get("reffy.open", {});
@@ -222,7 +222,7 @@ function fpMarkCats() {
 /* 플라이아웃 위치: 누른 카테고리 줄 바로 옆(위끝을 그 줄에 맞춤). 화면 아래로 넘치면 넘치는 만큼만 위로 올림 */
 function fpPlace() {
   if (!FP.el) return;
-  const r = $(".side").getBoundingClientRect(), minTop = Math.max(r.top, 0) + 16;
+  const r = $(".side").getBoundingClientRect(), minTop = Math.max(r.top, $(".top").getBoundingClientRect().bottom) + 16;
   const btn = document.querySelector(`.fp-cat[data-g="${CSS.escape(FP.open || "")}"]`);
   const want = btn ? btn.getBoundingClientRect().top - 8 : minTop;
   FP.el.style.left = `${r.right + 18}px`;
@@ -253,6 +253,7 @@ function fpClose() {
   fpMarkCats();
 }
 addEventListener("resize", fpPlace);
+addEventListener("scroll", () => { if (FP.el) fpPlace(); }, { passive: true });   // 패널이 페이지와 함께 스크롤될 때도 줄을 따라감
 $("#groups").addEventListener("scroll", () => { if (FP.el) fpPlace(); }, { passive: true });   // 패널을 스크롤하면 창도 그 줄을 따라감
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && FP.el) fpClose(); });
 /* 창 바깥을 누르면 닫기 — 그 클릭으로 피드 이미지가 열리지 않게 한 번 막음 */
@@ -525,6 +526,8 @@ async function drawZero() {
     if (r.items.length) rec.replaceChildren(h("h3", {}, "추천 레퍼런스"), h("div", { class: "grid" }, r.items.slice(0, isM() ? 6 : 10).map(card)));
   } catch { /* 없으면 생략 */ }
 }
+/* 적용 칩 지우기 아이콘 (Figma Common/Chip · Remove icon 18) */
+function chipX() { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 18 18"); s.setAttribute("width", "18"); s.setAttribute("height", "18"); s.setAttribute("aria-hidden", "true"); s.innerHTML = '<path fill-rule="evenodd" clip-rule="evenodd" d="M9.36328 1.69629C11.1705 1.78611 12.8854 2.54422 14.1709 3.82983C15.542 5.20116 16.3125 7.06078 16.3125 9C16.3124 10.9393 15.5422 12.7996 14.1709 14.1709C12.7995 15.5422 10.9394 16.3125 9 16.3125C7.06064 16.3125 5.20046 15.5422 3.8291 14.1709C2.45779 12.7996 1.68755 10.9393 1.6875 9C1.6875 7.06078 2.45797 5.20116 3.8291 3.82983C5.2003 2.45852 7.06003 1.68769 8.99927 1.6875H9.00073L9.36328 1.69629ZM11.4595 6.53979C11.2398 6.32031 10.8837 6.32019 10.6641 6.53979L8.99927 8.20459L7.33447 6.53979C7.11479 6.32031 6.75867 6.32019 6.53906 6.53979C6.31964 6.75942 6.31964 7.11558 6.53906 7.33521L8.20386 9L6.53906 10.6648C6.31964 10.8844 6.31964 11.2406 6.53906 11.4602C6.75867 11.6798 7.11479 11.6797 7.33447 11.4602L8.99927 9.79541L10.6641 11.4602C10.8837 11.6798 11.2398 11.6797 11.4595 11.4602C11.6791 11.2405 11.6791 10.8845 11.4595 10.6648L9.79468 9L11.4595 7.33521C11.6791 7.11554 11.6791 6.75946 11.4595 6.53979Z" fill="currentColor"/>'; return s; }
 function drawBar(d) {
   const hasQ = !!S.q;
   mobileBar(hasQ);
@@ -534,15 +537,15 @@ function drawBar(d) {
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
   const seen = new Set();
-  if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, "✕")));
-  S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k })).forEach((m) => {
+  if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, isM() ? "✕" : chipX())));
+  S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k, short: S.labels[k]?.short || S.labels[k]?.label || k })).forEach((m) => {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
-    chips.append(h("span", { class: "chip dark" }, "#" + m.label, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, "✕") : null));
+    chips.append(h("span", { class: "chip dark" }, isM() ? "#" + m.label : m.short, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, isM() ? "✕" : chipX()) : null));
   });
-  (S.kinds || []).forEach((k) => chips.append(h("span", { class: "chip dark" }, "#" + (KINDS.find((x) => x[0] === k) || [k, k])[1],
-    h("button", { type: "button", "aria-label": "종류 필터 해제", onclick: () => { S.kinds = S.kinds.filter((x) => x !== k); S.pickedKind.delete(k); drawGroups(); reload(); } }, "✕"))));
+  (S.kinds || []).forEach((k) => chips.append(h("span", { class: "chip dark" }, (isM() ? "#" : "") + (KINDS.find((x) => x[0] === k) || [k, k])[1],
+    h("button", { type: "button", "aria-label": "종류 필터 해제", onclick: () => { S.kinds = S.kinds.filter((x) => x !== k); S.pickedKind.delete(k); drawGroups(); reload(); } }, isM() ? "✕" : chipX()))));
   S.colors.forEach((c) => chips.append(h("span", { class: "chip dark" }, h("i", { class: "sw", style: `background:${c}` }), c.toUpperCase(),
-    h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); S.pickColors = [...S.colors]; drawColorPanel(); reload(); } }, "✕"))));
+    h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); S.pickColors = [...S.colors]; drawColorPanel(); reload(); } }, isM() ? "✕" : chipX()))));
   $("#empty").hidden = true;   // 0개일 때는 drawZero() 가 빈 상태를 그립니다
 }
 new IntersectionObserver((en) => { if (en[0].isIntersecting && S.items.length) more(false); }, { rootMargin: "600px" }).observe($("#more"));
