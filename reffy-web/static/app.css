@@ -1902,5 +1902,11 @@ html:not(.m) .chip.dark button svg{display:block}
 html:not(.m) .chip.dark button:hover{background:rgba(116,37,246,.12)}
 html:not(.m) .chip.dark .sw{border-color:rgba(116,37,246,.3)}
 
-/* ===== 필터 패널 (Figma FilterPanel 2460:122490): '분위기' 메뉴 아래 여백 — 적용하기 버튼과 붙어 보이지 않게 ===== */
-html:not(.m) body .side .groups{padding-bottom:40px}
+/* ===== 필터 패널 (Figma FilterPanel 2574:146525 · 높이 1362) =====
+   탭 위 29 · 본문 위 30 · 섹션 사이 40 · 카테고리 줄 간격 0
+   맨 아래까지 스크롤하면 '분위기'와 적용하기 영역 사이가 137 (1269 - 1132) — 그만큼 더 스크롤되게 아래 여백 */
+html:not(.m) .side .tabs{margin-top:29px}
+html:not(.m) body .side .groups{padding:30px 24px 137px}
+html:not(.m) .fp-ttl1{line-height:24px}
+.fp-cats{gap:0}
+html:not(.m) .side .apply{height:93px;padding-top:21px}
