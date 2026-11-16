@@ -215,6 +215,8 @@ async def analyze(file: UploadFile = File(...)):
     res = await asyncio.to_thread(tag_image, ImageOps.exif_transpose(im)) if config.TAGGER_INT8 else tag_image(ImageOps.exif_transpose(im))
     tags = [_public_tag(t["ikey"], t["prob"], t["src"], None, t["prob"] >= config.TAG_THRESHOLD) for t in res["tags"]]
     (config.TMP / f"{token}.json").write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+    if store.ON:   # 클라우드: 분석 뒤 등록 전에 서버가 다시 켜져도 이어서 등록할 수 있게 임시 파일도 올려 둠
+        await asyncio.to_thread(lambda: (store.push(config.TMP / f"{token}.{ext}"), store.push(config.TMP / f"{token}.json")))
     return {"token": token, "tags": tags, "seconds": round(time.time() - t0, 2),
             "aiReady": T.ready, "message": "" if T.ready else "AI 태깅 모델이 아직 준비되지 않았어요. 태그를 직접 골라 주세요."}
 
@@ -292,6 +294,10 @@ def publish(body: PublishIn, request: Request):
     user = social.need(request)
     tok = "".join(ch for ch in body.token if ch.isalnum())
     files = list(config.TMP.glob(f"{tok}.*"))
+    if tok and store.ON and not any(f.suffix != ".json" for f in files):   # 서버가 다시 켜져 임시 파일이 사라졌으면 클라우드에서 받아 옴
+        for ext in ("jpg", "png", "webp", "gif", "json"):
+            store.pull(config.TMP / f"{tok}.{ext}")
+        files = list(config.TMP.glob(f"{tok}.*"))
     img_f = next((f for f in files if f.suffix != ".json"), None)
     if not tok or img_f is None:
         raise HTTPException(400, "업로드가 만료됐어요. 이미지를 다시 올려 주세요.")
@@ -320,7 +326,7 @@ def publish(body: PublishIn, request: Request):
     thumb.save(config.UPLOADS / f"t_{iid}.jpg", "JPEG", quality=85)
     store.push(config.UPLOADS / name); store.push(config.UPLOADS / f"t_{iid}.jpg")
     for f in files:
-        f.unlink(missing_ok=True)
+        store.delete(f) if store.ON else f.unlink(missing_ok=True)
     return {"id": iid}
 
 
