@@ -43,6 +43,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()          # service_role 키
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "reffy").strip()
 TAGGER = os.getenv("TAGGER", "auto").strip().lower()          # auto / off / mock(시험용 가짜 태그)
 TAGGER_REPO = os.getenv("TAGGER_REPO", "SmilingWolf/wd-vit-tagger-v3").strip()
+# TAGGER_INT8=1 : 미리 줄여 둔 model.int8.onnx 만 쓴다 (메모리가 작은 클라우드 서버용, 없으면 원본을 읽지 않고 AI 태그를 끔)
+TAGGER_INT8 = (os.getenv("TAGGER_INT8") or "0").strip().lower() in ("1", "true", "on", "yes")
 MODEL_DIR = Path(os.getenv("MODEL_DIR") or (BASE / "models"))
 if not MODEL_DIR.is_absolute():
     MODEL_DIR = (BASE / MODEL_DIR).resolve()

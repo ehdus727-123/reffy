@@ -43,7 +43,22 @@ class Tagger:
             self.message = "시험용 가짜 태그(mock)"
             print("[AI] TAGGER=mock : 가짜 태그로 동작합니다(시험 전용).", flush=True)
             return
+        if config.TAGGER_INT8:   # 메모리가 작은 서버: 켤 때 바로 읽지 않고 첫 업로드 때 읽음 (서버가 켜지자마자 메모리가 부족해지지 않게)
+            self.status, self.message = "idle", "첫 업로드 때 AI 모델을 불러와요"
+            return
         threading.Thread(target=self._boot, daemon=True).start()
+
+    def ensure(self, timeout: float = 120) -> bool:
+        """모델이 아직 안 읽혔으면 읽고, 준비될 때까지 기다린다 (TAGGER_INT8 용)."""
+        import time
+        with self.lock:
+            if self.status == "idle":
+                self.status = "loading"
+                threading.Thread(target=self._boot, daemon=True).start()
+        t0 = time.time()
+        while self.status == "loading" and time.time() - t0 < timeout:
+            time.sleep(0.3)
+        return self.ready
 
     def _fetch(self, name: str, folder):
         dst = folder / name
@@ -68,7 +83,12 @@ class Tagger:
             import onnxruntime as ort
 
             folder = config.MODEL_DIR / self.model_id
-            onnx_path = self._fetch("model.onnx", folder)
+            if config.TAGGER_INT8:
+                onnx_path = folder / "model.int8.onnx"
+                if not onnx_path.exists():
+                    raise FileNotFoundError("model.int8.onnx 가 없어요 (빌드 때 tools/quantize_tagger.py 실행 필요)")
+            else:
+                onnx_path = self._fetch("model.onnx", folder)
             tags_path = self._fetch("selected_tags.csv", folder)
             with open(tags_path, newline="", encoding="utf-8") as f:
                 rows = list(csv.DictReader(f))
@@ -77,6 +97,10 @@ class Tagger:
             self.counts = [int(r.get("count") or 0) for r in rows]
             opts = ort.SessionOptions()
             opts.intra_op_num_threads = max(1, (os.cpu_count() or 2) // 2)
+            if config.TAGGER_INT8:   # 메모리를 아끼는 설정 (조금 느려짐)
+                opts.intra_op_num_threads = 1
+                opts.enable_cpu_mem_arena = False
+                opts.enable_mem_pattern = False
             self.session = ort.InferenceSession(str(onnx_path), sess_options=opts, providers=["CPUExecutionProvider"])
             self.size = int(self.session.get_inputs()[0].shape[1])
             self.status = "ready"

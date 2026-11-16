@@ -7,7 +7,7 @@ services:
     runtime: python
     plan: free
     rootDir: reffy-web
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt onnx && python tools/quantize_tagger.py
     startCommand: python run.py
     autoDeploy: true
     envVars:
@@ -22,7 +22,9 @@ services:
       - key: LOCAL_ADMIN
         value: "0"           # 클라우드에서는 관리자(아무 글 삭제) 권한 끔
       - key: TAGGER
-        value: "off"         # 무료 서버 메모리(512MB)로는 AI 태거 모델을 못 돌려서 끔 (업로드는 됨, 태그는 직접 추가)
+        value: auto          # WD14 태거 사용
+      - key: TAGGER_INT8
+        value: "1"           # 무료 서버 메모리(512MB)에 맞게 빌드 때 int8 로 줄인 모델만 사용
       - key: SEED_DIR
         value: demo-data     # 처음 켤 때(DB 가 비어 있을 때) reffy-web/demo-data 의 게시물 · 이미지로 시작
       # ↓ Supabase 에 저장하려면 Render 대시보드 → reffy → Environment 에서 값을 직접 넣어 주세요 (깃허브에 올리지 않음)

@@ -1,5 +1,6 @@
 """REFFY — 레퍼런스 검색 서비스 (MVP): 업로드 -> AI 태깅 -> 태그·검색어로 찾기."""
 from __future__ import annotations
+import asyncio
 import io
 import json
 import secrets
@@ -209,7 +210,9 @@ async def analyze(file: UploadFile = File(...)):
     token = secrets.token_hex(12)
     (config.TMP / f"{token}.{ext}").write_bytes(data)
     t0 = time.time()
-    res = tag_image(ImageOps.exif_transpose(im))
+    if T.status == "idle" or T.status == "loading":
+        await asyncio.to_thread(T.ensure, 120)
+    res = await asyncio.to_thread(tag_image, ImageOps.exif_transpose(im)) if config.TAGGER_INT8 else tag_image(ImageOps.exif_transpose(im))
     tags = [_public_tag(t["ikey"], t["prob"], t["src"], None, t["prob"] >= config.TAG_THRESHOLD) for t in res["tags"]]
     (config.TMP / f"{token}.json").write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
     return {"token": token, "tags": tags, "seconds": round(time.time() - t0, 2),
