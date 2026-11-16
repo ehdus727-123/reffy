@@ -74,6 +74,7 @@ function liveApply() { /* 체크만으로는 적용하지 않음 — ‘필터 �
 function drawGroups() {
   const root = $("#groups"); root.replaceChildren();
   S.pickedKind = S.pickedKind || new Set();
+  if (!isM()) return drawFilterPC(root);
   // 종류(사진 · 일러스트)는 맨 위 그룹. 모바일은 축(인물 수 · 성별 …)마다 접히는 그룹으로 보여 줍니다 (HOM_0201)
   const kindAxis = { name: "종류", mode: "", kind: true, tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
   const groups = isM()
@@ -97,9 +98,173 @@ function drawGroups() {
     box.append(btn, body); root.append(box);
   });
 }
+/* ---- PC 필터 패널 (Figma FilterPanel 2460:122490) ----
+   위: 종류 · 스타일 · 기본 정보 칩 / 아래: 카테고리 5개 → 누르면 패널 바로 옆에 FilterFlyout 이 떠요.
+   플라이아웃은 화면 위에 떠 있는 창(position:fixed)이라 피드 이미지를 밀지 않고 그 위에 겹쳐 보입니다.
+   칩·스와치·아이콘을 눌러도 바로 적용되지 않고 ‘적용하기’를 눌러야 결과에 반영돼요. */
+const FP_CATS = [   // [vocab 그룹, 패널 메뉴 이름, 플라이아웃 제목]
+  ["인물 외형", "인물 외형", "인물 외형"],
+  ["의상·장신구", "의상/악세사리", "의상/장신구"],
+  ["얼굴 방향, 감정", "감정", "감정"],
+  ["앵글, 자세", "앵글/자세", "앵글/자세"],
+  ["분위기", "분위기", "분위기"],
+];
+const FP_ORDER = {   // 디자인에 나온 순서를 먼저, 나머지는 원래 순서대로
+  "인물 외형": ["머리 › 머리 모양 › 앞머리", "머리 › 머리 길이", "머리 › 머리색", "머리 › 머리 모양 › 묶음", "머리 › 머리 모양 › 머릿결", "눈 › 눈 색", "눈 › 동공 모양", "비인간 특징"],
+  "분위기": ["계절", "배경 › 시간대", "배경 › 장소", "날씨", "기념일"],
+};
+const FP_NAME = { "성별(외형)": "성별", "프레이밍": "범위", "비인간 특징": "특수 특징" };
+const FP_TOGGLE = { "머리 › 머리 모양 › 앞머리": "앞머리", "눈 › 동공 모양": "특수동공" };   // 스위치를 켜면 칩이 나타남
+const FP_SW = { "빨강": "#E5484D", "주황": "#F76B15", "노랑": "#FFD23F", "초록": "#30A46C", "파랑": "#3E63DD", "보라": "#8E4EC6", "검정": "#18171A", "흰색": "#FFFFFF", "분홍": "#F5A3C7", "갈색": "#8D5B3A", "회색": "#9E9E9E" };
+const FP_SW_X = { "여러 색": "conic-gradient(#E5484D,#FFD23F,#30A46C,#3E63DD,#8E4EC6,#E5484D)", "오드아이": "linear-gradient(90deg,#E5484D 50%,#3E63DD 50%)" };
+/* 감정 · 날씨 아이콘 (Figma icon/emotion · icon/weather, Gray 상태 SVG 그대로). 선택(Purple)은 선 #7425F6 + 채움 #F5EEFF 인 요소(f) */
+const FP_IC = {
+  "기쁨": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M8 11C8.8 9.93335 9.6 9.93335 10.4 11" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6 11C14.4 9.93335 15.2 9.93335 16 11" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.6 14H14.4C14.4 14.6365 14.1471 15.247 13.6971 15.6971C13.247 16.1471 12.6365 16.4 12 16.4C11.3635 16.4 10.753 16.1471 10.3029 15.6971C9.85285 15.247 9.6 14.6365 9.6 14Z" fill="#6F6D72"/>'],
+  "슬픔": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M8 11.2L10 10.4" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11.2L14 10.4" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.8 16.2C11.2667 15.1333 12.7333 15.1333 14.2 16.2" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M15.4 12.4C15.84 13.04 16.12 13.44 16.12 13.76C16.12 13.951 16.0441 14.1341 15.9091 14.2691C15.7741 14.4041 15.591 14.48 15.4 14.48C15.209 14.48 15.0259 14.4041 14.8909 14.2691C14.7559 14.1341 14.68 13.951 14.68 13.76C14.68 13.44 14.96 13.04 15.4 12.4Z" fill="#6F6D72"/>'],
+  "화남": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M7.8 10L10.2 11.2" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2 10L13.8 11.2" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 15.8C11.3333 15 12.6667 15 14 15.8" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>'],
+  "놀람": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M9.2 10.6V10.7" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.8 10.6V10.7" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 13.8C11.6287 13.8001 11.2727 13.9688 11.0103 14.2689C10.7478 14.569 10.6004 14.976 10.6005 15.4003C10.6006 15.8246 10.7481 16.2315 11.0106 16.5315C11.2732 16.8315 11.6292 17 12.0005 17C12.3718 17 12.7278 16.8315 12.9904 16.5315C13.2529 16.2315 13.4004 15.8246 13.4005 15.4003C13.4006 14.976 13.2532 14.569 12.9907 14.2689C12.7283 13.9688 12.3723 13.8001 12.001 13.8H12Z" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>'],
+  "부끄러움": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M8 10.6C8.8 11.5333 9.6 11.5333 10.4 10.6" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6 10.6C14.4 11.5333 15.2 11.5333 16 10.6" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 15.2C11.3333 14.8667 11.6667 14.8667 12 15.2C12.3333 15.5333 12.6667 15.5333 13 15.2" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.39999 14L7.09999 13.1" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round"/><path d="M7.59999 14L8.29999 13.1" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round"/><path d="M15.7 14L16.4 13.1" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round"/><path d="M16.9 14L17.6 13.1" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round"/>'],
+  "두려움": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M9.20001 11V11.1" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.8 11V11.1" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.60001 15.6C10 15.1333 10.4 15.1333 10.8 15.6C11.2 16.0667 11.6 16.0667 12 15.6C12.4 15.1333 12.8 15.1333 13.2 15.6C13.6 16.0667 14 16.0667 14.4 15.6" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.2 6C17.6125 6.6 17.875 6.975 17.875 7.275C17.875 7.45402 17.8039 7.62571 17.6773 7.7523C17.5507 7.87888 17.379 7.95 17.2 7.95C17.021 7.95 16.8493 7.87888 16.7227 7.7523C16.5961 7.62571 16.525 7.45402 16.525 7.275C16.525 6.975 16.7875 6.6 17.2 6Z" fill="#6F6D72"/>'],
+  "무표정": ['<circle cx="12" cy="12" r="9" stroke="#6F6D72" stroke-width="1.5" f/><path d="M10.4 15.2H13.6" stroke="#6F6D72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.20001 11V11.1" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round"/><path d="M14.8 11V11.1" stroke="#6F6D72" stroke-width="1.8" stroke-linecap="round"/>'],
+  "맑음": ['<path d="M12 8C10.9392 8.00013 9.92184 8.42165 9.1718 9.17184C8.42175 9.92202 8.00042 10.9394 8.00049 12.0002C8.00055 13.0611 8.42201 14.0784 9.17215 14.8285C9.92229 15.5786 10.9397 16 12.0005 16C13.0613 16 14.0787 15.5786 14.8288 14.8285C15.579 14.0784 16.0004 13.0611 16.0005 12.0002C16.0006 10.9394 15.5792 9.92202 14.8292 9.17184C14.0791 8.42165 13.0618 8.00013 12.001 8H12Z" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" f/><path d="M18.6 12H20.6M16.67 16.67L18.08 18.08M12 18.6V20.6M7.32998 16.67L5.91998 18.08M5.39999 12H3.39999M7.32998 7.33001L5.91998 5.92001M12 5.39999V3.39999M16.67 7.33001L18.08 5.92001" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'],
+  "흐림": ['<path d="M7.2 17.4248H17.1C17.9549 17.4199 18.7766 17.093 19.4013 16.5094C20.0261 15.9258 20.408 15.1283 20.4711 14.2757C20.5342 13.423 20.2737 12.578 19.7416 11.9088C19.2095 11.2396 18.4449 10.7955 17.6 10.6648C17.4009 9.58975 16.855 8.60959 16.0457 7.87441C15.2365 7.13923 14.2086 6.68956 13.1194 6.59426C12.0303 6.49896 10.9399 6.76328 10.0153 7.34675C9.09065 7.93022 8.38276 8.80067 8 9.8248C6.99218 9.71871 5.98349 10.0173 5.19584 10.655C4.40818 11.2926 3.90609 12.217 3.8 13.2248C3.69391 14.2326 3.99253 15.2413 4.63015 16.029C5.26777 16.8166 6.19218 17.3187 7.2 17.4248Z" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" f/>'],
+  "비": ['<path d="M7.5 4.20001C9.1 6.40001 10 7.70001 10 8.80001C10 9.46305 9.73661 10.0989 9.26777 10.5678C8.79893 11.0366 8.16304 11.3 7.5 11.3C6.83696 11.3 6.20107 11.0366 5.73223 10.5678C5.26339 10.0989 5 9.46305 5 8.80001C5 7.70001 5.9 6.40001 7.5 4.20001Z" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" f/><path d="M16.5 4.20001C18.1 6.40001 19 7.70001 19 8.80001C19 9.46305 18.7366 10.0989 18.2678 10.5678C17.7989 11.0366 17.163 11.3 16.5 11.3C15.837 11.3 15.2011 11.0366 14.7322 10.5678C14.2634 10.0989 14 9.46305 14 8.80001C14 7.70001 14.9 6.40001 16.5 4.20001Z" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" f/><path d="M12 12.7C13.6 14.9 14.5 16.2 14.5 17.3C14.5 17.9631 14.2366 18.5989 13.7678 19.0678C13.2989 19.5366 12.663 19.8 12 19.8C11.337 19.8 10.7011 19.5366 10.2322 19.0678C9.76339 18.5989 9.5 17.9631 9.5 17.3C9.5 16.2 10.4 14.9 12 12.7Z" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" f/>'],
+  "눈": ['<path d="M12 3.40002V20.6M13.7 5.09998L12 6.79998L10.3 5.09998M19.45 7.70001L4.54999 16.3M18.83 10.02L16.5 9.40002L17.13 7.08002M19.45 16.3L4.54999 7.70001M17.13 16.92L16.5 14.6L18.83 13.98M10.3 18.9L12 17.2L13.7 18.9M5.16998 13.98L7.49998 14.6L6.86998 16.92M6.86998 7.08002L7.49998 9.40002L5.16998 10.02" stroke="#6F6D72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'],
+};
+const FP_ICON_AXES = new Set(["감정", "날씨"]);
+function fpIcon(kw, on) {
+  const body = FP_IC[kw][0].replace(/ f\/>/g, on ? ' fill="#F5EEFF"/>' : "/>").replace(/#6F6D72/g, on ? "#7425F6" : "#6F6D72");
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("width", "32"); s.setAttribute("height", "32"); s.setAttribute("fill", "none"); s.setAttribute("aria-hidden", "true");
+  s.innerHTML = body;   // 위 상수(고정 문자열)만 넣음 — 사용자 입력 아님
+  return s;
+}
+const FP = { open: null, tog: {}, el: null, eat: false };
+const fpSet = (t) => (t.kind ? S.pickedKind : S.picked);
+const fpVal = (t) => t.kind || t.ikey;
+const fpHas = (t) => fpSet(t).has(fpVal(t));
+function fpFlip(t, btn) {
+  const set = fpSet(t), v = fpVal(t), on = !set.has(v);
+  on ? set.add(v) : set.delete(v);
+  btn.classList.toggle("on", on); btn.setAttribute("aria-pressed", String(on));
+  if (btn.classList.contains("fp-ic")) btn.querySelector("svg").replaceWith(fpIcon(btn.dataset.kw, on));
+  fpMarkCats();
+}
+const fpChip = (t) => h("button", { class: "fp-chip" + (fpHas(t) ? " on" : ""), type: "button", "aria-pressed": String(fpHas(t)), onclick: (e) => fpFlip(t, e.currentTarget) }, t.label);
+function fpTags(axis) {
+  const base = axis.name.split(" › ").pop();
+  if (FP_ICON_AXES.has(axis.name)) {   // 감정 · 날씨: 아이콘(없는 항목은 칩)
+    const ko = Object.keys(FP_IC), rank = (t) => (FP_IC[t.kw] ? ko.indexOf(t.kw) : 99);   // 디자인 순서(맑음·흐림·비·눈)
+    return h("div", { class: "fp-icons" }, [...axis.tags].sort((a, b) => rank(a) - rank(b)).map((t) => FP_IC[t.kw]
+      ? h("button", { class: "fp-ic" + (fpHas(t) ? " on" : ""), type: "button", "data-kw": t.kw, title: t.label, "aria-label": t.label, "aria-pressed": String(fpHas(t)), onclick: (e) => fpFlip(t, e.currentTarget) }, fpIcon(t.kw, fpHas(t)))
+      : fpChip(t)));
+  }
+  if (base === "머리색" || base === "눈 색") {   // 색 스와치
+    return h("div", { class: "fp-sws" }, axis.tags.map((t) => {
+      const name = t.kw.replace(/\(.*\)$/, "").trim();
+      const bg = FP_SW[name] || FP_SW_X[name] || "#fff";
+      return h("button", { class: "fp-sw" + (fpHas(t) ? " on" : ""), type: "button", "aria-pressed": String(fpHas(t)), title: t.label, onclick: (e) => fpFlip(t, e.currentTarget) },
+        h("i", { style: `background:${bg}` + (name === "흰색" ? ";--ring:#c3c2c5" : "") }), h("span", {}, name));
+    }));
+  }
+  return h("div", { class: "fp-chips" }, axis.tags.map(fpChip));
+}
+/* 한 축(섹션). sub=true 면 작은 회색 소제목(14), 아니면 큰 제목(18) */
+function fpSection(axis, sub) {
+  const raw = axis.name.split(" › ").pop(), name = FP_NAME[axis.name] || FP_NAME[raw] || raw;
+  if (FP_TOGGLE[axis.name]) {
+    const on = FP.tog[axis.name] ?? axis.tags.some(fpHas);
+    const tags = fpTags(axis); tags.hidden = !on;
+    const sw = h("button", { class: "fp-switch" + (on ? " on" : ""), type: "button", role: "switch", "aria-checked": String(on), "aria-label": FP_TOGGLE[axis.name], onclick: () => {
+      const o = sw.getAttribute("aria-checked") !== "true";
+      FP.tog[axis.name] = o; sw.classList.toggle("on", o); sw.setAttribute("aria-checked", String(o)); tags.hidden = !o;
+      if (!o) { axis.tags.forEach((t) => fpSet(t).delete(fpVal(t))); tags.querySelectorAll(".on").forEach((b) => { b.classList.remove("on"); b.setAttribute("aria-pressed", "false"); }); fpMarkCats(); }
+    } });
+    return h("div", { class: "fp-sec fp-tog" }, h("div", { class: "fp-togrow" }, h("span", { class: "fp-sub" }, FP_TOGGLE[axis.name]), sw), tags);
+  }
+  return h("div", { class: "fp-sec" + (sub ? "" : " big") }, h(sub ? "span" : "h4", { class: sub ? "fp-sub" : "fp-ttl" }, name), fpTags(axis));
+}
+/* 축 목록 → 블록: 같은 머리말(머리 › … / 눈 › …)끼리 묶어 큰 제목 + 작은 소제목 섹션들 */
+function fpBlocks(axes, order) {
+  const ord = order || [];
+  const list = axes.map((a, i) => [a, ord.includes(a.name) ? ord.indexOf(a.name) : 100 + i]).sort((x, y) => x[1] - y[1]).map((x) => x[0]);
+  const out = [];
+  list.forEach((a) => {
+    const parts = a.name.split(" › ");
+    if (parts.length > 1) {
+      const last = out[out.length - 1];
+      if (last && last.head === parts[0]) last.axes.push(a); else out.push({ head: parts[0], axes: [a] });
+    } else out.push({ axes: [a] });
+  });
+  return out.map((b) => b.head
+    ? h("div", { class: "fp-group" }, h("h4", { class: "fp-ttl" }, b.head), h("div", { class: "fp-secs" }, b.axes.map((a) => fpSection(a, true))))
+    : fpSection(b.axes[0], false));
+}
+function drawFilterPC(root) {
+  const g0 = S.vocab.groups.find((g) => g.name === "기본 정보") || { axes: [] };
+  const kindAxis = { name: "종류", tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
+  const style = g0.axes.filter((a) => a.name.startsWith("스타일 ›")), basic = g0.axes.filter((a) => !a.name.startsWith("스타일 ›"));
+  const top = h("div", { class: "fp-top" },
+    h("div", { class: "fp-sec" }, h("div", { class: "fp-hrow" }, h("h4", { class: "fp-ttl" }, "종류"), h("button", { class: "fp-reset", type: "button", onclick: () => $("#reset").click() }, "초기화")), fpTags(kindAxis)),
+    style.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "스타일"), h("div", { class: "fp-subs" }, style.map((a) => fpSection(a, true)))) : null,
+    basic.length ? h("div", { class: "fp-sec" }, h("h4", { class: "fp-ttl" }, "기본 정보"), h("div", { class: "fp-subs" }, basic.map((a) => fpSection(a, true)))) : null);
+  const cats = h("div", { class: "fp-cats" }, FP_CATS.filter(([g]) => S.vocab.groups.some((x) => x.name === g)).map(([g, label]) =>
+    h("button", { class: "fp-cat", type: "button", "data-g": g, "aria-haspopup": "dialog", "aria-expanded": "false", onclick: () => (FP.open === g ? fpClose() : fpOpen(g)) },
+      h("span", {}, label), h("b", { class: "fp-n", hidden: true }), icon("chevR", 24))));
+  root.append(h("div", { class: "fp" }, top, h("hr", { class: "fp-line" }), cats));
+  fpMarkCats();
+  if (FP.open) fpOpen(FP.open, true);   // 초기화 등으로 다시 그릴 때 열린 창 내용도 새로
+}
+/* 카테고리 메뉴: 열린 창은 선택 상태, 고른 개수는 숫자로 */
+function fpMarkCats() {
+  document.querySelectorAll(".fp-cat").forEach((b) => {
+    const g = S.vocab.groups.find((x) => x.name === b.dataset.g);
+    const n = g ? g.axes.reduce((s, a) => s + a.tags.filter((t) => S.picked.has(t.ikey)).length, 0) : 0;
+    const on = FP.open === b.dataset.g;
+    b.classList.toggle("on", on); b.setAttribute("aria-expanded", String(on));
+    const nb = b.querySelector(".fp-n"); nb.hidden = !n; nb.textContent = n ? String(n) : "";
+  });
+}
+function fpPlace() {
+  if (!FP.el) return;
+  const r = $(".side").getBoundingClientRect(), top = Math.max(r.top, 0) + 16;
+  FP.el.style.left = `${r.right + 18}px`; FP.el.style.top = `${top}px`; FP.el.style.maxHeight = `${innerHeight - top - 16}px`;
+}
+function fpOpen(g, redraw) {
+  const cat = FP_CATS.find((c) => c[0] === g), grp = S.vocab.groups.find((x) => x.name === g);
+  if (!cat || !grp) return;
+  const keep = redraw && FP.el ? FP.el.querySelector(".fp-body").scrollTop : 0;
+  const swap = FP.el && FP.open !== g;
+  FP.open = g;
+  const el = FP.el || h("div", { class: "flyout", role: "dialog", "aria-modal": "false" });
+  el.setAttribute("aria-label", cat[2]);
+  el.replaceChildren(
+    h("div", { class: "fp-head" }, h("h3", {}, cat[2]), h("button", { class: "fp-x", type: "button", "aria-label": "닫기", onclick: fpClose }, icon("close", 24))),
+    h("div", { class: "fp-body" }, fpBlocks(grp.axes, FP_ORDER[g])));
+  if (!FP.el) { FP.el = el; document.body.append(el); fpPlace(); requestAnimationFrame(() => el.classList.add("on")); }
+  else { fpPlace(); if (swap) { el.classList.remove("swap"); void el.offsetWidth; el.classList.add("swap"); } }
+  el.querySelector(".fp-body").scrollTop = keep;
+  fpMarkCats();
+}
+function fpClose() {
+  if (!FP.el) return;
+  const el = FP.el; FP.el = null; FP.open = null;
+  el.classList.remove("on"); setTimeout(() => el.remove(), RM.matches ? 0 : 200);
+  fpMarkCats();
+}
+addEventListener("resize", fpPlace);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && FP.el) fpClose(); });
+/* 창 바깥을 누르면 닫기 — 그 클릭으로 피드 이미지가 열리지 않게 한 번 막음 */
+document.addEventListener("pointerdown", (e) => {
+  if (!FP.el || FP.el.contains(e.target) || e.target.closest(".side")) return;
+  if (e.target.closest(".grid")) { FP.eat = true; setTimeout(() => (FP.eat = false), 500); }
+  fpClose();
+}, true);
+document.addEventListener("click", (e) => { if (FP.eat) { FP.eat = false; e.stopPropagation(); e.preventDefault(); } }, true);
 $("#apply").onclick = () => {
   if (curTab === "pose") { toast("3D 포즈 검색은 준비 중이에요"); return; }
   if (CP.dirty && !$("#cpanel").hidden) { const c = hsv2hex(CP.h, CP.s, CP.v); if (!S.pickColors.includes(c)) S.pickColors = [...S.pickColors, c].slice(-5); CP.dirty = false; }   // 저장하지 않아도 지금 고른 색으로 적용
+  fpClose();
   S.applied = [...S.picked]; S.kinds = [...(S.pickedKind || [])]; S.colors = [...S.pickColors]; if (!$("#cpanel").hidden) drawColorPanel(); reload();
   if (isM()) setFilterOpen(false);
 };
@@ -111,6 +276,7 @@ let fCloseT;
 function setFilterOpen(o) {
   const L = $("#layout"), was = L.classList.contains("f-open");
   if (was !== o) masSnap();
+  if (!o) fpClose();
   clearTimeout(fCloseT);
   // PC에서 닫을 때: 필터 창을 바로 없애지 않고 왼쪽으로 미끄러져 사라지게 (그동안 피드는 왼쪽으로 채워짐)
   if (was && !o && !isM() && !RM.matches) { L.classList.add("f-closing"); fCloseT = setTimeout(() => L.classList.remove("f-closing"), 340); }
@@ -175,7 +341,8 @@ function showTab(t) {
   const on = { tag: curTab === "tag", pose: curTab === "pose", color: curTab === "color" };
   $("#groups").hidden = !on.tag; $("#cpanel").hidden = !on.color; $("#ppanel").hidden = !on.pose;
   [["tabTag", on.tag], ["tabPose", on.pose], ["tabColor", on.color]].forEach(([id, v]) => { $("#" + id).classList.toggle("on", v); $("#" + id).setAttribute("aria-selected", String(v)); });
-  $("#apply").textContent = isM() ? "적용하기" : on.color ? "색상 적용하기" : on.pose ? "포즈 적용하기" : "필터 적용하기";
+  $("#apply").textContent = isM() ? "적용하기" : on.color ? "색상 적용하기" : on.pose ? "포즈 적용하기" : "적용하기";
+  if (!on.tag) fpClose();
   if (on.color) drawColorPanel();
   if (on.pose) drawPosePanel();
 }

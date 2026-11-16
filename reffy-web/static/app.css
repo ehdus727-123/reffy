@@ -1686,3 +1686,74 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):
 .pf-banner{position:relative}
 .pc-back.on-banner{position:absolute;left:24px;top:16px;margin:0;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .pc-back.on-banner:hover{background:rgba(255,255,255,.85)}
+
+/* ===== PC 필터 패널 · FilterFlyout (Figma 2480:124768) ===== */
+html:not(.m) .side{padding:0;gap:0;background:#f8f7f8}
+html:not(.m) .side .tabs{margin:24px 0 0;gap:0;border-bottom:1px solid #f1f0f2}
+html:not(.m) .side .tabs [role=tab]{flex:1 1 0;min-width:0;display:flex;justify-content:center;padding:9px 12px 11px;font:500 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72;border-bottom:2px solid transparent;margin-bottom:-1px}
+html:not(.m) .side .tabs [role=tab].on{font-weight:600;color:var(--brand);border-bottom-color:var(--brand);padding-bottom:11px}
+html:not(.m) .side .tabs .reset{display:none}
+html:not(.m) body .side .groups{margin:0;padding:30px 24px 24px;gap:0}
+html:not(.m) body .side .cpanel,html:not(.m) body .side .ppanel{margin:0;padding:30px 24px 24px}
+html:not(.m) .side .apply{height:92px;padding:20px 24px 0;border-top:1px solid #f1f0f2;background:#f8f7f8}
+html:not(.m) .side .apply .btn.primary{height:48px;border-radius:10px;background:var(--brand);border-color:var(--brand);color:#fff;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .side .apply .btn.primary:hover{background:#6a1fe4;border-color:#6a1fe4}
+.fp{display:flex;flex-direction:column;gap:36px}
+.fp-top{display:flex;flex-direction:column;gap:40px}
+.fp-sec{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fp-top>.fp-sec:nth-child(3){gap:16px}
+.fp-subs{display:flex;flex-direction:column;gap:28px}
+.fp-hrow{display:flex;align-items:center;justify-content:space-between}
+.fp-ttl{margin:0;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.fp-top .fp-ttl,.fp-top .fp-sub{padding:0 8px}
+.fp-reset{font:500 12px/16px Pretendard,sans-serif;color:#5b595f;padding:4px 0;border-radius:4px}
+.fp-reset:hover{color:#18171a;text-decoration:underline}
+.fp-sub{font:500 14px/20px Pretendard,sans-serif;color:#6f6d72}
+.fp-chips,.fp-icons{display:flex;flex-wrap:wrap;gap:8px}
+.fp-icons{gap:8px 12px;align-items:center}
+.fp-chip{height:32px;padding:0 12px;border-radius:999px;background:#f1f0f2;color:#18171a;font:500 14px/20px Pretendard,sans-serif;white-space:nowrap;transition:background-color var(--d1,.12s) var(--ease,ease),color var(--d1,.12s) var(--ease,ease)}
+.fp-chip:hover{background:#e7e6e8}
+.fp-chip.on{background:#f5eeff;color:#7425f6}
+.fp-chip.on:hover{background:#ece0ff}
+.fp-line{border:0;border-top:1px solid #e4e3e5;margin:0}
+.fp-cats{display:flex;flex-direction:column}
+.fp-cat{display:flex;align-items:center;gap:8px;width:100%;padding:12px;border-radius:6px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a;text-align:left;transition:background-color var(--d1,.12s) var(--ease,ease),color var(--d1,.12s) var(--ease,ease)}
+.fp-cat>span{flex:1;min-width:0}
+.fp-cat .ic{width:24px;height:24px;color:#18171a}
+.fp-cat:hover{background:rgba(24,23,26,.04)}
+.fp-cat.on{background:#f5eeff;color:#7425f6}
+.fp-cat.on .ic{color:#7425f6}
+.fp-n{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#7425f6;color:#fff;font:600 12px/20px Pretendard,sans-serif;text-align:center}
+/* 플라이아웃: 패널 오른쪽 18px에 떠 있음 (피드는 그대로, 그 위에 겹침) */
+.flyout{position:fixed;z-index:25;width:400px;display:flex;flex-direction:column;gap:8px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(24,23,26,.12);overflow:hidden;opacity:0;transform:translateX(-8px);transition:opacity .2s var(--ease,ease),transform .2s var(--ease,ease)}
+.flyout.on{opacity:1;transform:none}
+.flyout.swap .fp-body,.flyout.swap .fp-head h3{animation:rf-fade .2s var(--ease,ease) both}
+.fp-head{display:flex;align-items:center;gap:8px;padding:24px 24px 16px;flex:none}
+.fp-head h3{flex:1;min-width:0;margin:0;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#18171a}
+.fp-x{width:24px;height:24px;display:grid;place-items:center;border-radius:6px;color:#18171a}
+.fp-x .ic{width:24px;height:24px}
+.fp-x:hover{background:rgba(24,23,26,.06)}
+.fp-body{min-height:0;overflow:auto;padding:0 24px 24px;display:flex;flex-direction:column;gap:40px;overscroll-behavior:contain}
+.fp-group{display:flex;flex-direction:column;gap:16px}
+.fp-secs{display:flex;flex-direction:column;gap:28px}
+.fp-body .fp-sec{gap:10px}
+.fp-body .fp-sec.big{gap:16px}
+.fp-body .fp-sub{color:#5b595f}
+.fp-tog{gap:10px}
+.fp-togrow{display:flex;align-items:center;gap:12px}
+.fp-tog>[hidden]{display:none}
+.fp-switch{position:relative;width:32px;height:18px;border-radius:9px;background:#c3c2c5;flex:none;transition:background-color .15s var(--ease,ease)}
+.fp-switch::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s var(--ease,ease)}
+.fp-switch.on{background:#7425f6}
+.fp-switch.on::after{transform:translateX(14px)}
+.fp-sws{display:flex;flex-wrap:wrap;gap:12px 6px}
+.fp-sw{width:48px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;border-radius:6px}
+.fp-sw i{width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(24,23,26,.1);transition:box-shadow .12s var(--ease,ease),transform .12s var(--ease,ease)}
+.fp-sw:hover i{transform:scale(1.06)}
+.fp-sw.on i{outline:1px solid #fff;outline-offset:-2px;box-shadow:inset 0 0 0 1px rgba(24,23,26,.1),0 0 0 1.5px var(--ring,transparent)}
+.fp-sw span{font:500 11px/16px Pretendard,sans-serif;color:#5b595f;white-space:nowrap}
+.fp-sw.on span{color:#7425f6}
+.fp-ic{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;padding:0}
+.fp-ic svg{width:32px;height:32px;display:block;transition:transform .12s var(--ease,ease)}
+.fp-ic:hover svg{transform:scale(1.08)}
+@media (prefers-reduced-motion:reduce){.flyout{transition:none}.flyout.swap .fp-body,.flyout.swap .fp-head h3{animation:none}}
