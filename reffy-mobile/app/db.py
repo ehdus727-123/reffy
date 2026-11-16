@@ -4,7 +4,11 @@ from datetime import datetime
 
 from . import config
 
-engine = create_engine(config.DB_URL, pool_pre_ping=True, future=True)
+if config.DB_URL.startswith("sqlite"):
+    engine = create_engine(config.DB_URL, pool_pre_ping=True, future=True)
+else:
+    # 클라우드 DB: 매 요청마다 연결 확인(왕복 1번)을 하지 않고 연결을 재사용 → 서버와 DB 가 멀어도 덜 느리게
+    engine = create_engine(config.DB_URL, pool_pre_ping=False, pool_recycle=240, pool_size=5, max_overflow=5, future=True)
 if engine.dialect.name == "sqlite":
     @event.listens_for(engine, "connect")
     def _pragma(dbapi, _):  # noqa: ANN001

@@ -198,7 +198,9 @@ def image_file(image_id: int, request: Request, s: str = "thumb"):
         p = config.UPLOADS / f
         if not store.pull(p):
             raise HTTPException(404)
-    return FileResponse(p, headers={"Cache-Control": "no-cache"})
+    # 주소에 버전(v=)이 붙은 공개 이미지는 브라우저가 오래 저장해 두고 다시 묻지 않게 (비공개는 매번 확인)
+    cc = "public, max-age=31536000, immutable" if request.query_params.get("v") and not r[0]["private"] else "no-cache"
+    return FileResponse(p, headers={"Cache-Control": cc})
 
 
 # ------------------------------------------------------------------ 업로드: 분석 -> (태그 수정) -> 게시
@@ -390,5 +392,8 @@ async def _no_stale_static(request, call_next):
         resp.headers["Cache-Control"] = "no-cache"
     return resp
 
+
+from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
+app.add_middleware(GZipMiddleware, minimum_size=1024)   # 화면 파일 · 목록 응답을 압축해서 보냄 (이미지는 그대로)
 
 app.mount("/", StaticFiles(directory=str(config.BASE / "static"), html=True), name="static")
