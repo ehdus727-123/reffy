@@ -13,7 +13,7 @@ from PIL import Image, ImageOps
 from pydantic import BaseModel
 from sqlalchemy import text
 
-from . import colors as colormod, config, db, extras, social
+from . import colors as colormod, config, db, extras, social, store
 from .classifier import C
 from .search import match_tags, search
 from .tagger import T
@@ -28,6 +28,7 @@ FORMATS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp", "GIF": "gif"}
 @app.on_event("startup")
 def _start():
     db.init()
+    store.ensure_bucket()
     _backfill_colors()
     T.start([v["aliases"] for v in VOCAB])
     C.load()
@@ -39,7 +40,8 @@ def _backfill_colors():
         if colormod.is_current(colormod.loads(r["colors"])):
             continue
         f = config.UPLOADS / f"t_{r['id']}.jpg"
-        f = f if f.exists() else config.UPLOADS / r["file"]
+        f = f if store.pull(f) else config.UPLOADS / r["file"]
+        store.pull(f)
         try:
             with Image.open(f) as im:
                 cols = colormod.extract(im)
@@ -191,8 +193,10 @@ def image_file(image_id: int, request: Request, s: str = "thumb"):
         raise HTTPException(404)
     f = r[0]["file"]
     p = (config.UPLOADS / ("t_" + f.rsplit(".", 1)[0] + ".jpg")) if s == "thumb" else (config.UPLOADS / f)
-    if not p.exists():
+    if not store.pull(p):
         p = config.UPLOADS / f
+        if not store.pull(p):
+            raise HTTPException(404)
     return FileResponse(p, headers={"Cache-Control": "no-cache"})
 
 
@@ -311,6 +315,7 @@ def publish(body: PublishIn, request: Request):
     thumb = im.convert("RGB")
     thumb.thumbnail((520, 1400))
     thumb.save(config.UPLOADS / f"t_{iid}.jpg", "JPEG", quality=85)
+    store.push(config.UPLOADS / name); store.push(config.UPLOADS / f"t_{iid}.jpg")
     for f in files:
         f.unlink(missing_ok=True)
     return {"id": iid}
@@ -357,7 +362,7 @@ def delete_image(image_id: int, request: Request):
             c.execute(text(f"DELETE FROM {t} WHERE " + ("image_id" if t != "image_tags" else "image_id") + " = :i"), {"i": image_id})
         c.execute(text("DELETE FROM images WHERE id = :i"), {"i": image_id})
     for p in (config.UPLOADS / r[0]["file"], config.UPLOADS / f"t_{image_id}.jpg"):
-        p.unlink(missing_ok=True)
+        store.delete(p)
     return {"ok": True}
 
 

@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 from sqlalchemy import text
 
-from . import config, db
+from . import config, db, store
 from . import social as S
 
 router = APIRouter(prefix="/api")
@@ -146,6 +146,7 @@ async def inquiry(request: Request):
             im.thumbnail((1600, 1600))
             name = f"iq_{iid}_{n}.jpg"
             im.save(config.UPLOADS / name, "JPEG", quality=88)
+            store.push(config.UPLOADS / name)
             names.append(name)
         if names:
             c.execute(text("UPDATE inquiries SET photos = :p WHERE id = :i"), {"p": _json.dumps(names), "i": iid})
@@ -236,7 +237,7 @@ def leave(body: LeaveIn, request: Request, resp: Response):
             c.execute(text(sql), p)
     for im in imgs:
         for f in (config.UPLOADS / im["file"], config.UPLOADS / f"t_{im['id']}.jpg"):
-            f.unlink(missing_ok=True)
+            store.delete(f)
     resp.delete_cookie(S.COOKIE)
     return {"ok": True}
 

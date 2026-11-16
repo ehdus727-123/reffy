@@ -17,7 +17,7 @@ from PIL import Image, ImageOps
 from pydantic import BaseModel
 from sqlalchemy import text
 
-from . import config, db
+from . import config, db, store
 
 router = APIRouter(prefix="/api")
 COOKIE = "reffy_session"
@@ -171,7 +171,7 @@ def logout(request: Request, resp: Response):
 @router.get("/auth/me")
 def whoami(request: Request):
     u = me(request)
-    unread = db.rows("SELECT COUNT(*) AS n FROM notifications WHERE user_id = :u AND is_read = 0", u=u["id"])[0]["n"] if u else 0
+    unread = db.rows("SELECT COUNT(*) AS n FROM notifications WHERE user_id = :u AND is_read = :f", u=u["id"], f=False)[0]["n"] if u else 0
     return {"user": {**u, "avatar": _avatar_url(u["uid"], u["avatar"])} if u else None, "unread": unread}
 
 
@@ -538,7 +538,7 @@ def notifications(request: Request, kind: str = ""):
 def read_all(request: Request):
     u = need(request)
     with db.engine.begin() as c:
-        c.execute(text("UPDATE notifications SET is_read = 1 WHERE user_id = :u"), {"u": u["id"]})
+        c.execute(text("UPDATE notifications SET is_read = :t WHERE user_id = :u"), {"u": u["id"], "t": True})
     return {"ok": True}
 
 
@@ -555,6 +555,7 @@ def _save_square(data: bytes, dest, size: int, limit_mb: int = 5):
         raise HTTPException(400, "JPG · PNG 이미지만 올릴 수 있어요.")
     im = ImageOps.fit(im, (size, size))
     im.save(dest, "JPEG", quality=88)
+    store.push(dest)
 
 
 @router.post("/books/{book_id}/cover")
@@ -574,6 +575,7 @@ def get_cover(book_id: int, v: str = ""):
     r = db.rows("SELECT cover FROM books WHERE id = :b", b=book_id)
     if not r or not r[0]["cover"]:
         raise HTTPException(404, "커버가 없어요.")
+    store.pull(config.UPLOADS / f"bc_{book_id}_{r[0]['cover']}")
     return FileResponse(config.UPLOADS / f"bc_{book_id}_{r[0]['cover']}", headers={"Cache-Control": "public, max-age=31536000"})
 
 
@@ -727,6 +729,7 @@ async def set_cover(request: Request, file: UploadFile = File(...)):
     im.thumbnail((1440, 1440))
     name = secrets.token_hex(4)
     im.save(config.UPLOADS / f"cv_{u['id']}_{name}.jpg", "JPEG", quality=88)
+    store.push(config.UPLOADS / f"cv_{u['id']}_{name}.jpg")
     with db.engine.begin() as c:
         c.execute(text("UPDATE users SET cover = :a WHERE id = :i"), {"a": name, "i": u["id"]})
     return {"cover": f"/api/users/{u['uid']}/cover?v={name}"}
@@ -745,6 +748,7 @@ def cover_file(uid: str, v: str = ""):
     t = _user_row(uid)
     if not t["cover"]:
         raise HTTPException(404, "헤더 이미지가 없어요.")
+    store.pull(config.UPLOADS / f"cv_{t['id']}_{t['cover']}.jpg")
     return FileResponse(config.UPLOADS / f"cv_{t['id']}_{t['cover']}.jpg", headers={"Cache-Control": "public, max-age=31536000"})
 
 
@@ -753,4 +757,5 @@ def avatar_file(uid: str, v: str = ""):
     t = _user_row(uid)
     if not t["avatar"]:
         raise HTTPException(404, "프로필 사진이 없어요.")
+    store.pull(config.UPLOADS / f"av_{t['id']}_{t['avatar']}.jpg")
     return FileResponse(config.UPLOADS / f"av_{t['id']}_{t['avatar']}.jpg", headers={"Cache-Control": "public, max-age=31536000"})

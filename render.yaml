@@ -24,4 +24,11 @@ services:
       - key: TAGGER
         value: "off"         # 무료 서버 메모리(512MB)로는 AI 태거 모델을 못 돌려서 끔 (업로드는 됨, 태그는 직접 추가)
       - key: SEED_DIR
-        value: demo-data     # 켤 때마다 reffy-web/demo-data 의 게시물 · 이미지로 시작
+        value: demo-data     # 처음 켤 때(DB 가 비어 있을 때) reffy-web/demo-data 의 게시물 · 이미지로 시작
+      # ↓ Supabase 에 저장하려면 Render 대시보드 → reffy → Environment 에서 값을 직접 넣어 주세요 (깃허브에 올리지 않음)
+      - key: DB_URL          # Supabase → Connect → Session pooler 주소 (postgresql://postgres.xxxx:비밀번호@...pooler.supabase.com:5432/postgres)
+        sync: false
+      - key: SUPABASE_URL    # Supabase → Project Settings → API → Project URL
+        sync: false
+      - key: SUPABASE_KEY    # Supabase → Project Settings → API Keys → service_role (secret) 키
+        sync: false

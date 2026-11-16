@@ -32,6 +32,15 @@ TMP = DATA / "tmp"
 for d in (UPLOADS, TMP, BASE / "models"):
     d.mkdir(parents=True, exist_ok=True)
 DB_URL = os.getenv("DB_URL") or f"sqlite:///{(DATA / 'reffy.db').as_posix()}"
+# Supabase 등에서 복사한 postgres:// · postgresql:// 주소를 그대로 넣어도 되게 (psycopg 드라이버 사용)
+if DB_URL.startswith("postgres://"):
+    DB_URL = "postgresql://" + DB_URL[len("postgres://"):]
+if DB_URL.startswith("postgresql://"):
+    DB_URL = "postgresql+psycopg://" + DB_URL[len("postgresql://"):]
+# Supabase Storage: 둘 다 있으면 업로드 이미지를 클라우드에도 저장 (서버가 다시 켜져도 남음)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()          # service_role 키 (서버에만 둠, 화면에 내보내지 않음)
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "reffy").strip()
 TAGGER = os.getenv("TAGGER", "auto").strip().lower()          # auto / off / mock(시험용 가짜 태그)
 TAGGER_REPO = os.getenv("TAGGER_REPO", "SmilingWolf/wd-vit-tagger-v3").strip()
 MODEL_DIR = Path(os.getenv("MODEL_DIR") or (BASE / "models"))

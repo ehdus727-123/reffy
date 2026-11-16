@@ -137,5 +137,7 @@ Render 무료 웹 서비스에 올리면 `https://reffy-xxxx.onrender.com` 같�
 
 알아 둘 점
 - 15분 동안 아무도 안 들어오면 서버가 잠들어요. 다음 사람이 들어올 때 **처음 한 번 1분 정도** 걸려요.
-- 서버가 다시 켜질 때마다 `demo-data` 상태로 돌아가요 (사이트에서 새로 올린 글은 임시).
+- Supabase 를 연결하지 않으면, 서버가 다시 켜질 때마다 `demo-data` 상태로 돌아가요 (사이트에서 새로 올린 글은 임시).
+- Supabase 를 연결하면(Render → Environment 에 `DB_URL` · `SUPABASE_URL` · `SUPABASE_KEY`) 누가 올린 글 · 이미지든 계속 남아요.
+  처음 켤 때 DB 가 비어 있으면 `demo-data` 를 한 번 옮겨 넣어요. Supabase 무료 프로젝트는 일주일간 접속이 없으면 일시정지되니 대시보드에서 Restore 해 주세요.
 - 무료 서버는 메모리가 작아 **AI 자동 태그는 꺼져 있어요** (업로드 · 태그 직접 추가는 됨).
