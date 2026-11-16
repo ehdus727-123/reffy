@@ -1910,3 +1910,22 @@ html:not(.m) body .side .groups{padding:30px 24px 137px}
 html:not(.m) .fp-ttl1{line-height:24px}
 .fp-cats{gap:0}
 html:not(.m) .side .apply{height:93px;padding-top:21px}
+
+/* ===== 필터 패널 · 상세 필터 창 최종 (Figma FilterPanel 2563:146159 / 섹션 2480:124768) ===== */
+/* 탭: 16px Medium (선택은 보라 글자 + 보라 밑줄 2) */
+html:not(.m) .side .tabs [role=tab],html:not(.m) .side .tabs [role=tab].on{font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;padding:9px 10px 11px}
+/* 큰 제목(종류 · 스타일 · 기본 정보) 16px SemiBold */
+html:not(.m) .fp-top .fp-ttl,html:not(.m) .fp-ttl1{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000}
+/* 칩: Outlined — 기본 = 회색 테두리(#C3C2C5) · 선택 = 연보라 배경 + 보라 테두리 + 보라 글자 · 높이 34 · 글자 좌우 12 */
+.fp-chip{height:34px;box-sizing:border-box;padding:0 12px;background:transparent;border:1px solid #c3c2c5;box-shadow:none;color:#18171a}
+.fp-chip:hover{background:rgba(24,23,26,.04)}
+.fp-chip.on,.fp-chip.on:hover{background:#f5eeff;border-color:#7425f6;color:#7425f6;box-shadow:none}
+/* 구분선 위 36 · 아래 18 · 카테고리 줄 간격 0 */
+html:not(.m) .fp{gap:36px}
+html:not(.m) .fp-line{margin-bottom:-18px}
+/* 맨 아래까지 스크롤하면 '분위기'와 적용하기 영역 사이 155 (1269 - 1114) */
+html:not(.m) body .side .groups{padding:30px 24px 155px}
+/* 적용하기 영역: 위 20 · 아래 24 · 위 구분선 */
+html:not(.m) .side .apply{height:auto;padding:20px 24px 24px;border-top:1px solid #f1f0f2;background:#f8f7f8}
+/* 카테고리 줄의 고른 개수 숫자는 Figma 에 없어 숨김 */
+.fp-cat .fp-n{display:none!important}
