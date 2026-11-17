@@ -2010,3 +2010,31 @@ html:not(.m) .dp-more{height:48px;margin-top:33px;border-radius:10px;font-size:1
 img.wbg{filter:brightness(.95)}
 /* 연관 이미지 카드의 고정 5% 덮개는 위 규칙으로 통일 */
 .dp-im::after{display:none}
+
+/* ================================================================ Common/Card 상태 (Figma 2138:1046)
+   Hover(홈 피드 · PC): 이미지에 #18171A 8% State layer + 오른쪽 위 빈 하트 40(그림자 15%)
+   Active(지금 열어 본 이미지): 이미지에 2px brand 테두리만
+   Selected(선택 모드에서 고른 이미지): 왼쪽 위 체크박스 18(보라 · 모서리 4) + 2px brand 테두리 */
+.card .im{position:relative}
+.card .im::before,.card .im::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1}
+.card .im::before{background:#18171a;opacity:0;transition:opacity var(--d1,.12s) ease}
+.card .im::after{border:2px solid transparent}
+html:not(.m) #grid .card:hover .im::before{opacity:.08}
+html:not(.m) #grid .card:hover .im img,html:not(.m) .card:hover .im img{transform:none}
+.c-like{position:absolute;right:10px;top:10px;width:40px;height:40px;z-index:2;display:none;cursor:pointer}
+.c-like svg{width:40px;height:40px;display:block;filter:drop-shadow(0 0 2px rgba(0,0,0,.15))}
+html:not(.m) #grid .card:hover .c-like{display:block}
+.selecting .c-like{display:none!important}
+/* Active */
+.card.sel::after{display:none}
+.card.sel .im::after{border-color:#7425f6}
+/* Selected */
+.card.on .im{outline:0}
+.card.on .im::after{border-color:#7425f6}
+.card .ck{left:8px;top:8px;width:18px;height:18px;border-radius:4px;border:2px solid #8e8c91;background:#fff;box-sizing:border-box;z-index:2}
+.card.on .ck{border:0;background:#7425f6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M13.3132 5.64645C13.5084 5.45118 13.8249 5.45118 14.0202 5.64645C14.2154 5.84171 14.2154 6.15822 14.0202 6.35348L7.68685 12.6868C7.49159 12.8821 7.17508 12.8821 6.97982 12.6868L3.97982 9.68681C3.78456 9.49155 3.78456 9.17504 3.97982 8.97978C4.17508 8.78452 4.49159 8.78452 4.68685 8.97978L7.33334 11.6263L13.3132 5.64645Z' fill='white'/%3E%3C/svg%3E") center/18px 18px no-repeat}
+.card.on .ck::after{display:none}
+/* 킵 스페이스 이미지도 같은 선택 색 */
+.kc-card.on .kc-chk,.kc-th.on .kc-chk{background:#7425f6;border-color:#7425f6;color:#fff}
+.kc-card.cur{border-color:#7425f6}
+.kc-card.on .kc-chk{border-color:#7425f6}

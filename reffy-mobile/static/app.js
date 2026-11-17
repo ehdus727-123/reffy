@@ -428,9 +428,33 @@ new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes)
 function card(it) {
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
-    h("span", { class: "im" }, img),
+    h("span", { class: "im" }, img, cardLike(it)),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
+}
+/* 카드 Hover(Figma Common/Card 2138:1046): 이미지에 8% State layer + 오른쪽 위 하트 40 — 누르면 하트(좋아요) */
+const CL_PATH = {
+  o: "M20.6429 33.1559C20.2473 33.3931 19.7527 33.3931 19.3571 33.1559L20 32.0833L20.6429 33.1559ZM31.6667 15.6673C31.6667 12.3678 29.1533 10.0003 26.084 10C23.9734 10 22.1146 11.1573 21.0726 12.8939C20.8467 13.2702 20.439 13.4993 20 13.4993C19.561 13.4993 19.1534 13.2702 18.9274 12.8939C17.8855 11.1573 16.0266 10 13.916 10C10.8467 10.0003 8.33334 12.3678 8.33334 15.6673C8.33351 17.5232 9.02714 19.4028 10.1628 21.2272C11.2965 23.0485 12.8292 24.7466 14.3962 26.2126C15.9586 27.6742 17.5263 28.8786 18.7061 29.7184C19.2257 30.0883 19.6697 30.3844 20 30.6006C20.3303 30.3844 20.7743 30.0883 21.294 29.7184C22.4737 28.8786 24.0414 27.6742 25.6039 26.2126C27.1709 24.7466 28.7035 23.0485 29.8373 21.2272C30.9729 19.4028 31.6665 17.5232 31.6667 15.6673ZM34.1667 15.6673C34.1665 18.1443 33.2456 20.483 31.9596 22.5488C30.6717 24.6178 28.9747 26.4824 27.3128 28.0371C25.6465 29.5959 23.9844 30.8705 22.7425 31.7546C22.1205 32.1973 21.6019 32.5457 21.2354 32.7832C21.0522 32.9019 20.9063 32.9924 20.8057 33.055C20.7553 33.0863 20.7158 33.1116 20.6885 33.1283L20.6478 33.1527L20.6445 33.1543L20 32.0833L19.3555 33.1543L19.3522 33.1527L19.3115 33.1283C19.2842 33.1116 19.2447 33.0863 19.1943 33.055C19.0937 32.9924 18.9478 32.9019 18.7647 32.7832C18.3982 32.5457 17.8795 32.1973 17.2575 31.7546C16.0156 30.8705 14.3535 29.5959 12.6872 28.0371C11.0253 26.4824 9.32832 24.6178 8.04037 22.5488C6.75443 20.483 5.83351 18.1443 5.83334 15.6673C5.83334 10.9673 9.48593 7.50034 13.916 7.5C16.3293 7.5 18.4825 8.54746 20 10.1839C21.5175 8.54746 23.6707 7.5 26.084 7.5C30.5141 7.50034 34.1667 10.9673 34.1667 15.6673Z",
+  f: "M20 32.08C19.78 32.08 19.55 32.02 19.36 31.9C18.6 31.43 5.83 23.52 5.83 15.67C5.83 10.97 9.49 7.5 13.92 7.5C16.33 7.5 18.48 8.55 20 10.18C21.52 8.55 23.67 7.5 26.08 7.5C30.51 7.5 34.17 10.97 34.17 15.67C34.17 23.52 21.4 31.43 20.64 31.9C20.45 32.02 20.22 32.08 20 32.08Z",
+};
+function cardLike(it) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 40 40"); svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("fill", "#fff"); svg.append(path);
+  const paint = () => { path.setAttribute("d", it.liked ? CL_PATH.f : CL_PATH.o); el.setAttribute("aria-pressed", String(!!it.liked)); el.setAttribute("aria-label", it.liked ? "하트 취소" : "하트"); };
+  const el = h("span", { class: "c-like", role: "button", tabindex: "-1", onclick: async (e) => {
+    e.stopPropagation(); e.preventDefault();
+    if (!needLogin()) return;
+    const on = !it.liked;
+    try {
+      await api(`/api/images/${it.id}/like`, { method: on ? "POST" : "DELETE" });
+      it.liked = on; it.likes = Math.max(0, (it.likes || 0) + (on ? 1 : -1)); paint();
+      const c = el.closest(".card"), m = c && c.querySelector(".meta");
+      if (m) { m.classList.toggle("liked", on); const lk = m.querySelector(".lk"); if (lk) lk.textContent = String(it.likes); }
+    } catch (err) { toast(err.message); }
+  } }, svg);
+  paint();
+  return el;
 }
 const moreIc = () => icon("more", 24);
 /* 카드 하트: Figma Common/Card 의 채운 하트 16 (기본 #C3C2C5, 내가 누른 글은 보라) */

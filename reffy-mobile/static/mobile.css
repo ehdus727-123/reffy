@@ -251,7 +251,7 @@
 .m .card .meta .tx b{font:500 11px/16px Pretendard,sans-serif}
 .m .card .meta .av{width:16px;height:16px}
 .m .card .meta .like{gap:3px}
-.m .card .ck{left:10px;top:10px;width:18px;height:18px;border-radius:4px}
+.m .card .ck{left:8px;top:8px;width:18px;height:18px;border-radius:4px}
 /* 칩 32 · 모서리 16 · Padding 0/12 · 묶음 간격 8 */
 .m .pill{height:32px;padding:0 12px;border-radius:16px;font:500 14px/20px Pretendard,sans-serif}
 .m .kbar{gap:8px;margin:0 0 12px;min-height:32px}
