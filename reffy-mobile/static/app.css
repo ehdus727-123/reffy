@@ -2059,3 +2059,12 @@ html .card{overflow:visible}
 html:not(.m) .top .gnb-ic{display:block;flex:none}
 html:not(.m) .top #bell{width:24px;height:24px;padding:0;color:#18171a}
 html:not(.m) .top #me{width:32px;height:32px;background:#e4e3e5;color:#6f6d72}
+
+/* ================================================================ 상단 바 간격 = Figma GNB(2559:100431) 비율 그대로
+   1440 화면 기준 좌우 24 · 로고↔메뉴 43 · 메뉴 사이 28 · 메뉴↔검색창 47 · 검색창↔알림 52 · 알림↔아바타 20.
+   간격은 모두 화면 폭에 비례(1440에서 위 숫자 그대로), 검색창은 남는 폭을 채움 → 1440에서 953 */
+html:not(.m) .top{--u:calc(100vw / 1440);gap:0;padding:22px calc(24 * var(--u))}
+html:not(.m) .top .brand{gap:calc(43 * var(--u));flex:none}
+html:not(.m) .top .nav{gap:calc(28 * var(--u))}
+html:not(.m) .top .search{flex:1 1 0;width:auto;min-width:240px;margin:0 calc(52 * var(--u)) 0 calc(47 * var(--u))}
+html:not(.m) .top .actions{margin-left:0;flex:none;width:auto;gap:calc(20 * var(--u))}
