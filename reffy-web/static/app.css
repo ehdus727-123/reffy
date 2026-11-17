@@ -2054,3 +2054,8 @@ html .card{overflow:visible}
 /* 상세 패널 '사용한 툴' (DetailedPanel): 칩 높이 34 · 글자 14 Medium · 좌우 12 · 간격 5 */
 .dp-tools{display:flex;flex-wrap:wrap;gap:5px}
 .dp-tool{display:inline-flex;align-items:center;height:34px;padding:0 12px;border:1px solid #c3c2c5;border-radius:999px;font:500 14px/20px Pretendard,sans-serif;color:#18171a;box-sizing:border-box;white-space:nowrap}
+
+/* 상단 바 = Figma Web/Top app bar/GNB (2559:100431): 검색 아이콘 20(#5B595F) · 알림 24(#18171A) · 아바타 32(#E4E3E5) */
+html:not(.m) .top .gnb-ic{display:block;flex:none}
+html:not(.m) .top #bell{width:24px;height:24px;padding:0;color:#18171a}
+html:not(.m) .top #me{width:32px;height:32px;background:#e4e3e5;color:#6f6d72}

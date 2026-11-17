@@ -6,8 +6,8 @@
 <title>REFFY · 레퍼런스 검색</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="icon" type="image/svg+xml" href="assets/reffy-symbol.svg">
-<link rel="stylesheet" href="app.css?v=20261118j">
-<link rel="stylesheet" href="mobile.css?v=20261118j" media="(max-width:767px)">
+<link rel="stylesheet" href="app.css?v=20261118k">
+<link rel="stylesheet" href="mobile.css?v=20261118k" media="(max-width:767px)">
 </head>
 <body>
 <header class="top">
@@ -19,13 +19,13 @@
   </div>
   <button class="icon-btn m-only" id="mBack" type="button" aria-label="뒤로" hidden><i data-ic="back" data-s="24"></i></button>
   <form class="search" id="searchForm" role="search" autocomplete="off">
-    <i data-ic="search" data-s="20"></i>
+    <svg class="gnb-ic" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M13.7507 9.16732C13.7507 7.95194 13.268 6.78627 12.4087 5.92676C11.5492 5.06719 10.3829 4.58408 9.16732 4.58398L8.93945 4.58968C7.80674 4.64602 6.73164 5.12097 5.92594 5.92676C5.06665 6.78627 4.58398 7.95194 4.58398 9.16732C4.58403 10.3829 5.06722 11.5492 5.92676 12.4087C6.78626 13.268 7.95194 13.7507 9.16732 13.7507C10.3827 13.7507 11.5484 13.268 12.4079 12.4087C13.2674 11.5492 13.7506 10.3829 13.7507 9.16732ZM15.0007 9.16732C15.0006 10.7144 14.3856 12.1986 13.2917 13.2925C12.1977 14.3862 10.7142 15.0007 9.16732 15.0007C7.62041 15.0007 6.13689 14.3862 5.04297 13.2925C3.94901 12.1986 3.33405 10.7144 3.33398 9.16732C3.33398 7.62042 3.94844 6.1369 5.04215 5.04297C6.13594 3.94905 7.61957 3.3342 9.1665 3.33398H9.16813L9.45703 3.34131C10.8988 3.41295 12.267 4.01735 13.2925 5.04297C14.3862 6.1369 15.0007 7.62042 15.0007 9.16732Z" fill="#5B595F"/><path d="M12.5583 12.5588C12.8024 12.3147 13.198 12.3147 13.4421 12.5588L16.9008 16.0174C17.1445 16.2615 17.1447 16.6572 16.9008 16.9012C16.6568 17.1452 16.2611 17.145 16.017 16.9012L12.5583 13.4426C12.3143 13.1985 12.3143 12.8028 12.5583 12.5588Z" fill="#5B595F"/></svg>
     <input id="q" type="search" placeholder="검색어를 입력하세요" aria-label="검색어">
     <button class="qclear" id="qClear" type="button" aria-label="검색어 지우기" hidden><i data-ic="close" data-s="20"></i></button>
     <div class="suggest" id="suggest" hidden></div>
   </form>
   <div class="actions"><div class="notif" id="notif" hidden></div>
-    <button class="icon-btn" id="bell" type="button" aria-label="알림" aria-haspopup="true" aria-expanded="false"><i data-ic="bell" data-s="24"></i></button>
+    <button class="icon-btn" id="bell" type="button" aria-label="알림" aria-haspopup="true" aria-expanded="false"><svg class="gnb-ic" width="24" height="24" viewBox="0 4 24 24" fill="none" aria-hidden="true"><path d="M17 21.75V14.25C17 12.9239 16.4728 11.6525 15.5352 10.7148C14.5975 9.77716 13.3261 9.25 12 9.25C10.6739 9.25 9.40253 9.77716 8.46484 10.7148C7.52716 11.6525 7 12.9239 7 14.25V21.75C7 22.1642 6.66421 22.5 6.25 22.5C5.83579 22.5 5.5 22.1642 5.5 21.75V14.25C5.5 12.5261 6.18433 10.8723 7.40332 9.65332C8.62231 8.43433 10.2761 7.75 12 7.75C13.7239 7.75 15.3777 8.43433 16.5967 9.65332C17.8157 10.8723 18.5 12.5261 18.5 14.25V21.75C18.5 22.1642 18.1642 22.5 17.75 22.5C17.3358 22.5 17 22.1642 17 21.75Z" fill="currentColor"/><path d="M19.25 21C19.6642 21 20 21.3358 20 21.75C20 22.1642 19.6642 22.5 19.25 22.5H4.75C4.33579 22.5 4 22.1642 4 21.75C4 21.3358 4.33579 21 4.75 21H19.25Z" fill="currentColor"/><path d="M10.5 7.5C10.5 7.10217 10.6581 6.72076 10.9395 6.43945C11.2208 6.15815 11.6022 6 12 6C12.3978 6 12.7792 6.15815 13.0605 6.43945C13.3419 6.72076 13.5 7.10217 13.5 7.5V8.25C13.5 8.66421 13.1642 9 12.75 9H11.25C10.8358 9 10.5 8.66421 10.5 8.25V7.5Z" fill="currentColor"/><path d="M13.5 23C13.6989 23 13.8896 23.0791 14.0303 23.2197C14.1709 23.3604 14.25 23.5511 14.25 23.75C14.25 24.3467 14.0128 24.9189 13.5908 25.3408C13.1689 25.7628 12.5967 26 12 26C11.4033 26 10.8311 25.7628 10.4092 25.3408C9.98722 24.9189 9.75 24.3467 9.75 23.75C9.75 23.5511 9.82907 23.3604 9.96973 23.2197C10.1104 23.0791 10.3011 23 10.5 23H13.5Z" fill="currentColor"/></svg></button>
     <button class="avatar" id="me" type="button" aria-label="닉네임 설정" title="닉네임 설정"></button>
   </div>
 </header>
@@ -71,11 +71,11 @@
   <a data-r="me" href="#/me"><i data-ic="user" data-s="24"></i><span>마이페이지</span></a>
 </nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="icons.js?v=20261118j"></script>
-<script src="config.js?v=20261118j"></script>
-<script src="app.js?v=20261118j"></script>
-<script src="mobile.js?v=20261118j"></script>
-<script src="pages.js?v=20261118j"></script>
-<script src="i18n.js?v=20261118j"></script>
+<script src="icons.js?v=20261118k"></script>
+<script src="config.js?v=20261118k"></script>
+<script src="app.js?v=20261118k"></script>
+<script src="mobile.js?v=20261118k"></script>
+<script src="pages.js?v=20261118k"></script>
+<script src="i18n.js?v=20261118k"></script>
 </body>
 </html>
