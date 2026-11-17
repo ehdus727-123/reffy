@@ -267,7 +267,7 @@ $("#apply").onclick = () => {
   if (curTab === "pose") { toast("3D 포즈 검색은 준비 중이에요"); return; }
   if (CP.dirty && !$("#cpanel").hidden) { const c = hsv2hex(CP.h, CP.s, CP.v); if (!S.pickColors.includes(c)) S.pickColors = [...S.pickColors, c].slice(-5); CP.dirty = false; }   // 저장하지 않아도 지금 고른 색으로 적용
   fpClose();
-  S.applied = [...S.picked]; S.kinds = [...(S.pickedKind || [])]; S.colors = [...S.pickColors]; if (!$("#cpanel").hidden) drawColorPanel(); reload();
+  S.applied = [...S.picked]; S.kinds = [...(S.pickedKind || [])]; S.colors = [...S.pickColors]; rememberPal(S.colors); if (!$("#cpanel").hidden) drawColorPanel(); reload();
   if (isM()) setFilterOpen(false);
 };
 $("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.pickedKind = new Set(); S.kinds = []; S.colors = []; S.pickColors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
@@ -295,11 +295,13 @@ const hsv2hex = (h, s, v) => { const f = (n) => { const k = (n + h / 60) % 6; re
 const hex2hsv = (hex) => { const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let hh = 0; if (d) hh = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return { h: hh * 60, s: mx ? d / mx : 0, v: mx }; };
 const CP = { h: 0, s: 0.75, v: 0.9, dirty: false };
 const pastPal = () => store.get("reffy.pal", []);
+/* '색상 적용하기'로 실제 검색에 쓴 색을 지난 팔레트에 남김 (다른 화면에 갔다 와도 그대로) */
+const rememberPal = (cs) => { if (cs.length) store.set("reffy.pal", [...cs.map((c) => c.toLowerCase()), ...pastPal().filter((x) => !cs.includes(x))].slice(0, 15)); };
 function drawColorPanel() {
   const root = $("#cpanel"); root.replaceChildren();
   const cur = () => hsv2hex(CP.h, CP.s, CP.v);
   const add = (c) => { c = c.toLowerCase(); if (!S.pickColors.includes(c)) S.pickColors = [...S.pickColors, c].slice(-5); CP.dirty = false; drawColorPanel(); };
-  const saveColor = (c) => { c = c.toLowerCase(); store.set("reffy.pal", [c, ...pastPal().filter((x) => x !== c)].slice(0, 15)); add(c); toast("지난 팔레트에 저장했어요"); };
+  const saveColor = (c) => { c = c.toLowerCase(); add(c); toast("현재 팔레트에 저장했어요"); };
   const box = h("div", { class: "cbox", role: "slider", "aria-label": "채도와 명도", tabindex: "0" }, h("span", { class: "cdot" }));
   const hue = h("input", { type: "range", min: "0", max: "360", step: "1", class: "chue", "aria-label": "색상(Hue)", value: String(Math.round(CP.h)) });
   const hex = h("input", { class: "chex", maxlength: "7", "aria-label": "색상 코드", value: cur().toUpperCase() });
@@ -323,7 +325,7 @@ function drawColorPanel() {
     h("h3", { class: "ctit" }, "현재 팔레트"),
     h("div", { class: "cpal" }, h("button", { type: "button", class: "ccirc plus", "aria-label": "현재 색 추가", title: "현재 색 추가", onclick: () => add(cur()) }, icon("plus", 20)), S.pickColors.map((c) => circle(c, () => { S.pickColors = S.pickColors.filter((x) => x !== c); drawColorPanel(); }, "삭제"))),
     h("h3", { class: "ctit" }, "지난 팔레트"),
-    h("div", { class: "cpal" }, pastPal().length ? pastPal().map((c) => h("span", { class: "pc-wrap" }, circle(c, () => add(c), "현재 팔레트에 추가"), h("button", { type: "button", class: "pc-x", "aria-label": `${c.toUpperCase()} 지난 팔레트에서 삭제`, onclick: () => { store.set("reffy.pal", pastPal().filter((x) => x !== c)); drawColorPanel(); } }, "×"))) : h("p", { class: "hint", style: "margin:0" }, "‘저장’을 누른 색이 여기에 남아 나중에 다시 쓸 수 있어요.")));
+    h("div", { class: "cpal" }, pastPal().length ? pastPal().map((c) => h("span", { class: "pc-wrap" }, circle(c, () => add(c), "현재 팔레트에 추가"), h("button", { type: "button", class: "pc-x", "aria-label": `${c.toUpperCase()} 지난 팔레트에서 삭제`, onclick: () => { store.set("reffy.pal", pastPal().filter((x) => x !== c)); drawColorPanel(); } }, "×"))) : h("p", { class: "hint", style: "margin:0" }, "‘색상 적용하기’로 찾아본 색이 여기에 남아 나중에 다시 쓸 수 있어요.")));
   paint();
 }
 async function pullPalette(id) {
@@ -404,6 +406,23 @@ $("#sortBtn").onclick = (e) => { e.stopPropagation();
   const m = $("#sortMenu"); m.hidden = !m.hidden; $("#sortBtn").setAttribute("aria-expanded", String(!m.hidden)); };
 document.addEventListener("click", () => { $("#sortMenu").hidden = true; });
 drawSort();
+
+/* ---------------------------------------------------------------- 흰 바탕 이미지: 검정 5% 덮기
+   이미지 가장자리가 대부분 흰색이면 .wbg 를 붙인다. 색을 읽을 수 없으면(외부 이미지 등) 구분이 안 되므로 그냥 덮는다. */
+const WBG_SEL = ".card .im img, .dp-img > img, .dp-im img, .pm-img img, .pf-cell img, .kc-th img, .kc-card img, .book .cover img, .brow-pick > img, .nitem > img";
+function wbgCheck(img) {
+  if (!img.matches(WBG_SEL) || img.dataset.wbg) return;
+  img.dataset.wbg = "1";
+  try {
+    const N = 24, c = document.createElement("canvas"); c.width = c.height = N;
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(img, 0, 0, N, N);
+    const d = x.getImageData(0, 0, N, N).data; let n = 0, w = 0;
+    for (let i = 0; i < N; i++) for (const [px, py] of [[i, 0], [i, N - 1], [0, i], [N - 1, i]]) { const k = (py * N + px) * 4; n++; if (d[k + 3] > 200 && d[k] > 235 && d[k + 1] > 235 && d[k + 2] > 235) w++; }
+    if (w / n >= 0.3) img.classList.add("wbg");
+  } catch { img.classList.add("wbg"); }
+}
+document.addEventListener("load", (e) => { if (e.target.tagName === "IMG") wbgCheck(e.target); }, true);
+new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) (n.tagName === "IMG" ? [n] : n.querySelectorAll("img")).forEach((i) => { if (i.complete && i.naturalWidth) wbgCheck(i); }); }).observe(document.documentElement, { childList: true, subtree: true });
 
 /* ---------------------------------------------------------------- 피드(무한 스크롤) */
 function card(it) {

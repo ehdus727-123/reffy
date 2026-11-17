@@ -2005,3 +2005,8 @@ html:not(.m) .dp-lk{gap:3px;font-size:11px}
 html:not(.m) .dp-lk .dps{width:12px;height:12px;display:block}
 html:not(.m) .dp-lk.on .dps{color:#e5484d}
 html:not(.m) .dp-more{height:48px;margin-top:33px;border-radius:10px;font-size:18px;font-weight:600;line-height:24px;letter-spacing:0}
+
+/* 흰 바탕 이미지(가장자리 대부분 흰색)는 검정 5%를 덮어 흰 화면과 구분 — 검정 5% 덮기 = 밝기 95% (app.js wbgCheck) */
+img.wbg{filter:brightness(.95)}
+/* 연관 이미지 카드의 고정 5% 덮개는 위 규칙으로 통일 */
+.dp-im::after{display:none}
