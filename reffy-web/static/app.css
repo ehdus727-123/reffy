@@ -1787,9 +1787,9 @@ html:not(.m) #grid.mas{column-gap:18px}
 html:not(.m) .layout.f-open #grid.mas{column-gap:12px}
 html:not(.m) .card{margin-bottom:16px}
 /* 카드 (Common/Card): 정보 줄 36 · 아바타 20 · 닉네임 Title/S · 채운 하트 16 */
-html:not(.m) .card:not(.sel) .meta{height:36px;padding:0 2px;gap:8px}
-html:not(.m) .card:not(.sel) .meta .av{width:20px;height:20px;background:#c3c2c5}
-html:not(.m) .card:not(.sel) .meta .tx b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .card .meta{height:36px;padding:0 2px;gap:8px}
+html:not(.m) .card .meta .av{width:20px;height:20px;background:#c3c2c5}
+html:not(.m) .card .meta .tx b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
 html:not(.m) .card .meta .like{gap:3px;color:#c3c2c5}
 html:not(.m) .card .meta .like .chf{width:16px;height:16px}
 html:not(.m) .card .meta .lk{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#8e8c91}
