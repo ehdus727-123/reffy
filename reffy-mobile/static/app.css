@@ -2038,3 +2038,6 @@ html:not(.m) #grid .card:hover .c-like{display:block}
 .kc-card.on .kc-chk,.kc-th.on .kc-chk{background:#7425f6;border-color:#7425f6;color:#fff}
 .kc-card.cur{border-color:#7425f6}
 .kc-card.on .kc-chk{border-color:#7425f6}
+/* 카드 이미지(Media)는 네 모서리 모두 8 — 테두리(Active · Selected)가 모서리에서 잘리지 않게 */
+html .card .im{border-radius:8px;overflow:hidden}
+html .card{overflow:visible}
