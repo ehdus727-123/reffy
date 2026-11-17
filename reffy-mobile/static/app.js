@@ -934,7 +934,8 @@ const TOOLS = ["Clip studio", "이비스 페인트 X", "Procreate", "사이툴",
 function toolsField(list, redraw, cls = "field") {
   return h("div", { class: cls + " tools-f" }, h("label", {}, "사용 툴"),
     h("div", { class: "tool-chips", role: "group", "aria-label": "사용 툴" }, TOOLS.map((t) => h("button", { type: "button", class: "tool-chip" + (list.includes(t) ? " on" : ""), "aria-pressed": String(list.includes(t)),
-      onclick: () => { const i = list.indexOf(t); if (i >= 0) list.splice(i, 1); else list.push(t); redraw(); } }, t))));
+      // 창 전체를 다시 그리지 않고 누른 칩만 바꿈 (다시 그리면 스크롤이 맨 위로 가고 깜빡임)
+      onclick: (e) => { const i = list.indexOf(t); if (i >= 0) list.splice(i, 1); else list.push(t); const on = list.includes(t); e.currentTarget.classList.toggle("on", on); e.currentTarget.setAttribute("aria-pressed", String(on)); } }, t))));
 }
 /* 공개 설정 토글 */
 function privacyField(priv, onChange) {
