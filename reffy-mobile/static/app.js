@@ -798,7 +798,7 @@ function drawDetail(d, edit = false) {
       h("div", { class: "dp-body" },
       (d.tools || []).length ? h("div", { class: "dp-sec" }, head("사용한 툴"), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
       h("div", { class: "dp-sec" },
-        head("태그", so.editable ? h("button", { class: "dp-link", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
+        head("태그"),   // 태그 고치기는 더보기(⋮) → 수정하기에서
         edit ? kindTag(d, true, () => drawDetail(d, true)) : null,
         h("div", { class: "tags" }, edit ? null : kindTag(d, false), act_.length ? act_.map(tagEl) : (edit ? h("span", { class: "hint" }, "아직 태그가 없어요.") : null)),
         edit ? h("div", { class: "tags", style: "margin-top:10px" }, pickButton(box, (t) => save(d, { add: [t.ikey] }, t), () => new Set(d.tags.filter((x) => x.active).map((x) => x.ikey))),
