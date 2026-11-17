@@ -1929,3 +1929,27 @@ html:not(.m) body .side .groups{padding:30px 24px 155px}
 html:not(.m) .side .apply{height:auto;padding:20px 24px 24px;border-top:1px solid #f1f0f2;background:#f8f7f8}
 /* 카테고리 줄의 고른 개수 숫자는 Figma 에 없어 숨김 */
 .fp-cat .fp-n{display:none!important}
+
+/* ===== 계정 메뉴 (Figma MenuCard 2574:148801) — 홈 상단 프로필 사진을 누르면 뜨는 창 ===== */
+.acct{width:280px;padding:8px 7px 6px;border:1px solid #e4e3e5;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.acct-me{height:61px;box-sizing:border-box;padding:10px 12px 12px;margin:1px 2px 0;gap:12px;border-bottom:0}
+.acct-me b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.acct-me small{font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+.acct-div{display:block;height:1px;background:#e4e3e5;margin:0 1px}
+.acct-div1{margin:2px 1px 12px}
+.acct-it,.acct-lang{display:flex;align-items:center;gap:10px;width:260px;height:48px;box-sizing:border-box;padding:10px 12px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a;margin-bottom:2px}
+.acct-lang{justify-content:flex-start}
+.acct-lang>span:not(.acct-seg){flex:1}
+.acct-ic{width:20px;height:20px;flex:none;color:#18171a}
+/* 메뉴 항목 hover = Side navigation/Item Selected (연보라 배경 + 보라 글자 · 아이콘) */
+.acct-it:hover,.acct-it:focus-visible{background:#f6f0fe;color:#7425f6}
+.acct-it:hover .acct-ic,.acct-it:focus-visible .acct-ic{color:#7425f6}
+.acct-seg{padding:3px;gap:2px;border-radius:8px;background:#f1f0f2}
+.acct-seg button{padding:4px 10px;border-radius:6px;font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+.acct-seg button.on{background:#fff;color:#18171a;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.acct-it+.acct-lang+.acct-div,.acct-lang+.acct-div{margin:13px 1px 2px}
+.acct-out{height:44px;padding:10px 12px;margin:0 2px;width:auto;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#5b595f}
+.acct-out:hover{background:#f1f0f2}
+
+/* ===== 정렬 메뉴 글꼴 (Figma Common/Menu/Menu 2494:127669): 14px Medium · 자간 0 ===== */
+html:not(.m) #sortMenu button{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
