@@ -83,7 +83,7 @@ function pcard(it, o = {}) {
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     isM() ? h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes))) : null)
     : h("span", { class: "meta" }, h("span", { class: "av" }, (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, h("b", {}, it.title || "제목 없음"), h("span", {}, it.author)),
-      o.more ? h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); o.more(e.currentTarget, it); } }, moreIc()) : moreIc()));
+      o.more ? h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); o.more(e.currentTarget, it); } }, moreIc()) : o.noMore ? null : moreIc()));
   return el;
 }
 const pgrid = (items, o, cls) => h("div", { class: "grid " + (cls || "c6") }, items.map((it) => pcard(it, typeof o === "function" ? o(it) : o)));
@@ -153,6 +153,7 @@ async function keepPage() {
       try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [...picked] }) }); picked.clear(); sel = false; toast("킵 스페이스에서 삭제했어요"); load(); } catch (e) { toast(e.message); }
     });
     const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
+    saveBtn.disabled = !n; if (!n) saveBtn.title = "저장할 이미지를 먼저 골라 주세요";   // 고른 이미지가 없으면 북에 저장 불가
     b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, saveBtn);
     return b;
   }
@@ -161,7 +162,7 @@ async function keepPage() {
     const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
     const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts" }, h("button", { class: "icon-btn", type: "button", disabled: true, "aria-label": "삭제" }, icon("trash", 24)), h("button", { class: "btn primary", type: "button", disabled: true }, "선택")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
     root.replaceChildren(isM() ? mbar("킵 스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? pgrid(data.items, (it) => ({ on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+      data.items.length ? pgrid(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
         : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
           : h("div", { class: "kp-empty" }, h("span", { class: "kp-ex" }, "!"), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("피드 둘러보기", "primary", () => (location.hash = "#/"))),
       bar());
@@ -188,7 +189,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
     try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: list }) });
       items = items.filter((x) => !list.includes(x.id)); list.forEach((x) => picked.delete(x)); toast("킵 스페이스에서 삭제했어요");
       if (!items.length) return close(); idx = Math.min(idx, items.length - 1); build(); } catch (e) { toast(e.message); } } }, icon("trash", 24));
-  const saveBtn = h("button", { class: "btn primary kc-save", type: "button", onclick: () => saveToBook(ids(), { after: () => { picked.clear(); onDone(); } }) }, "북에 저장");
+  const saveBtn = h("button", { class: "btn primary kc-save", type: "button", disabled: true, title: "저장할 이미지를 먼저 골라 주세요", onclick: () => picked.size && saveToBook([...picked], { after: () => { picked.clear(); onDone(); } }) }, "북에 저장");
   const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { document.removeEventListener("keydown", key); setKind(k); } }, l));
   const prev = h("button", { class: "kc-nav prev", type: "button", "aria-label": "이전 레퍼런스", onclick: () => go(idx - 1) }, icon("chevR", 48));
   const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, icon("chevR", 48));
@@ -206,6 +207,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
     count.textContent = `${idx + 1}/${items.length}`;
     prev.disabled = idx <= 0; next.disabled = idx >= items.length - 1;
     saveBtn.textContent = picked.size ? `북에 저장 (${picked.size})` : "북에 저장";
+    saveBtn.disabled = !picked.size; saveBtn.title = picked.size ? "" : "저장할 이미지를 먼저 골라 주세요";
   }
   function go(i, instant) {
     if (!items.length) return; idx = Math.max(0, Math.min(items.length - 1, i));

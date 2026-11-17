@@ -2041,3 +2041,5 @@ html:not(.m) #grid .card:hover .c-like{display:block}
 /* 카드 이미지(Media)는 네 모서리 모두 8 — 테두리(Active · Selected)가 모서리에서 잘리지 않게 */
 html .card .im{border-radius:8px;overflow:hidden}
 html .card{overflow:visible}
+/* 킵 스페이스 '북에 저장': 고른 이미지가 없으면 비활성 */
+.kc-save:disabled,.selbar .btn.primary:disabled{opacity:.4;cursor:default}
