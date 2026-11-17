@@ -1571,12 +1571,6 @@ html:not(.m) .layout{overflow-x:clip}
 
 /* 선택한 카드 (Figma WF/Card 1675:30405): 테두리 1px · 하단 줄 높이 36 · 좌우 여백 10 · 아바타 16 · 하트 14 */
 .card .meta{transition:padding var(--d1,.16s) var(--ease,ease)}
-html body .card.sel .meta{height:36px;padding:0 10px;gap:5px}
-html body .card.sel .meta .av{width:16px;height:16px}
-html body .card.sel .meta .tx b{font:600 13px/18px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
-html body .card.sel .meta .like{gap:3px}
-html body .card.sel .meta .like svg,html body .card.sel .meta .like .ic{width:14px;height:14px}
-html body .card.sel .meta .lk{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
 
 /* 상세 패널 닫힘: 오른쪽으로 미끄러져 나감 (피드 이동과 같은 0.34초) */
 @keyframes rf-panel-out{from{transform:none}to{transform:translateX(calc(100% + 24px))}}
@@ -1801,7 +1795,6 @@ html:not(.m) .card .meta .like .chf{width:16px;height:16px}
 html:not(.m) .card .meta .lk{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#8e8c91}
 html:not(.m) .card .meta.liked .like{color:#7425f6}
 html:not(.m) .card .meta.liked .lk{color:#7425f6}
-html:not(.m) .card.sel .meta .like .chf{width:14px;height:14px}
 /* 필터 패널: 탭 위 39 · '종류' 제목 줄높이 28 */
 html:not(.m) .side .tabs{margin-top:39px}
 html:not(.m) .fp-ttl1{line-height:28px;letter-spacing:-.2px}

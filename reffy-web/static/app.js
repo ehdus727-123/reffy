@@ -447,7 +447,7 @@ function cardLike(it) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 40 40"); svg.setAttribute("aria-hidden", "true");
   const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("fill", "#fff"); svg.append(path);
-  const paint = () => { path.setAttribute("d", it.liked ? CL_PATH.f : CL_PATH.o); el.setAttribute("aria-pressed", String(!!it.liked)); el.setAttribute("aria-label", it.liked ? "하트 취소" : "하트"); };
+  const paint = () => { path.setAttribute("d", it.liked ? CL_PATH.f : CL_PATH.o); path.setAttribute("fill", it.liked ? "#7425F6" : "#fff"); el.setAttribute("aria-pressed", String(!!it.liked)); el.setAttribute("aria-label", it.liked ? "하트 취소" : "하트"); };
   const el = h("span", { class: "c-like", role: "button", tabindex: "-1", onclick: async (e) => {
     e.stopPropagation(); e.preventDefault();
     if (!needLogin()) return;
