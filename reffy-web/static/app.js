@@ -465,7 +465,7 @@ function cardLike(it) {
 const moreIc = () => icon("more", 24);
 /* 카드 하트: Figma Common/Card 의 채운 하트 16 (기본 #C3C2C5, 내가 누른 글은 보라) */
 function cardHeart() { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 16 16"); s.setAttribute("width", "16"); s.setAttribute("height", "16"); s.setAttribute("class", "ic chf"); s.setAttribute("aria-hidden", "true"); s.innerHTML = '<path d="M8.90611 13.4059C8.40611 13.8747 7.62486 13.8747 7.09361 13.4059L7.03111 13.3434C3.53111 10.1872 1.24985 8.09341 1.3436 5.53091C1.37485 4.37466 1.9686 3.31216 2.9061 2.65591C4.6561 1.46841 6.81236 2.03091 7.99986 3.40591C9.18736 2.03091 11.3436 1.46841 13.0936 2.65591C14.0311 3.31216 14.6249 4.37466 14.6561 5.53091C14.7499 8.09341 12.4686 10.1872 8.96861 13.3747L8.90611 13.4059Z" fill="currentColor"/>'; return s; }
-/* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽, 그다음 가장 짧은 열에 채움 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
+/* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽으로 한 줄씩 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
 const MAS = { cols: [], hs: [], n: 0, seq: 0, el: new Map() };
 function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }
 function masReset() {
@@ -473,11 +473,11 @@ function masReset() {
   MAS.cols = Array.from({ length: MAS.n }, () => h("div", { class: "mcol" })); MAS.hs = Array(MAS.n).fill(0);
   g.replaceChildren(...MAS.cols);
 }
+/* 순서대로: 1번째 카드는 1열, 2번째는 2열 … n번째 다음은 다시 1열 (줄 수가 바뀌어도 늘 같은 규칙으로 다시 놓음) */
 function masPlace(it, el) {
-  let k = 0;
-  for (let i = 1; i < MAS.n; i++) if (MAS.hs[i] < MAS.hs[k] - 0.01) k = i;
+  const k = MAS.hs.reduce((a, b) => a + b, 0) % MAS.n;
   MAS.cols[k].append(el);
-  MAS.hs[k] += (it.w && it.h ? it.h / it.w : 1.25) + 0.2;
+  MAS.hs[k] += 1;
 }
 function masAdd(items) {
   if (!MAS.cols.length || MAS.cols[0].parentNode !== $("#grid")) masReset();
