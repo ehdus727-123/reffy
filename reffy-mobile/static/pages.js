@@ -771,6 +771,7 @@ async function postModal(id, onChange) {
         h("button", { class: "pm-btn dark", type: "button", onclick: () => needLogin() && saveToBook([d.id], { after: refresh }) }, "북에 저장")),
       h("hr", { class: "pm-hr" }),
       tags.length ? h("section", { class: "pm-sec" }, h("h3", {}, "태그"), h("div", { class: "pm-tags" }, kindTag ? kindTag(d) : null, tags.map((t) => h("span", { class: "pm-tag" }, "#" + t.label)))) : null,
+      (d.tools || []).length ? h("section", { class: "pm-sec" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용한 툴")), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
       mats.length ? h("section", { class: "pm-sec" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용 소재"), mats.length > 3 ? h("button", { class: "pm-more", type: "button", onclick: () => { allMats = !allMats; draw(); } }, allMats ? "접기" : "더보기") : null),
         h("div", { class: "pm-links" }, mats.slice(0, allMats ? mats.length : 3).map((l) => h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, icon("link", 15), h("span", {}, l))))) : null,
       h("section", { class: "pm-sec" }, h("h3", {}, `댓글 ${cmts.length}`),

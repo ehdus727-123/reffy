@@ -219,7 +219,7 @@ def image_colors(image_id: int):
 
 @app.get("/api/images/{image_id}")
 def detail(image_id: int, request: Request):
-    r = db.rows("SELECT id, title, author, w, h, views, created_at, user_id, COALESCE(private,0) AS private, materials, COALESCE(kind,'illust') AS kind FROM images WHERE id = :i", i=image_id)
+    r = db.rows("SELECT id, title, author, w, h, views, created_at, user_id, COALESCE(private,0) AS private, materials, tools, COALESCE(kind,'illust') AS kind FROM images WHERE id = :i", i=image_id)
     if not r or (r[0]["private"] and not ((v := social.me(request)) and v["id"] == r[0]["user_id"])):
         raise HTTPException(404, "이미지를 찾을 수 없어요.")
     with db.engine.begin() as c:
@@ -229,6 +229,7 @@ def detail(image_id: int, request: Request):
     d["views"] += 1
     d["private"] = bool(r[0]["private"])
     d["materials"] = _materials(r[0]["materials"])
+    d["tools"] = _tools(r[0]["tools"])
     d["kind"] = "photo" if r[0]["kind"] == "photo" else "illust"
     d["full"] = f"/img/{image_id}?s=full&v={_ver(r[0])}"
     d["tags"] = _tags_of(image_id)
@@ -294,6 +295,7 @@ class PublishIn(BaseModel):
     kind: str = "illust"           # illust(일러스트) / photo(사진)
     tags: List[str] = []          # 사용자가 최종 확정한 ikey 목록
     materials: List[str] = []     # 사용 소재 링크 (최대 10개, http(s)만)
+    tools: List[str] = []         # 사용한 툴 (TOOLS 중에서)
     private: bool = False         # 비공개 게시
 
 
@@ -303,6 +305,27 @@ def _materials(raw) -> list:
         return [x for x in v if isinstance(x, str)]
     except ValueError:
         return []
+
+
+# 사용한 툴 (Figma 2601:52939) — 업로드 때 고르고 상세 패널 '사용한 툴'에 보임
+TOOLS = ["Clip studio", "이비스 페인트 X", "Procreate", "사이툴", "Illustrator", "Photoshop", "MediBang", "기타"]
+
+
+def _tools(raw) -> list:
+    try:
+        v = json.loads(raw) if raw else []
+        return [x for x in TOOLS if x in v]
+    except ValueError:
+        return []
+
+
+def _clean_tools(tools) -> str:
+    return json.dumps([x for x in TOOLS if x in (tools or [])], ensure_ascii=False)
+
+
+@app.get("/api/tools")
+def tool_list():
+    return {"tools": TOOLS}
 
 
 def _clean_links(links: List[str]) -> str:
@@ -320,6 +343,7 @@ class MetaIn(BaseModel):
     title: str = ""
     materials: List[str] = []
     private: bool = False
+    tools: Optional[List[str]] = None   # 보내지 않으면 그대로
 
 
 @app.put("/api/images/{image_id}/meta")
@@ -334,6 +358,8 @@ def edit_meta(image_id: int, body: MetaIn, request: Request):
     with db.engine.begin() as c:
         c.execute(text("UPDATE images SET title = :t, materials = :m, private = :p WHERE id = :i"),
                   {"t": body.title.strip()[:120], "m": _clean_links(body.materials), "p": 1 if body.private else 0, "i": image_id})
+        if body.tools is not None:
+            c.execute(text("UPDATE images SET tools = :tl WHERE id = :i"), {"tl": _clean_tools(body.tools), "i": image_id})
     return {"ok": True}
 
 
@@ -381,7 +407,7 @@ def _publish(body, user, tok, files, img_f, res):
     im = _shrink(im, (1400, 2800))   # 대표색 · 썸네일은 작은 사본으로 (원본 파일은 그대로 보관)
     with db.engine.begin() as c:
         rid = c.execute(db.images.insert().values(title=body.title.strip()[:120], author=user["nick"], user_id=user["id"], kind="photo" if body.kind == "photo" else "illust", file="pending",
-                                                  private=1 if body.private else 0, materials=_clean_links(body.materials),
+                                                  private=1 if body.private else 0, materials=_clean_links(body.materials), tools=_clean_tools(body.tools),
                                                   w=w, h=h, views=0, wd_json=json.dumps(res.get("wd", {}), ensure_ascii=False)))
         iid = rid.inserted_primary_key[0]
         name = f"{iid}.{img_f.suffix[1:]}"

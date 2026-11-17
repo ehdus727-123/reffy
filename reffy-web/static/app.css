@@ -2043,3 +2043,14 @@ html .card .im{border-radius:8px;overflow:hidden}
 html .card{overflow:visible}
 /* 킵 스페이스 '북에 저장': 고른 이미지가 없으면 비활성 */
 .kc-save:disabled,.selbar .btn.primary:disabled{opacity:.4;cursor:default}
+
+/* 사용 툴 (Figma 2601:52939) — 업로드 · 수정: 제목 14 SemiBold, 칩 높이 30 · 글자 12 · 좌우 10 · 간격 5 / 줄 간격 8 */
+.tools-f{display:flex;flex-direction:column;gap:4px}
+.tools-f>label{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#000}
+.tool-chips{display:flex;flex-wrap:wrap;gap:8px 5px}
+.tool-chip{height:30px;padding:0 10px;border:1px solid #c3c2c5;border-radius:999px;background:#fff;font:500 12px/16px Pretendard,sans-serif;color:#18171a;white-space:nowrap;cursor:pointer}
+.tool-chip:hover{background:#f8f7f8}
+.tool-chip.on{background:#f5eeff;border-color:#7425f6;color:#7425f6}
+/* 상세 패널 '사용한 툴' (DetailedPanel): 칩 높이 34 · 글자 14 Medium · 좌우 12 · 간격 5 */
+.dp-tools{display:flex;flex-wrap:wrap;gap:5px}
+.dp-tool{display:inline-flex;align-items:center;height:34px;padding:0 12px;border:1px solid #c3c2c5;border-radius:999px;font:500 14px/20px Pretendard,sans-serif;color:#18171a;box-sizing:border-box;white-space:nowrap}
