@@ -509,10 +509,11 @@ function masFlip(before) {
   if (RM.matches) return;
   before.forEach((r0, c) => {
     const r1 = c.getBoundingClientRect(); if (!r1.width) return;
-    const dx = r0.left - r1.left, dy = r0.top - r1.top, sx = r0.width / r1.width;
-    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < .01) return;
+    // 자리만 미끄러지게 (크기 확대·축소 효과는 쓰지 않음 — 글자 · 프로필이 커졌다 작아졌다 보이지 않게)
+    const dx = r0.left - r1.left, dy = r0.top - r1.top;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
     c.classList.add("in");
-    c.animate([{ transform: `translate(${dx}px,${dy}px) scale(${sx})` }, { transform: "none" }], { duration: 340, easing: "cubic-bezier(.2,.8,.2,1)" });
+    c.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: "none" }], { duration: 340, easing: "cubic-bezier(.2,.8,.2,1)" });
   });
 }
 const masObs = new MutationObserver((recs) => {
