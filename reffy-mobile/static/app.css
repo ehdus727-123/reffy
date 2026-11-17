@@ -1953,3 +1953,55 @@ html:not(.m) .side .apply{height:auto;padding:20px 24px 24px;border-top:1px soli
 
 /* ===== 정렬 메뉴 글꼴 (Figma Common/Menu/Menu 2494:127669): 14px Medium · 자간 0 ===== */
 html:not(.m) #sortMenu button{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+
+/* ================================================================ 상세 패널 = Figma DetailedPanel (2513:142696)
+   이미지 높이 464 · 위: 뒤로(36) · 닫기(36) · 오른쪽 원형 버튼 58 ×3(포즈 · 팔레트 · 킵에 담기) 간격 15
+   정보: 좌우 20 · 프로필(아바타 36 · 이름 20 · 팔로우) → 제목 18 · 하트/댓글 + 공유/더보기 + 구분선 · 구역 사이 32 */
+html:not(.m) .dp-img{aspect-ratio:auto;height:464px}
+html:not(.m) .dp-top{top:9px;height:65px;padding:0 20px;gap:0}
+html:not(.m) .dp-ib{width:36px;height:36px;filter:drop-shadow(0 0 2px rgba(255,255,255,.9))}
+html:not(.m) .dp-ib .dps{width:36px;height:36px;display:block}
+html:not(.m) .dp-fab{right:20px;bottom:23px;padding:0;gap:15px}
+html:not(.m) .dp-fb{width:58px;height:58px;border:1px solid #fff;background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 0 5px rgba(0,0,0,.2);color:#18171a}
+html:not(.m) .dp-fb:hover{background:rgba(255,255,255,.78)}
+html:not(.m) .dp-fb .dps{width:28px;height:28px;display:block}
+html:not(.m) .dp-fb.add{background:#7425f6;border-color:#7425f6;color:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+html:not(.m) .dp-fb.add:hover{background:#6628d5;border-color:#6628d5}
+html:not(.m) .dp-info{padding:26px 20px 16px;gap:0}
+html:not(.m) .dp-head{gap:20px}
+html:not(.m) .dp-user{gap:10px;min-height:46px}
+html:not(.m) .dp-user .dp-av40{width:36px;height:36px;border-radius:18px}
+html:not(.m) .dp-name a,html:not(.m) .dp-name b{font-family:Pretendard,sans-serif;font-size:20px;font-weight:600;line-height:28px;letter-spacing:-.2px}
+html:not(.m) .dp-name span{font-size:12px;font-weight:500;line-height:16px;color:#5b595f}
+html:not(.m) .dp-follow{height:40px;min-width:0;padding:0 16px;border-radius:8px;font-size:14px;font-weight:500;line-height:20px}
+html:not(.m) .dp-title{font-size:18px;font-weight:600;line-height:24px;letter-spacing:0}
+html:not(.m) .dp-acts{display:flex;align-items:center;gap:8px;height:32px;margin-top:26px;padding-bottom:16px;border-bottom:1px solid #e4e3e5;box-sizing:content-box}
+html:not(.m) .dp-acts .sp{flex:1}
+html:not(.m) .dp-react{gap:14px}
+html:not(.m) .dp-st{gap:5px;font-size:14px;font-weight:500;line-height:20px;color:#18171a}
+html:not(.m) .dp-st .dps{width:20px;height:20px;display:block}
+html:not(.m) .dp-st.on{color:#18171a}
+html:not(.m) .dp-st.on .dps{color:#e5484d}
+html:not(.m) .dp-acts .dp-ab+.dp-ab{margin-left:8px}
+html:not(.m) .dp-ab{width:24px;height:24px;padding:0;border:0;background:none;color:#18171a;display:grid;place-items:center;cursor:pointer}
+html:not(.m) .dp-ab .dps{width:24px;height:24px;display:block}
+html:not(.m) .dp-body{display:flex;flex-direction:column;gap:32px;margin-top:24px}
+html:not(.m) .dp-sec{gap:8px}
+html:not(.m) .dp-h h3{font-size:20px;font-weight:600;line-height:28px;letter-spacing:-.2px}
+html:not(.m) .dp-link{font-size:12px;font-weight:500;line-height:16px;color:#6f6d72}
+html:not(.m) .dp-links a{gap:6px;font-size:12px;font-weight:500;line-height:16px;color:#5b595f}
+html:not(.m) .dp-links a:first-child{color:#245cb3}
+html:not(.m) .dp-links .dps{width:15px;height:15px;flex:none;display:block;color:#5b595f}
+html:not(.m) .dp-cmt{gap:20px}
+html:not(.m) .dp-c{align-items:center}
+html:not(.m) .dp-cm b{font-size:14px;font-weight:600}
+html:not(.m) .dp-cm small{font-size:11px;font-weight:500}
+html:not(.m) .dp-ct p{font-size:12px;font-weight:400}
+html:not(.m) .dp-all{font-size:14px;font-weight:500;line-height:20px}
+html:not(.m) .dp-grid{gap:13px}
+html:not(.m) .dp-col{gap:12px}
+html:not(.m) .dp-nk{font-size:11px;font-weight:500}
+html:not(.m) .dp-lk{gap:3px;font-size:11px}
+html:not(.m) .dp-lk .dps{width:12px;height:12px;display:block}
+html:not(.m) .dp-lk.on .dps{color:#e5484d}
+html:not(.m) .dp-more{height:48px;margin-top:33px;border-radius:10px;font-size:18px;font-weight:600;line-height:24px;letter-spacing:0}
