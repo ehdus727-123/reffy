@@ -151,6 +151,27 @@ function bookDialog(book, done) {
 }
 
 /* ---------------------------------------------------------------- 킵 스페이스 */
+const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M32.0846 10C32.775 10 33.3346 10.5597 33.3346 11.25C33.3346 11.9404 32.775 12.5 32.0846 12.5H7.91797C7.22761 12.5 6.66797 11.9404 6.66797 11.25C6.66797 10.5597 7.22761 10 7.91797 10H32.0846Z" fill="currentColor"/><path d="M23.3346 11.25V8.75004C23.3346 8.63953 23.2907 8.53359 23.2126 8.45544C23.1344 8.3773 23.0285 8.33337 22.918 8.33337H17.0846C16.9741 8.33337 16.8682 8.3773 16.79 8.45544C16.7119 8.53359 16.668 8.63953 16.668 8.75004V11.25C16.668 11.9404 16.1083 12.5 15.418 12.5C14.7276 12.5 14.168 11.9404 14.168 11.25V8.75004C14.168 7.97649 14.4755 7.23485 15.0225 6.68787C15.5694 6.14089 16.3111 5.83337 17.0846 5.83337H22.918C23.6915 5.83337 24.4332 6.14089 24.9801 6.68787C25.5271 7.23485 25.8346 7.97649 25.8346 8.75004V11.25C25.8346 11.9404 25.275 12.5 24.5846 12.5C23.8943 12.5 23.3346 11.9404 23.3346 11.25Z" fill="currentColor"/><path d="M29.5846 10C29.932 10 30.2645 10.1443 30.501 10.3988C30.7373 10.6532 30.8567 10.9949 30.8314 11.3412L29.4154 30.6755L29.4137 30.6771C29.3269 31.832 28.8071 32.9115 27.957 33.698C27.1077 34.4835 25.9921 34.9176 24.8353 34.9154L15.1673 34.917C14.0105 34.9192 12.8949 34.4835 12.0456 33.698C11.1955 32.9115 10.6757 31.832 10.5889 30.6771L10.5872 30.6755L9.17122 11.3412C9.14591 10.9949 9.26532 10.6532 9.50163 10.3988C9.73812 10.1443 10.0706 10 10.418 10H29.5846ZM13.0807 30.4899L13.1051 30.6853C13.1822 31.1352 13.4055 31.5494 13.7432 31.862C14.1296 32.2194 14.6377 32.4184 15.1641 32.417H24.8385C25.3649 32.4184 25.873 32.2194 26.2594 31.862C26.6454 31.5046 26.8824 31.0145 26.9219 30.4899L28.2402 12.5H11.7624L13.0807 30.4899Z" fill="currentColor"/><path d="M15.8346 27.5V17.5C15.8346 16.8097 16.3943 16.25 17.0846 16.25C17.775 16.25 18.3346 16.8097 18.3346 17.5V27.5C18.3346 28.1904 17.775 28.75 17.0846 28.75C16.3943 28.75 15.8346 28.1904 15.8346 27.5ZM21.668 27.5V17.5C21.668 16.8097 22.2276 16.25 22.918 16.25C23.6083 16.25 24.168 16.8097 24.168 17.5V27.5C24.168 28.1904 23.6083 28.75 22.918 28.75C22.2276 28.75 21.668 28.1904 21.668 27.5Z" fill="currentColor"/></svg>';   // Figma icon/trash 40 (고정 문자열)
+/* 빈 화면 아이콘 (Figma 2733:129392): 원 104 #F1F0F2 + 느낌표 53 */
+function kpEx() {
+  const e = h("span", { class: "kp-ex" });
+  e.innerHTML = '<svg width="53" height="53" viewBox="0 0 53 53" fill="none" aria-hidden="true"><path d="M24.8444 33.125V8.83331C24.8444 7.91859 25.5859 7.17706 26.5007 7.17706C27.4154 7.17706 28.1569 7.91859 28.1569 8.83331V33.125C28.1569 34.0397 27.4154 34.7812 26.5007 34.7812C25.5859 34.7812 24.8444 34.0397 24.8444 33.125Z" fill="#6F6D72"/><path d="M29.2611 43.0625C29.2611 44.587 28.0252 45.8229 26.5007 45.8229C24.9761 45.8229 23.7402 44.587 23.7402 43.0625C23.7402 41.5379 24.9761 40.3021 26.5007 40.3021C28.0252 40.3021 29.2611 41.5379 29.2611 43.0625Z" fill="#6F6D72"/></svg>';
+  return e;
+}
+/* 홈 피드와 같은 배치: n번째 카드는 (n % 열 수)번째 열 — 왼쪽 → 오른쪽으로 한 줄씩. 열 수는 폭에 맞춰(카드 약 217 · 간격 18) */
+function rrGrid(items, o) {
+  const g = h("div", { class: "rrgrid" });
+  const cards = items.map((it) => { const c = pcard(it, typeof o === "function" ? o(it) : o); const im = c.querySelector(".im"); if (im) im.style.setProperty("--ch", cardH(it)); return c; });
+  const lay = () => {
+    const W = g.clientWidth; if (!W) return;
+    const n = Math.max(2, Math.floor((W + 18) / 218)); if (g._n === n) return; g._n = n;
+    const cols = Array.from({ length: n }, () => h("div", { class: "rrcol" }));
+    cards.forEach((c, i) => cols[i % n].append(c));
+    g.replaceChildren(...cols);
+  };
+  new ResizeObserver(lay).observe(g);
+  return g;
+}
 async function keepPage() {
   if (!needLogin()) return;
   let kind = "", sel = false, data = { items: [] }; const picked = new Set();
@@ -172,11 +193,11 @@ async function keepPage() {
   function draw() {
     root.classList.toggle("selecting", sel);
     const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
-    const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts" }, h("button", { class: "icon-btn", type: "button", disabled: true, "aria-label": "삭제" }, icon("trash", 24)), h("button", { class: "btn primary", type: "button", disabled: true }, "선택")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
+    const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts kp-acts0" }, (() => { const t = h("button", { class: "icon-btn kc-del", type: "button", disabled: true, "aria-label": "삭제" }); t.innerHTML = KC_TRASH; return t; })(), h("button", { class: "btn primary", type: "button", disabled: true }, "북에 저장")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
     root.replaceChildren(isM() ? mbar("킵 스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? pgrid(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+      data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
         : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
-          : h("div", { class: "kp-empty" }, h("span", { class: "kp-ex" }, "!"), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("피드 둘러보기", "primary", () => (location.hash = "#/"))),
+          : h("div", { class: "kp-empty" }, kpEx(), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("홈으로 이동", "", () => (location.hash = "#/"))),
       bar());
   }
   load();
@@ -222,7 +243,6 @@ function keepCompare(items, start, kind, setKind, onDone) {
   track.addEventListener("click", (e) => { if (eatClick) { e.stopPropagation(); e.preventDefault(); } }, true);   // 끌기 뒤 클릭(선택)은 무시
   const strip = h("div", { class: "kc-strip" });
   const count = h("b", { class: "kc-count" });
-const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M32.0846 10C32.775 10 33.3346 10.5597 33.3346 11.25C33.3346 11.9404 32.775 12.5 32.0846 12.5H7.91797C7.22761 12.5 6.66797 11.9404 6.66797 11.25C6.66797 10.5597 7.22761 10 7.91797 10H32.0846Z" fill="currentColor"/><path d="M23.3346 11.25V8.75004C23.3346 8.63953 23.2907 8.53359 23.2126 8.45544C23.1344 8.3773 23.0285 8.33337 22.918 8.33337H17.0846C16.9741 8.33337 16.8682 8.3773 16.79 8.45544C16.7119 8.53359 16.668 8.63953 16.668 8.75004V11.25C16.668 11.9404 16.1083 12.5 15.418 12.5C14.7276 12.5 14.168 11.9404 14.168 11.25V8.75004C14.168 7.97649 14.4755 7.23485 15.0225 6.68787C15.5694 6.14089 16.3111 5.83337 17.0846 5.83337H22.918C23.6915 5.83337 24.4332 6.14089 24.9801 6.68787C25.5271 7.23485 25.8346 7.97649 25.8346 8.75004V11.25C25.8346 11.9404 25.275 12.5 24.5846 12.5C23.8943 12.5 23.3346 11.9404 23.3346 11.25Z" fill="currentColor"/><path d="M29.5846 10C29.932 10 30.2645 10.1443 30.501 10.3988C30.7373 10.6532 30.8567 10.9949 30.8314 11.3412L29.4154 30.6755L29.4137 30.6771C29.3269 31.832 28.8071 32.9115 27.957 33.698C27.1077 34.4835 25.9921 34.9176 24.8353 34.9154L15.1673 34.917C14.0105 34.9192 12.8949 34.4835 12.0456 33.698C11.1955 32.9115 10.6757 31.832 10.5889 30.6771L10.5872 30.6755L9.17122 11.3412C9.14591 10.9949 9.26532 10.6532 9.50163 10.3988C9.73812 10.1443 10.0706 10 10.418 10H29.5846ZM13.0807 30.4899L13.1051 30.6853C13.1822 31.1352 13.4055 31.5494 13.7432 31.862C14.1296 32.2194 14.6377 32.4184 15.1641 32.417H24.8385C25.3649 32.4184 25.873 32.2194 26.2594 31.862C26.6454 31.5046 26.8824 31.0145 26.9219 30.4899L28.2402 12.5H11.7624L13.0807 30.4899Z" fill="currentColor"/><path d="M15.8346 27.5V17.5C15.8346 16.8097 16.3943 16.25 17.0846 16.25C17.775 16.25 18.3346 16.8097 18.3346 17.5V27.5C18.3346 28.1904 17.775 28.75 17.0846 28.75C16.3943 28.75 15.8346 28.1904 15.8346 27.5ZM21.668 27.5V17.5C21.668 16.8097 22.2276 16.25 22.918 16.25C23.6083 16.25 24.168 16.8097 24.168 17.5V27.5C24.168 28.1904 23.6083 28.75 22.918 28.75C22.2276 28.75 21.668 28.1904 21.668 27.5Z" fill="currentColor"/></svg>';   // Figma icon/trash 40 (고정 문자열)
 
   const toggle = (it) => { if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); paint(); };
   const ids = () => (picked.size ? [...picked] : items[idx] ? [items[idx].id] : []);

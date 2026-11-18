@@ -2192,3 +2192,20 @@ html:not(.m) .notif .nitem .btn{height:32px;min-width:64px;padding:0 12px;border
 .kc-track.dragging{cursor:grabbing}
 .kc-track.dragging .kc-card{pointer-events:none}
 .kc-card img{-webkit-user-drag:none}
+
+/* ================================================================ 킵 스페이스 (2733:128868)
+   목록: 홈 피드처럼 왼쪽 → 오른쪽으로 한 줄씩 (열 간격 18 · 카드 사이 16 · 이미지 높이 120~320 단계)
+   빈 화면: 원 104 #F1F0F2 + 느낌표 53 · 아래 24 · 제목 24 SemiBold · 아래 16 · '홈으로 이동' 보라 테두리 버튼 · 화면 가운데 */
+.rrgrid{display:flex;gap:18px;align-items:flex-start;margin-top:16px}
+.rrcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:16px}
+.rrgrid .card{margin:0;width:100%;break-inside:auto}
+.rrgrid .card .im[style*="--ch"]{aspect-ratio:217 / var(--ch)}
+.rrgrid .card .im[style*="--ch"] img{width:100%;height:100%;max-height:none;object-fit:cover}
+html:not(.m) .kp-empty{min-height:calc(100vh - 88px - 140px);padding:0 0 124px;box-sizing:border-box;justify-content:center;gap:0}
+html:not(.m) .kp-empty .kp-ex{width:104px;height:104px;border-radius:50%;background:#f1f0f2;margin:0 0 24px;display:grid;place-items:center}
+html:not(.m) .kp-empty h2{margin:0 0 16px;font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px;color:#18171a}
+html:not(.m) .kp-empty .btn{height:42px;padding:0 16px;border-radius:8px;border:1px solid #7425f6;background:#fff;color:#7425f6;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .kp-acts0{gap:24px}
+html:not(.m) .kp-acts0 .kc-del{width:40px;height:40px;padding:0;color:#18171a}
+html:not(.m) .kp-acts .btn:disabled{background:#7425f6;border-color:#7425f6;color:#fff;opacity:1;height:42px;padding:0 16px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .rrgrid .card{margin:0}
