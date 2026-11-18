@@ -2378,3 +2378,23 @@ html:not(.m) .pf-tabs+*{margin-top:22px}
 html:not(.m) .pf-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
 html:not(.m) .pf-row{align-self:stretch}
 html:not(.m) .pf-links li svg.dps{fill:none}
+
+/* 킵 스페이스 비교 화면 (Figma HOM_0000 2684:110975) — 위 줄 y112 · 카드 376×545 간격 28 · 화살표 104 · 아래 바 1038×110 (썸네일 74 · 간격 12, 가운데부터) */
+html:not(.m) .kc-bar{padding:24px 24px 0;height:42px;box-sizing:content-box}
+html:not(.m) .kc-count{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .kc-save{height:40px}
+html:not(.m) .kc-stage{margin-top:24px}
+html:not(.m) .kc-track{height:min(545px,calc(100vh - 479px));min-height:280px;gap:28px}
+html:not(.m) .kc-card{aspect-ratio:376/545;border-radius:16px}
+html:not(.m) .kc-card:not(.on) .kc-chk{display:none}
+html:not(.m) .kc-nav{top:calc(min(545px,max(280px,calc(100vh - 479px))) / 2 - 65px);width:104px;height:104px;padding:0}
+html:not(.m) .kc-nav .ic{width:104px;height:104px}
+html:not(.m) .kc-nav.prev{left:0}html:not(.m) .kc-nav.next{right:0}
+html:not(.m) .kc-dock{bottom:96px;width:min(1038px,calc(100% - 48px));height:110px;padding:0;border:1.364px solid #e4e3e5;border-radius:16px;box-shadow:0 10.909px 32.727px rgba(0,0,0,.12);display:flex;align-items:center;overflow:hidden}
+html:not(.m) .kc-strip{flex:1;min-width:0;gap:12px;padding:0 19px;-webkit-mask-image:none;mask-image:none}
+html:not(.m) .kc-strip.fr{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 87px),transparent calc(100% - 30px));mask-image:linear-gradient(90deg,#000 calc(100% - 87px),transparent calc(100% - 30px))}
+html:not(.m) .kc-strip.fl{-webkit-mask-image:linear-gradient(270deg,#000 calc(100% - 87px),transparent calc(100% - 30px));mask-image:linear-gradient(270deg,#000 calc(100% - 87px),transparent calc(100% - 30px))}
+html:not(.m) .kc-strip.fl.fr{-webkit-mask-image:linear-gradient(90deg,transparent 30px,#000 87px,#000 calc(100% - 87px),transparent calc(100% - 30px));mask-image:linear-gradient(90deg,transparent 30px,#000 87px,#000 calc(100% - 87px),transparent calc(100% - 30px))}
+html:not(.m) .kc-th{width:74px;height:74px;border-radius:8px}
+html:not(.m) .kc-th,html:not(.m) .kc-th.on,html:not(.m) .kc-card,html:not(.m) .kc-card.on{border:0}
+html:not(.m) .kc-th.on::after,html:not(.m) .kc-card.on::after{content:"";position:absolute;inset:0;border:2px solid #7425f6;border-radius:inherit;pointer-events:none}

@@ -209,7 +209,9 @@ async function keepPage() {
 function keepCompare(items, start, kind, setKind, onDone) {
   const root = $("#page"); let idx = Math.max(0, start); const picked = new Set();
   const full = (it) => (it.thumb || "").replace("s=thumb", "s=full");
-  const close = () => { document.removeEventListener("keydown", key); onDone(); };
+  const navBack = (e) => { if (e.target.closest && e.target.closest('a[href="#/keep"]')) { e.preventDefault(); close(); } };   // 위 메뉴 '킵 스페이스'를 누르면 목록으로
+  const close = () => { document.removeEventListener("keydown", key); document.removeEventListener("click", navBack, true); onDone(); };
+  document.addEventListener("click", navBack, true);
   const key = (e) => { if ($(".modal:not(.closing)")) return; if (e.key === "ArrowRight") go(idx + 1); else if (e.key === "ArrowLeft") go(idx - 1); else if (e.key === "Escape") close(); else if (e.key === " ") { e.preventDefault(); toggle(items[idx]); } };
   document.addEventListener("keydown", key);
   const track = h("div", { class: "kc-track" });
@@ -243,6 +245,8 @@ function keepCompare(items, start, kind, setKind, onDone) {
   track.addEventListener("pointercancel", endDrag);
   track.addEventListener("click", (e) => { if (eatClick) { e.stopPropagation(); e.preventDefault(); } }, true);   // 끌기 뒤 클릭(선택)은 무시
   const strip = h("div", { class: "kc-strip" });
+  const fade = () => { const m = strip.scrollWidth - strip.clientWidth; strip.classList.toggle("fl", strip.scrollLeft > 2); strip.classList.toggle("fr", strip.scrollLeft < m - 2); };   // 더 있는 쪽만 흐리게
+  strip.addEventListener("scroll", fade, { passive: true }); new ResizeObserver(fade).observe(strip);
   const count = h("b", { class: "kc-count" });
 
   const toggle = (it) => { if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); paint(); };
@@ -255,7 +259,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
       if (!items.length) return close(); idx = Math.min(idx, items.length - 1); build(); } catch (e) { toast(e.message); } } });
   delBtn.innerHTML = KC_TRASH;
   const saveBtn = h("button", { class: "btn primary kc-save", type: "button", disabled: true, title: "저장할 이미지를 먼저 골라 주세요", onclick: () => picked.size && saveToBook([...picked], { after: () => { picked.clear(); onDone(); } }) }, "북에 저장");
-  const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { document.removeEventListener("keydown", key); setKind(k); } }, l));
+  const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { document.removeEventListener("keydown", key); document.removeEventListener("click", navBack, true); setKind(k); } }, l));
   const prev = h("button", { class: "kc-nav prev", type: "button", "aria-label": "이전 레퍼런스", onclick: () => go(idx - 1) }, icon("chevR", 48));
   const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, icon("chevR", 48));
   function build() {
@@ -285,7 +289,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
     paint();
   }
   root.replaceChildren(h("div", { class: "kc" },
-    h("div", { class: "kc-back" }, h("button", { class: "icon-btn", type: "button", "aria-label": "킵 스페이스로 돌아가기", onclick: close }, icon("chevR", 24))),
+    isM() ? h("div", { class: "kc-back" }, h("button", { class: "icon-btn", type: "button", "aria-label": "킵 스페이스로 돌아가기", onclick: close }, icon("chevR", 24))) : null,
     h("div", { class: "kc-bar" }, h("div", { class: "kc-chips" }, chips), count, h("div", { class: "kc-acts" }, delBtn, saveBtn)),
     h("div", { class: "kc-stage" }, track, prev, next),
     h("div", { class: "kc-dock" }, strip)));
