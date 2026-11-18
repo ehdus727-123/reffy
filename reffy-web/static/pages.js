@@ -275,7 +275,7 @@ function keepCompare(items, start, kind, setKind, onDone) {
     strip.querySelectorAll(".kc-th").forEach((t, i) => { t.classList.toggle("cur", i === idx); t.classList.toggle("on", picked.has(items[i]?.id)); });
     count.textContent = `${picked.size}/${items.length}`;   // 선택한 이미지 / 전체 이미지
     prev.disabled = idx <= 0; next.disabled = idx >= items.length - 1;
-    saveBtn.textContent = picked.size ? `북에 저장 (${picked.size})` : "북에 저장";
+    saveBtn.textContent = "북에 저장";
     saveBtn.disabled = !picked.size; saveBtn.title = picked.size ? "" : "저장할 이미지를 먼저 골라 주세요";
   }
   function go(i, instant) {

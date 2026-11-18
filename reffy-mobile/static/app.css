@@ -2398,3 +2398,6 @@ html:not(.m) .kc-strip.fl.fr{-webkit-mask-image:linear-gradient(90deg,transparen
 html:not(.m) .kc-th{width:74px;height:74px;border-radius:8px}
 html:not(.m) .kc-th,html:not(.m) .kc-th.on,html:not(.m) .kc-card,html:not(.m) .kc-card.on{border:0}
 html:not(.m) .kc-th.on::after,html:not(.m) .kc-card.on::after{content:"";position:absolute;inset:0;border:2px solid #7425f6;border-radius:inherit;pointer-events:none}
+/* 휴지통 아이콘 32 (킵 스페이스 목록 · 비교 화면) */
+html:not(.m) .kc-del,html:not(.m) .kp-acts0 .kc-del{width:32px;height:32px;padding:0}
+html:not(.m) .kc-del .kc-tr,html:not(.m) .kc-del .ic{width:32px;height:32px}
