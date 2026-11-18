@@ -2340,3 +2340,6 @@ html:not(.m) .dmain .dchips{gap:5px}
 html:not(.m) .dmain .dchip{height:34px;padding:0 14px;display:inline-flex;align-items:center;border:1px solid #c3c2c5;background:#fff;color:#18171a;font:500 14px/20px Pretendard,sans-serif}
 html:not(.m) .dmain .dchip.on{background:#f6f0fe;border-color:#7425f6;color:#7425f6}
 html:not(.m) .selbar.bkbar .sp{flex:1}
+/* 홈 위 줄: 초기화 · 칩 · 정렬 · 필터를 세로 가운데로 */
+html:not(.m) .bar{align-items:center}
+html:not(.m) .bar>*,html:not(.m) .bar .resetbtn,html:not(.m) .bar .grow{align-self:center;margin-top:0;margin-bottom:0}
