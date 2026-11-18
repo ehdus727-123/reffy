@@ -299,7 +299,7 @@ async function drawerPage(sub, id) {
   if (sub === "act") sub = "";
   const link = (t, href, on) => h("a", { href, class: on ? "on" : "", "aria-current": on ? "page" : null }, t);
   const main = h("div", { class: "dmain" });
-  const root = h("div", { class: "drawer" }, h("aside", { class: "dnav" }, h("h2", {}, "서랍"), link("레퍼런스 북", "#/drawer", !sub || sub === "book"), h("small", {}, "내 활동"),
+  const root = h("div", { class: "drawer" }, h("aside", { class: "dnav" }, h("h2", {}, "서랍"), link("내 북", "#/drawer", !sub || sub === "book"), h("small", {}, "내 활동"),
     link("최근 본 게시물", "#/drawer/recent", sub === "recent"), link("반응한 게시물", "#/drawer/liked", sub === "liked")), main);
   // 이미 서랍 화면이면 새 내용을 다 불러온 뒤에 바꿔 끼움 (빈 화면이 잠깐 보이지 않게)
   const stay = !$("#page").hidden && $("#page > .drawer");
@@ -326,15 +326,21 @@ async function drawerPage(sub, id) {
   } catch (e) { main.replaceChildren(notice("불러오지 못했어요", e.message)); }
   if (stay && location.hash.startsWith("#/drawer")) page(root);
 }
+/* 내 북 화면 아이콘 (Figma DRW_0000 2733:130109): 정렬 화살표 20 · 더하기 20 · 더보기 24 */
+const D_SVG = {
+  drop: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6.66693 8.5415H13.3336L10.0003 12.0832L6.66693 8.5415Z" fill="#5B595F"/><path d="M13.3336 7.9165C13.5828 7.9165 13.8084 8.06455 13.9073 8.29329C14.0062 8.52217 13.9594 8.78799 13.7885 8.96956L10.4552 12.5112C10.3371 12.6367 10.1726 12.7082 10.0003 12.7082C9.82793 12.7082 9.66346 12.6367 9.54535 12.5112L6.21202 8.96956C6.04116 8.78799 5.99431 8.52217 6.0932 8.29329C6.19216 8.06455 6.41768 7.9165 6.66693 7.9165H13.3336ZM10.0003 11.1717L11.8875 9.1665H8.11306L10.0003 11.1717Z" fill="#5B595F"/></svg>',
+  plus: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M9.37533 15.8332V10.6248H4.16699C3.82181 10.6248 3.54199 10.345 3.54199 9.99984C3.54199 9.65466 3.82181 9.37484 4.16699 9.37484H9.37533V4.1665C9.37533 3.82133 9.65515 3.5415 10.0003 3.5415C10.3455 3.5415 10.6253 3.82133 10.6253 4.1665V9.37484H15.8337C16.1788 9.37484 16.4587 9.65466 16.4587 9.99984C16.4587 10.345 16.1788 10.6248 15.8337 10.6248H10.6253V15.8332C10.6253 16.1783 10.3455 16.4582 10.0003 16.4582C9.65515 16.4582 9.37533 16.1783 9.37533 15.8332Z" fill="currentColor"/></svg>',
+};
+const dIc = (k) => { const sp = h("span", { class: "dic2" }); sp.innerHTML = D_SVG[k]; return sp; };
 async function bookList(main, sort = "recent") {
   const d = await api("/api/books?sort=" + sort);
   const redo = () => bookList(main, sort);
-  const sortBtn = h("button", { class: "sortbtn", type: "button", onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["최근 수정 순", () => { sort = "recent"; redo(); }], ["이름 순", () => { sort = "name"; redo(); }]]); } }, sort === "name" ? "이름 순" : "최근 수정 순", icon("chevronDown"));
-  main.replaceChildren(h("div", { class: "dhead" }, h("div", {}, h("h1", {}, "레퍼런스 북"), h("p", { class: "sub" }, `북 ${d.total}개`)), h("span", { class: "sp" }), sortBtn, btn("+ 새 북 만들기", "primary", () => bookDialog(null, redo))),
+  const sortBtn = h("button", { class: "sortbtn", type: "button", onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["최근 순", () => { sort = "recent"; redo(); }], ["이름 순", () => { sort = "name"; redo(); }]]); } }, sort === "name" ? "이름 순" : "최근 순", dIc("drop"));
+  main.replaceChildren(h("div", { class: "dhead" }, h("div", {}, h("h1", {}, "내 북"), h("p", { class: "sub" }, `북 ${d.total}개`)), h("span", { class: "sp" }), sortBtn, (() => { const b = btn("새 북 만들기", "primary newbk", () => bookDialog(null, redo)); b.prepend(dIc("plus")); return b; })()),
     d.items.length ? h("div", { class: "books" }, d.items.map((b) => h("div", { class: "bk" },
       h("button", { class: "book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) }, h("span", { class: "cover" + (b.cover ? " one" : "") }, b.cover ? h("img", { src: b.cover, alt: "" }) : [0, 1, 2].map((i) => h("span", {}, b.covers[i] ? h("img", { src: `/img/${b.covers[i]}?s=thumb`, alt: "" }) : null)))),
       h("div", { class: "brow" }, h("button", { class: "bt", type: "button", style: "text-align:left", onclick: () => (location.hash = "#/drawer/book/" + b.id) }, h("b", {}, b.name), h("span", {}, `${b.count}개 · ${ago(b.updated)}`)),
-        h("button", { class: "more-btn", type: "button", "aria-label": `${b.name} 더보기`, onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["편집", () => bookDialog(b, redo)], ["삭제", async () => { if (await confirmDialog(`“${b.name}” 북을 삭제할까요? 담긴 게시물은 삭제되지 않아요.`)) { try { await api("/api/books/" + b.id, { method: "DELETE" }); redo(); } catch (er) { toast(er.message); } } }]]); } }, moreIc())))))
+        h("button", { class: "more-btn bk-more", type: "button", "aria-label": `${b.name} 더보기`, onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["편집", () => bookDialog(b, redo)], ["삭제", async () => { if (await confirmDialog(`“${b.name}” 북을 삭제할까요? 담긴 게시물은 삭제되지 않아요.`)) { try { await api("/api/books/" + b.id, { method: "DELETE" }); redo(); } catch (er) { toast(er.message); } } }]]); } }, moreIc())))))
       : notice("아직 북이 없어요", "마음에 드는 레퍼런스를 주제별로 모아 보세요.", btn("+ 새 북 만들기", "primary", () => bookDialog(null, redo))));
 }
 async function bookDetail(main, id) {

@@ -2225,3 +2225,32 @@ html:not(.m) .dp-fab{gap:12px}
 html:not(.m) .dp-lk{color:#8e8c91}
 html:not(.m) .dp-lk .dps{color:#c3c2c5}
 html:not(.m) .dp-lk.on .dps,html:not(.m) .dp-lk.on{color:#7425f6}
+
+/* ================================================================ 서랍 · 내 북 = Figma DRW_0000 (2733:130109)
+   왼쪽(300 · #F8F7F8): '서랍' 20 SemiBold(왼 28 · 위 24) · 항목 260×48(왼 20 · 안쪽 12 · 모서리 6 · 16 Medium, 선택 #F6F0FE/보라, 올림 #F1F0F2) · 항목 사이 8
+   오른쪽: '내 북' 28 Bold · '북 N개' 16 Regular(위 5) · 정렬 42(16 Medium + 화살표 20) · 새 북 만들기(보라 40 · 더하기 20) · 둘 사이 5
+   북 카드 3열(간격 15): 표지 137(3장 · 간격 2 · 모서리 11) · 아래 9 · 제목 18 SemiBold · 정보 14 Medium #6F6D72(위 3) · 더보기 24 */
+.dic2{display:inline-grid;place-items:center;line-height:0;flex:none}
+html:not(.m) .drawer .dnav{width:300px;background:#f8f7f8;padding:24px 20px 0;box-sizing:border-box}
+html:not(.m) .drawer .dnav h2{margin:0 0 15px;padding:0 0 0 8px;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#000}
+html:not(.m) .drawer .dnav a,html:not(.m) .drawer .dnav a.on{display:flex;align-items:center;width:260px;height:48px;margin:0 0 8px;padding:12px;border-radius:6px;box-sizing:border-box;font:500 16px/24px Pretendard,sans-serif;letter-spacing:0;color:#18171a;background:none}
+html:not(.m) .drawer .dnav a:not(.on):hover{background:#f1f0f2}
+html:not(.m) .drawer .dnav a.on{background:#f6f0fe;color:#7425f6}
+html:not(.m) .drawer .dnav small{margin:52px 0 12px;padding:0 0 0 8px;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#6f6d72}
+html:not(.m) .dmain{padding:55px 22px 96px 20px}
+html:not(.m) .dmain .dhead{margin:0 0 16px;align-items:flex-end;gap:5px}
+html:not(.m) .dmain .dhead>div:first-child{padding-left:19px}
+html:not(.m) .dmain .dhead h1{margin:0;font:700 28px/36px Pretendard,sans-serif;letter-spacing:-.28px;color:#18171a}
+html:not(.m) .dmain .dhead .sub{margin:5px 0 0;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .dmain .dhead .sortbtn{height:42px;padding:8px 8px 8px 12px;gap:4px;display:inline-flex;align-items:center;border-radius:6px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .dmain .dhead .newbk{height:40px;padding:0 16px;gap:6px;display:inline-flex;align-items:center;border-radius:8px;background:#7425f6;border-color:#7425f6;color:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;margin-bottom:1px}
+html:not(.m) .dmain .books{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 15px}
+html:not(.m) .dmain .bk{padding:0 2px}
+html:not(.m) .dmain .bk .cover{height:137px;border-radius:11px;gap:2px;overflow:hidden;aspect-ratio:auto}
+html:not(.m) .dmain .bk .cover>span{background:#f1f0f2;border-radius:0}
+html:not(.m) .dmain .bk .brow{margin-top:9px;gap:4px;align-items:flex-start}
+html:not(.m) .dmain .bk .brow .bt{display:flex;flex-direction:column;gap:3px;min-width:0}
+html:not(.m) .dmain .bk .brow b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .dmain .bk .brow .bt span{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#6f6d72}
+html:not(.m) .dmain .bk .bk-more{width:24px;height:24px;padding:0;color:#18171a}
+html:not(.m) .dmain .bk .bk-more .ic{width:24px;height:24px}
