@@ -541,7 +541,7 @@ function followsDialog(u, kind, after) {
         } }, label));
     }) : [h("p", { class: "nempty" }, q ? "검색 결과가 없어요" : cur === "followers" ? "아직 팔로워가 없어요" : "아직 팔로잉한 사용자가 없어요")]));
   }
-  async function load() { body.replaceChildren(h("p", { class: "nempty" }, "불러오는 중…")); try { list = (await api(`/api/users/${u.uid}/follows?kind=${cur}`)).items; } catch (e) { list = []; toast(e.message); } drawList(); }
+  async function load() { body.replaceChildren(skFollows()); try { list = (await api(`/api/users/${u.uid}/follows?kind=${cur}`)).items; } catch (e) { list = []; toast(e.message); } drawList(); }
   drawTabs(); document.body.append(m); load();
 }
 

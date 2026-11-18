@@ -623,13 +623,25 @@ function picker(onPick, exclude) {
   return box;
 }
 
+/* ---------------------------------------------------------------- 스켈레톤 (불러오는 동안 자리만 보여 주고 빛이 지나가는 모션) */
+const sk = (cls, style) => h("span", { class: "sk " + (cls || ""), style: style || null, "aria-hidden": "true" });
+function skDetail() {
+  return h("div", { class: "pbody sk-detail", role: "status", "aria-label": "불러오는 중" },
+    sk("sk-img"),
+    h("div", { class: "sk-row" }, sk("sk-av"), h("div", { class: "sk-col" }, sk("sk-ln", "width:40%"), sk("sk-ln sm", "width:25%")), sk("sk-pill")),
+    sk("sk-ln lg", "width:60%"), sk("sk-ln", "width:85%"),
+    h("div", { class: "sk-tags" }, ...[56, 72, 48, 64, 80].map((w) => sk("sk-tag", `width:${w}px`))));
+}
+const skCard = (hgt) => h("span", { class: "sk-card", "aria-hidden": "true" }, sk("sk-im", `height:${hgt}px`), h("span", { class: "sk-ft" }, sk("sk-av xs"), sk("sk-ln sm", "width:50%")));
+const skFollows = (n = 6) => h("div", { class: "sk-list", role: "status", "aria-label": "불러오는 중" }, ...Array.from({ length: n }, () => h("div", { class: "sk-row" }, sk("sk-av"), h("div", { class: "sk-col" }, sk("sk-ln", "width:45%"), sk("sk-ln sm", "width:30%")), sk("sk-pill"))));
+
 /* ---------------------------------------------------------------- 상세 패널 */
 async function openDetail(id, back = false) {
   if (!back && S.open && S.open !== id) S.hist.push(S.open);   // back 버튼용: 직전에 본 이미지 기록
   S.open = id; document.querySelectorAll(".card").forEach((c) => c.classList.toggle("sel", +c.dataset.id === id));
   masSnap(); clearTimeout(closeDetail.t); $("#layout").classList.remove("p-closing"); $("#panel").style.cssText = "";
   const panel = $("#panel"); panel.hidden = false; $("#layout").classList.add("has-panel"); document.documentElement.classList.add("m-detail"); if (isM()) panel.scrollTop = 0;
-  panel.replaceChildren(h("div", { class: "pbody" }, "불러오는 중…"));
+  panel.replaceChildren(skDetail());
   try { const [d, so] = await Promise.all([api("/api/images/" + id), api("/api/images/" + id + "/social")]); d.so = so; drawDetail(d); }
   catch (e) { panel.replaceChildren(h("div", { class: "pbody" }, h("p", {}, e.message))); }
 }
@@ -788,12 +800,13 @@ function drawDetail(d, edit = false) {
     h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
     h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg("heart:f", 12), String(it.likes ?? 0))));
   const loadRel = async () => {
-    if (relBusy) return; relBusy = true; relMore.disabled = true; relMore.textContent = "불러오는 중…";
+    if (relBusy) return; relBusy = true; relMore.disabled = true; relMore.hidden = true;
+    const sks = [180, 240, 210, 150].map((hh, i) => { const c = skCard(hh); relCols[i % 2].append(c); return c; });   // 불러오는 동안 스켈레톤 카드
     try {
-      const r = await api(`/api/images/${d.id}/related?limit=10&offset=${relOff}`); if (S.open !== d.id) return;
+      const r = await api(`/api/images/${d.id}/related?limit=10&offset=${relOff}`); sks.forEach((c) => c.remove()); if (S.open !== d.id) return;
       r.items.forEach((it) => { const c = relCols[0].offsetHeight <= relCols[1].offsetHeight ? relCols[0] : relCols[1]; c.append(relCard(it)); });
       relOff += r.items.length; relMore.hidden = !r.more;
-    } catch { relMore.hidden = true; } finally { relBusy = false; relMore.disabled = false; relMore.textContent = "더보기"; }
+    } catch { relMore.hidden = true; } finally { sks.forEach((c) => c.remove()); relBusy = false; relMore.disabled = false; }
   };
   relMore.onclick = loadRel;
   const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
