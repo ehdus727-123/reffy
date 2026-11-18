@@ -2209,3 +2209,7 @@ html:not(.m) .kp-acts0{gap:24px}
 html:not(.m) .kp-acts0 .kc-del{width:40px;height:40px;padding:0;color:#18171a}
 html:not(.m) .kp-acts .btn:disabled{background:#7425f6;border-color:#7425f6;color:#fff;opacity:1;height:42px;padding:0 16px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
 html:not(.m) .rrgrid .card{margin:0}
+/* 킵 스페이스 선택 바: 화면 아래에서 59 띄워 고정 */
+html:not(.m) .selbar{bottom:59px}
+/* 페이지 등장 효과가 끝난 뒤 transform을 남기지 않음 → 화면 고정(fixed) 요소(선택 바 등)가 화면 기준으로 붙음 */
+#page:not([hidden])>*{animation-fill-mode:backwards}
