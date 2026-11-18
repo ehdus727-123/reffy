@@ -2314,3 +2314,12 @@ html:not(.m) .bar .chips{gap:8px}
 html:not(.m) .dlg.savebk .newbook>b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px}
 /* 상세 이미지 위쪽이 어두우면 뒤로 · 닫기 아이콘을 흰색으로 (app.js dpTone) */
 html:not(.m) .dp-img.dk-l .dp-ib.back,html:not(.m) .dp-img.dk-r .dp-top .dp-ib:last-child{color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.45))}
+/* 상단 바 왼쪽(로고 · 메뉴)은 화면 폭과 상관없이 Figma 1440 수치로 고정 → 아래 필터 패널·서랍(폭 300)과 늘 같은 줄
+   (로고 24 · 로고↔메뉴 43 · 메뉴 사이 28 · 메뉴↔검색 47 고정, 검색↔알림만 화면 폭에 비례) */
+html:not(.m) .top{padding:22px 24px}
+html:not(.m) .top .brand{gap:43px}
+html:not(.m) .top .nav{gap:28px}
+html:not(.m) .top .search{margin:0 calc(52 * var(--u)) 0 47px}
+html:not(.m) .top .actions{gap:20px}
+/* 필터 패널: 구역 제목 · 소제목을 칩 왼쪽 끝과 같은 줄로 (Figma FilterPanel) */
+html:not(.m) .side .fp-ttl,html:not(.m) .side .fp-sub{padding-left:0}
