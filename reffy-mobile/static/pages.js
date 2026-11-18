@@ -211,7 +211,7 @@ const CHEV_SVG = {
   L: '<path d="M13.9697 5.4697C14.2626 5.1768 14.7374 5.1768 15.0303 5.4697C15.3232 5.7626 15.3232 6.2374 15.0303 6.5303L9.5606 12L15.0303 17.4697C15.3232 17.7626 15.3232 18.2374 15.0303 18.5303C14.7374 18.8232 14.2626 18.8232 13.9697 18.5303L7.9697 12.5303C7.6768 12.2374 7.6768 11.7626 7.9697 11.4697L13.9697 5.4697Z" fill="currentColor"/>',
   R: '<path d="M8.9697 5.4697C9.2626 5.1768 9.7373 5.1768 10.0302 5.4697L16.0302 11.4697C16.3231 11.7626 16.3231 12.2374 16.0302 12.5303L10.0302 18.5303C9.7373 18.8232 9.2626 18.8232 8.9697 18.5303C8.6768 18.2374 8.6768 17.7626 8.9697 17.4697L14.4394 12L8.9697 6.5303C8.6768 6.2374 8.6768 5.7626 8.9697 5.4697Z" fill="currentColor"/>',
 };
-const chevSvg = (d) => { const sp = h("span", { class: "kc-chev" }); sp.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">${CHEV_SVG[d]}</svg>`; return sp; };
+const chevSvg = (d) => { const sp = h("span", { class: "kc-chev" }); sp.innerHTML = `<svg width="104" height="104" viewBox="0 0 104 104" fill="none" aria-hidden="true"><path d="${d === "L" ? "M62.83 26L36.83 52L62.83 78" : "M41.17 26L67.17 52L41.17 78"}" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; return sp; };   // 104 크기 · 선 굵기 4(가운데)
 function keepCompare(items, start, kind, setKind, onDone) {
   const root = $("#page"); let idx = Math.max(0, start); const picked = new Set();
   const full = (it) => (it.thumb || "").replace("s=thumb", "s=full");
