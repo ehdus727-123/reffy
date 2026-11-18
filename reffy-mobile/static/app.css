@@ -2507,3 +2507,4 @@ html:not(.m) .srow:active .rd{animation:rf-ripple-rd .35s cubic-bezier(.2,.8,.2,
 .sk-list{display:flex;flex-direction:column;gap:16px;padding:8px 0}
 .sk-list .sk-av{width:40px;height:40px}
 @media (prefers-reduced-motion:reduce){.sk{animation:none}}
+.acct-me b{font-weight:500}
