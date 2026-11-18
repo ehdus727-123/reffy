@@ -769,7 +769,7 @@ function drawDetail(d, edit = false) {
   let relOff = 0, relBusy = false;
   const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
-    h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg(it.liked ? "heart:f" : "heart", 12), String(it.likes ?? 0))));
+    h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg("heart:f", 12), String(it.likes ?? 0))));
   const loadRel = async () => {
     if (relBusy) return; relBusy = true; relMore.disabled = true; relMore.textContent = "불러오는 중…";
     try {

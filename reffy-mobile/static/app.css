@@ -2220,3 +2220,8 @@ html:not(.m) .dp-top{top:8px;padding:0 12px}
 html:not(.m) .dp-follow{height:42px;padding:0 16px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
 html:not(.m) .dp-head{margin-right:-5px}
 html:not(.m) .dp-h h3{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .dp-fab{gap:12px}
+/* 연관 이미지 카드 하트: Figma Common/Card M — 채운 하트 12 (#C3C2C5, 누른 글은 보라) · 수 11 #8E8C91 */
+html:not(.m) .dp-lk{color:#8e8c91}
+html:not(.m) .dp-lk .dps{color:#c3c2c5}
+html:not(.m) .dp-lk.on .dps,html:not(.m) .dp-lk.on{color:#7425f6}
