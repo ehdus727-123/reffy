@@ -127,16 +127,16 @@ async function saveToBook(ids, o = {}) {
 function bookDialog(book, done) {
   let file = null;
   const name = h("input", { type: "text", maxlength: "40", value: book?.name || "", placeholder: "예: 앉은 포즈 모음", "aria-label": "북 이름" });
-  const desc = h("textarea", { maxlength: "200", placeholder: "북에 대한 메모를 남겨 보세요", "aria-label": "북 설명" }, book?.description || "");
+  const desc = h("textarea", { maxlength: "200", placeholder: "북에 대한 메모를 남겨보세요", "aria-label": "북 설명" }, book?.description || "");
   const prev = h("span", { class: "cvprev" });
   const showPrev = (url) => prev.replaceChildren(url ? h("img", { src: url, alt: "커버 미리보기" }) : "");
   showPrev(book?.cover || (book?.covers?.[0] ? `/img/${book.covers[0]}?s=thumb` : null));
   const pick = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp", hidden: true, onchange: (e) => { const f = e.target.files[0]; if (!f) return; if (f.size > 5 << 20) { toast("5MB 이하의 이미지만 올릴 수 있어요."); return; } file = f; showPrev(URL.createObjectURL(f)); } });
   const m = h("div", { class: "modal", onmousedown: (e) => e.target === m && m.remove() },
     h("div", { class: "dlg bk", role: "dialog", "aria-modal": "true", "aria-label": book ? "북 편집" : "새 북 만들기" },
-      h("div", { class: "chd" }, h("h2", {}, book ? "북 편집" : "새 북 만들기"), h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24))),
+      h("div", { class: "chd" }, h("h2", {}, book ? "북 편집" : "새 북 만들기"), isM() ? h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24)) : figClose(() => m.remove())),
       h("div", { class: "cvrow" }, prev, h("div", { class: "cvtx" }, h("b", {}, "커버 이미지"), h("span", {}, "이미지를 고르면 커버로 지정돼요"),
-        h("button", { class: "btn", type: "button", onclick: () => pick.click() }, icon("image", 20), "업로드"), pick)),
+        h("button", { class: "btn cvup", type: "button", onclick: () => pick.click() }, isM() ? icon("image", 20) : (() => { const sp = h("span", { class: "dic2" }); sp.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12.6663 4.3335C12.6663 4.06828 12.5609 3.814 12.3734 3.62646C12.1858 3.43893 11.9316 3.3335 11.6663 3.3335H4.33301C4.06779 3.3335 3.81351 3.43893 3.62598 3.62646C3.43844 3.814 3.33301 4.06828 3.33301 4.3335V11.6668C3.33301 11.932 3.43844 12.1863 3.62598 12.3739C3.81351 12.5614 4.06779 12.6668 4.33301 12.6668H11.6663C11.9316 12.6668 12.1858 12.5614 12.3734 12.3739C12.5609 12.1863 12.6663 11.932 12.6663 11.6668V4.3335ZM13.6663 11.6668C13.6663 12.1973 13.4555 12.7058 13.0804 13.0809C12.7053 13.456 12.1968 13.6668 11.6663 13.6668H4.33301C3.80257 13.6668 3.29402 13.456 2.91895 13.0809C2.54387 12.7058 2.33301 12.1973 2.33301 11.6668V4.3335C2.33301 3.80306 2.54387 3.29451 2.91895 2.91943C3.29402 2.54436 3.80257 2.3335 4.33301 2.3335H11.6663C12.1968 2.3335 12.7053 2.54436 13.0804 2.91943C13.4555 3.29451 13.6663 3.80306 13.6663 4.3335V11.6668Z" fill="currentColor"/><path d="M5.16634 10.6668L6.49967 8.93351L7.53301 10.1335L9.16634 7.93351L10.833 10.6668H5.16634Z" fill="currentColor"/></svg>'; return sp; })(), "업로드"), pick)),
       h("label", { class: "fl2" }, "북 이름"), name,
       h("label", { class: "fl2" }, "설명 (선택)"), desc,
       h("div", { class: "cft" }, btn("취소", "", () => m.remove()), btn(book ? "저장" : "만들기", "primary", async () => {
