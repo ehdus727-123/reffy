@@ -2213,3 +2213,10 @@ html:not(.m) .rrgrid .card{margin:0}
 html:not(.m) .selbar{bottom:59px}
 /* 페이지 등장 효과가 끝난 뒤 transform을 남기지 않음 → 화면 고정(fixed) 요소(선택 바 등)가 화면 기준으로 붙음 */
 #page:not([hidden])>*{animation-fill-mode:backwards}
+
+/* ================================================================ 상세 패널 = Figma DetailedPanel (2662:56256)
+   위 줄: 위 8 · 좌우 12 · 아이콘 36 / 팔로우 버튼 42 · 좌우 16 · 16 Medium / 구역 제목 18 SemiBold(줄 24) */
+html:not(.m) .dp-top{top:8px;padding:0 12px}
+html:not(.m) .dp-follow{height:42px;padding:0 16px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .dp-head{margin-right:-5px}
+html:not(.m) .dp-h h3{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px}
