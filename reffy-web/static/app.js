@@ -437,12 +437,14 @@ function cardH(it) {
   const want = it.w && it.h ? 217 * it.h / it.w : 240;
   return CARD_HS.reduce((a, b) => (Math.abs(b - want) < Math.abs(a - want) ? b : a));
 }
+/* 카드 아래 프로필: 올린 사람의 프로필 사진이 있으면 그 사진, 없으면 회색 원 */
+const cardAv = (it, cls = "av", txt) => h("span", { class: cls + (it.avatar ? " has" : "") }, it.avatar ? h("img", { src: it.avatar, alt: "", loading: "lazy" }) : (txt || null));
 function card(it) {
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
-    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
+    h("span", { class: "meta" + (it.liked ? " liked" : "") }, cardAv(it), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
 /* 카드 Hover(Figma Common/Card 2138:1046): 이미지에 8% State layer + 오른쪽 위 하트 40 — 누르면 하트(좋아요) */
 const CL_PATH = {
@@ -798,7 +800,7 @@ function drawDetail(d, edit = false) {
   let relOff = 0, relBusy = false;
   const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
-    h("span", { class: "dp-ft" }, h("span", { class: "dp-av" }), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg("heart:f", 12), String(it.likes ?? 0))));
+    h("span", { class: "dp-ft" }, cardAv(it, "dp-av"), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg("heart:f", 12), String(it.likes ?? 0))));
   const loadRel = async () => {
     if (relBusy) return; relBusy = true; relMore.disabled = true; relMore.hidden = true;
     const sks = [180, 240, 210, 150].map((hh, i) => { const c = skCard(hh); relCols[i % 2].append(c); return c; });   // 불러오는 동안 스켈레톤 카드
@@ -823,7 +825,7 @@ function drawDetail(d, edit = false) {
     h("div", { class: "dp-info" },
       h("div", { class: "dp-head" },
         h("div", { class: "dp-user" }, o ? avatarEl(o, 36, "dp-av40") : h("span", { class: "dp-av40 avt" }, (d.author || "?").slice(0, 1)),
-          h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
+          h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
           o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
         h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),
       h("div", { class: "dp-acts" },
@@ -1009,7 +1011,7 @@ const UP_MAX = 10, MAT_MAX = 5, UP_TYPES = "image/jpeg,image/png,image/webp,imag
 let pu = null;
 function puDirty() { return pu && (pu.items.length || (pu.title || "").trim() || pu.materials.length || (pu.tools || []).length); }
 async function puClose(force) {
-  if (!force && puDirty() && !(await confirmDialog("작성을 그만둘까요?", "작성 중인 내용은 저장되지 않아요.", { ok: "그만두기", cancel: "계속 작성", danger: true }))) return;
+  if (!force && puDirty() && !(await confirmDialog("작성을 중단할까요?", "작성 중인 내용은 저장되지 않아요.", { fig: true, no: "계속 작성", yes: "그만두기", danger: true }))) return;
   pu?.items.forEach((it) => URL.revokeObjectURL(it.url)); pu = null; $(".modal.upl-pc")?.remove(); document.removeEventListener("keydown", puKey);
 }
 function puKey(e) { if (e.key === "Escape" && !$(".modal.center")) puClose(); }
@@ -1047,7 +1049,7 @@ function openUploadPC() {
   puDraw();
 }
 function puHeader() {
-  return h("header", { class: "upd-h" }, h("h2", {}, "새 게시물 업로드"), h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => puClose() }, icon("close", 24)));
+  return h("header", { class: "upd-h" }, h("h2", {}, "새 게시물 업로드"), figClose(() => puClose()));
 }
 function puDraw() {
   const dlg = $(".modal.upl-pc .dlg"); if (!dlg || !pu) return;
@@ -1073,21 +1075,21 @@ function puDraw() {
     pu.items.map((it, i) => h("button", { type: "button", class: "upd-th" + (i === pu.sel ? " on" : ""), "aria-label": `${i + 1}번째 이미지`, onclick: () => { pu.sel = i; puDraw(); } },
       h("img", { src: it.url, alt: "" }), pu.items.length > 1 ? h("span", { class: "upd-thx", role: "button", "aria-label": "이 이미지 빼기", onclick: (e) => { e.stopPropagation(); URL.revokeObjectURL(it.url); pu.items.splice(i, 1); pu.sel = Math.min(pu.sel, pu.items.length - 1); puDraw(); } }, icon("close", 14)) : null)),
     pu.items.length < UP_MAX ? h("button", { type: "button", class: "upd-add", "aria-label": "이미지 추가", onclick: () => pick() }, icon("plus", 24)) : null);
-  const left = h("div", { class: "upd-img" }, h("div", { class: "upd-pv" }, cur ? h("img", { src: cur.url, alt: "미리보기" }) : null), thumbs);
+  const left = h("div", { class: "upd-img" }, h("div", { class: "upd-pv" }, cur ? h("img", { src: cur.url, alt: "미리보기" }) : null, thumbs));   // 썸네일 줄은 미리보기 아래쪽 위에 겹쳐서 (Figma: 이미지 480×566)
   /* 오른쪽 폼 */
   const title = h("input", { class: "inp", id: "pTitle", maxlength: "120", placeholder: "게시물 제목을 입력하세요", value: pu.title, oninput: (e) => (pu.title = e.target.value) });
-  const matIn = h("input", { class: "inp", type: "url", placeholder: "링크를 입력해 주세요", "aria-label": "사용 소재 링크", maxlength: "300" });
+  const matIn = h("input", { class: "inp", type: "url", placeholder: "링크를 입력해주세요", "aria-label": "사용 소재 링크", maxlength: "300" });
   const addMat = () => { const v = matIn.value.trim(); if (!v) return; if (pu.materials.length >= MAT_MAX) return toast(`사용 소재는 ${MAT_MAX}개까지 넣을 수 있어요.`); if (!pu.materials.includes(v)) pu.materials.push(v); puDraw(); setTimeout(() => $("#pMat")?.focus(), 0); };
   matIn.id = "pMat"; matIn.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); addMat(); } };
-  const mats = h("div", { class: "upd-sec" },
-    h("div", { class: "upd-mh" }, h("label", { for: "pMat" }, "사용 소재"), h("small", {}, `${pu.materials.length} / ${MAT_MAX}`)),
-    h("div", { class: "upd-mrow" }, matIn, h("button", { class: "btn", type: "button", onclick: addMat }, "추가")),
-    pu.materials.map((l, i) => h("div", { class: "upd-link" }, icon("link", 18), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { pu.materials.splice(i, 1); puDraw(); } }, icon("close", 18)))));
-  const vis = h("label", { class: "upd-vis" }, h("span", {}, h("b", {}, "공개 설정"), h("small", {}, "끄면 나만 볼 수 있어요")),
-    h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: !pu.private, onchange: (e) => (pu.private = !e.target.checked) }), h("i", { class: "sw-ui" }));
-  /* 기존 기능(종류 · AI 태그)은 그대로 두고 공개 설정 아래에 이어서 보여 줌 */
-  const kind = h("div", { class: "upd-sec" }, h("label", {}, "종류"), h("div", { class: "seg", role: "radiogroup" },
-    [["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(pu.kind === k), class: pu.kind === k ? "on" : "", onclick: () => { pu.kind = k; puDraw(); } }, l))));
+  /* Figma 업로드(2789:150988): 제목 · 종류 · 사용 툴 · 사용 소재 · 비공개 설정 (AI 태그는 그 아래) */
+  const mats = h("div", { class: "upd-sec upd-mat" },
+    h("label", { for: "pMat" }, "사용 소재"),
+    h("div", { class: "upd-mrow" }, matIn, h("button", { class: "btn upd-madd", type: "button", onclick: addMat }, "추가")),
+    pu.materials.map((l, i) => h("div", { class: "upd-link" }, dpSvg("link", 20), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { pu.materials.splice(i, 1); puDraw(); } }, icon("close", 20)))));
+  const vis = h("label", { class: "upd-vis" }, h("span", {}, h("b", {}, "비공개 설정"), h("small", {}, "키면 나만 볼 수 있어요")),
+    h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: !!pu.private, onchange: (e) => (pu.private = e.target.checked) }), h("i", { class: "sw-ui" }));
+  const kind = h("div", { class: "upd-sec" }, h("label", {}, "종류"), h("div", { class: "tool-chips", role: "radiogroup", "aria-label": "종류" },
+    [["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(pu.kind === k), class: "tool-chip" + (pu.kind === k ? " on" : ""), onclick: () => { pu.kind = k; puDraw(); } }, l))));
   let tagSec = null;
   if (cur) {
     const tags = [...cur.tags.values()];
@@ -1101,7 +1103,7 @@ function puDraw() {
   }
   const busy = pu.items.some((it) => it.busy);
   dlg.replaceChildren(puHeader(),
-    h("div", { class: "upd-c" }, left, h("div", { class: "upd-form" }, h("div", { class: "upd-sec" }, h("label", { for: "pTitle" }, "제목"), title), mats, toolsField(pu.tools, puDraw, "upd-sec"), vis, kind, tagSec)),
+    h("div", { class: "upd-c" }, left, h("div", { class: "upd-form" }, h("div", { class: "upd-sec" }, h("label", { for: "pTitle" }, "제목"), title), kind, toolsField(pu.tools, puDraw, "upd-sec"), mats, vis, tagSec)),
     h("div", { class: "upd-f" }, h("span", { class: "sp" }),
       h("button", { class: "btn", type: "button", onclick: () => { store.set("reffy.draft", { title: pu.title || "", materials: pu.materials, tools: pu.tools, private: pu.private, kind: pu.kind }); toast("임시 저장했어요"); } }, "임시 저장"),
       h("button", { class: "btn primary", id: "pPub", type: "button", disabled: busy || !pu.items.some((it) => it.token), onclick: puPublish }, busy ? "분석 중…" : "등록")));

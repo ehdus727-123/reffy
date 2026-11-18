@@ -2509,3 +2509,65 @@ html:not(.m) .srow:active .rd{animation:rf-ripple-rd .35s cubic-bezier(.2,.8,.2,
 @media (prefers-reduced-motion:reduce){.sk{animation:none}}
 .acct-me b{font-weight:500}
 html:not(.m) .dp-name a,html:not(.m) .dp-name b{font-size:18px;line-height:24px;letter-spacing:-.08px}
+
+/* ===== 새 게시물 업로드 (Figma 2789:146073 · 2789:150988 · 2789:151262) ===== */
+html:not(.m) .upd{width:720px;padding:24px 28px;gap:20px;border-radius:16px}
+html:not(.m) .upd.s2{width:1040px;height:auto;max-height:calc(100vh - 32px)}
+html:not(.m) .upd-h{height:32px}
+html:not(.m) .upd-h h2{font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px;color:#18171a}
+html:not(.m) .upd-h .fclose{width:32px;height:32px;padding:0}
+html:not(.m) .upd .btn{height:40px;min-width:64px;padding:0 16px;border-radius:8px;border:1px solid #c3c2c5;background:#fff;color:#18171a;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .upd .btn.primary{background:#7425f6;border-color:#7425f6;color:#fff}
+html:not(.m) .upd .btn.primary:hover:not(:disabled){background:#6628d5;border-color:#6628d5}
+/* 1단계: 끌어다 놓기 */
+html:not(.m) .upd-drop{height:400px;gap:16px;border:1px dashed #c3c2c5;border-radius:12px;background:#f8f7f8}
+html:not(.m) .upd-drop.over,html:not(.m) .upd-drop.has{border-color:#7425f6;background:#f6f0fe}
+html:not(.m) .upd-drop .ic{width:32px;height:32px;color:#18171a}
+html:not(.m) .upd-dt{display:flex;flex-direction:column;gap:4px}
+html:not(.m) .upd-dt b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .upd-dt p{margin:0;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+html:not(.m) .upd .btn.upd-file{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+/* 2단계: 이미지 480×566 · 폼 472 · 간격 32 */
+html:not(.m) .upd-c{gap:32px;height:566px;flex:none}
+html:not(.m) .upd-img{width:480px;height:566px;gap:0}
+html:not(.m) .upd-pv{position:relative;width:480px;height:566px;border-radius:8px;background:#f1f0f2}
+html:not(.m) .upd-thumbs{position:absolute;left:0;right:0;bottom:0;padding:12px;gap:8px;background:linear-gradient(transparent,rgba(24,23,26,.28))}
+html:not(.m) .upd-th,html:not(.m) .upd-add{width:56px;height:56px;border-radius:8px;border:0}
+html:not(.m) .upd-th.on::after{content:"";position:absolute;inset:0;border:2px solid #7425f6;border-radius:inherit}
+html:not(.m) .upd-add{background:rgba(255,255,255,.9);border:1px dashed #c3c2c5}
+html:not(.m) .upd-form{width:472px;flex:none;gap:24px}
+html:not(.m) .upd-sec{gap:4px}
+html:not(.m) .upd-sec>label{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .upd .tool-chips{gap:8px 5px}
+html:not(.m) .upd .tool-chip{height:30px;padding:0 10px;font:500 12px/16px Pretendard,sans-serif}
+html:not(.m) .upd .tool-chip.on{background:#f6f0fe;border-color:#7425f6;color:#7425f6}
+html:not(.m) .upd-mat{gap:4px}
+html:not(.m) .upd-mrow{position:relative;display:block;margin-bottom:3px}
+html:not(.m) .upd-mrow .inp{width:100%;padding-right:90px}
+html:not(.m) .upd .btn.upd-madd{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:32px;min-width:64px;padding:0 12px;border-radius:6px;border-color:#7425f6;color:#7425f6;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .upd-link{height:48px;padding:0 14px;gap:8px;border:1px solid #f1f0f2;border-radius:10px;background:#f8f7f8;margin-top:4px}
+html:not(.m) .upd-link>svg{flex:none;width:20px;height:20px;color:#5b595f;fill:none}
+html:not(.m) .upd-link span{font:400 12px/16px Pretendard,sans-serif;letter-spacing:0;color:#5b595f}
+html:not(.m) .upd-link .icon-btn,html:not(.m) .upd-link .icon-btn .ic{width:20px;height:20px;color:#5b595f}
+html:not(.m) .upd-vis{height:42px;gap:16px}
+html:not(.m) .upd-vis b{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .upd-vis small{font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) .upd-f{gap:8px}
+/* 작성 중단 다이얼로그: [계속 작성] 회색 테두리 · [그만두기] 빨강 #ce3030 */
+html:not(.m) .dlg.confirm.fg.dz .cft .btn{height:40px;border-color:#c3c2c5;color:#18171a;background:#fff}
+html:not(.m) .dlg.confirm.fg.dz .cft .btn.primary.danger{background:#ce3030;border-color:#ce3030;color:#fff}
+html:not(.m) .dlg.confirm.fg.dz .cft .btn.primary.danger:hover{background:#b82a2a;border-color:#b82a2a}
+
+/* 마이페이지 링크 상자 (Figma 2789:146073): 높이 68 · 글자 14 · 가운데 */
+html:not(.m) .pf-links ul{display:grid;justify-content:center;align-content:start;gap:5px;padding:11px 12px;min-height:68px}
+html:not(.m) .pf-links li,html:not(.m) .pf-links a{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+/* 카드 · 관련 카드 프로필 사진 */
+.av.has,.dp-av.has{overflow:hidden;background:#e4e3e5}
+.av.has img,.dp-av.has img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+/* 업로드 폼 라벨: Figma Title/Title4 (Pretendard SemiBold 16/24) */
+html:not(.m) .upd .upd-sec>label,html:not(.m) .upd .upd-vis b{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .upd .upd-sec>label:has(+ * input:focus),html:not(.m) .upd .upd-sec>label:has(+ input:focus){color:#18171a}
+/* 마이페이지 링크 상자 (Figma 2789:146106): 높이 68 · 위 11 · 글자 14 Regular · 가운데 */
+html:not(.m) .pf-links ul{display:grid;justify-content:center;align-content:start;gap:5px;padding:11px 12px;min-height:68px}
+html:not(.m) .pf-links li{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;min-width:0;max-width:100%}
+html:not(.m) .pf-links a{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}

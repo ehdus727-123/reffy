@@ -62,11 +62,11 @@ function confirmDialog(title, sub, opt = {}) {
       wf ? h("div", { class: "dlg confirm wf", role: "alertdialog", "aria-modal": "true", "aria-label": title },
         h("h2", {}, title), sub ? h("p", { class: "csub" }, sub) : null,
         h("div", { class: "cft" }, btn(opt.cancel || "취소", "", () => done(false)), btn(opt.ok, opt.danger ? "danger" : "primary", () => done(true), { id: "cYes" })))
-      : h("div", { class: "dlg confirm" + (opt.fig ? " fg" : title.length > 24 ? " long" : ""), role: "alertdialog", "aria-modal": "true", "aria-label": title },
+      : h("div", { class: "dlg confirm" + (opt.fig ? " fg" : title.length > 24 ? " long" : "") + (opt.fig && opt.danger ? " dz" : ""), role: "alertdialog", "aria-modal": "true", "aria-label": title },
         h("div", { class: "chd" }, h("h2", {}, title), opt.fig ? figClose(() => done(false)) : h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => done(false) }, icon("close", 24))),
         sub ? h("p", { class: "csub" }, sub) : null,
         h("div", { class: "cft" }, opt.remember ? h("label", { class: "cskip" }, h("input", { class: "cbx", type: "checkbox", onchange: (e) => (skip = e.target.checked) }), "다시 보지 않기") : null,
-          btn(opt.no || "아니요", "", () => done(false)), btn(opt.yes || "네", "primary", () => done(true), { id: "cYes" }))));
+          btn(opt.no || "아니요", "", () => done(false)), btn(opt.yes || "네", "primary" + (opt.danger ? " danger" : ""), () => done(true), { id: "cYes" }))));
     document.body.append(m); document.addEventListener("keydown", key); setTimeout(() => $("#cYes")?.focus(), 0);
   });
 }
@@ -90,8 +90,8 @@ function pcard(it, o = {}) {
     onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); } } },
     h("span", { class: "im" }, h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null })), h("span", { class: "ck" }),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
-    isM() ? h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes))) : null)
-    : h("span", { class: "meta" }, h("span", { class: "av" }, (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, h("b", {}, it.title || "제목 없음"), h("span", {}, it.author)),
+    isM() ? h("span", { class: "meta" + (it.liked ? " liked" : "") }, cardAv(it), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes))) : null)
+    : h("span", { class: "meta" }, cardAv(it, "av", (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, h("b", {}, it.title || "제목 없음"), h("span", {}, it.author)),
       o.more ? h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); o.more(e.currentTarget, it); } }, moreIc()) : o.noMore ? null : moreIc()));
   return el;
 }

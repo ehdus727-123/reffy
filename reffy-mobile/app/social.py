@@ -185,9 +185,16 @@ def with_likes(items: list, viewer: Optional[dict] = None) -> list:
     p = {f"i{n}": i for n, i in enumerate(ids)}
     lk = {r["image_id"]: r["n"] for r in db.rows(f"SELECT image_id, COUNT(*) AS n FROM likes WHERE image_id IN ({ph}) GROUP BY image_id", **p)}
     mine = {r["image_id"] for r in db.rows(f"SELECT image_id FROM likes WHERE user_id = :u AND image_id IN ({ph})", u=viewer["id"], **p)} if viewer else set()
+    # 올린 사람의 지금 닉네임 · 프로필 사진 (프로필을 바꾸면 카드에도 바로 반영)
+    who = {r["id"]: r for r in db.rows(f"SELECT i.id, u.uid, u.nick, u.avatar FROM images i JOIN users u ON u.id = i.user_id WHERE i.id IN ({ph})", **p)}
     for c in items:
         c["likes"] = lk.get(c["id"], 0)
         c["liked"] = c["id"] in mine
+        w = who.get(c["id"])
+        if w:
+            c["author"] = w["nick"]
+            c["author_uid"] = w["uid"]
+            c["avatar"] = _avatar_url(w["uid"], w["avatar"])
     return items
 
 
