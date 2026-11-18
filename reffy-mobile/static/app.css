@@ -2323,3 +2323,20 @@ html:not(.m) .top .search{margin:0 calc(52 * var(--u)) 0 47px}
 html:not(.m) .top .actions{gap:20px}
 /* 필터 패널: 구역 제목 · 소제목을 칩 왼쪽 끝과 같은 줄로 (Figma FilterPanel) */
 html:not(.m) .side .fp-ttl,html:not(.m) .side .fp-sub{padding-left:0}
+
+/* 서랍 — 북 선택 모드 · 이동하기 · 최근 본/반응한 게시물 (Figma DRW 2733:135087 · 135509 · 144227 · 144646) */
+html:not(.m) .dmain.bkd .dhead .btn.bk-cancel{height:40px;min-width:64px;padding:0 16px;border-radius:8px;background:#fff;border:1px solid #c3c2c5;color:#18171a;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .selbar.bkbar{width:340px;height:64px;box-sizing:border-box;bottom:50px;padding:0 12px 0 24px;gap:6px;border:1px solid #e4e3e5;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+html:not(.m) .selbar.bkbar[hidden]{display:none}
+html:not(.m) .selbar.bkbar b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .selbar.bkbar .btn{height:40px;min-width:64px;padding:0 16px;border-radius:8px;background:#fff;border:1px solid #7425f6;color:#7425f6;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .selbar.bkbar .btn:disabled{opacity:.4;cursor:default}
+html:not(.m) .dlg.movebk .body>div>.lbl{margin:2px 0 10px}
+html:not(.m) .dlg.movebk .mvlist{display:flex;flex-direction:column;gap:10px}
+html:not(.m) .dmain .dhead2{align-items:flex-end;margin:0 0 20px}
+html:not(.m) .dmain .dhead2 h1{margin:0;font:700 28px/36px Pretendard,sans-serif;letter-spacing:-.28px;color:#18171a}
+html:not(.m) .dmain .dhead2 .sub{margin:5px 0 0;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#5b595f}
+html:not(.m) .dmain .dchips{gap:5px}
+html:not(.m) .dmain .dchip{height:34px;padding:0 14px;display:inline-flex;align-items:center;border:1px solid #c3c2c5;background:#fff;color:#18171a;font:500 14px/20px Pretendard,sans-serif}
+html:not(.m) .dmain .dchip.on{background:#f6f0fe;border-color:#7425f6;color:#7425f6}
+html:not(.m) .selbar.bkbar .sp{flex:1}
