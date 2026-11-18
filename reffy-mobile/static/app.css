@@ -2470,3 +2470,20 @@ html:not(.m) .search input{color:#18171a}
 html:not(.m) .search input::placeholder{color:#6f6d72}
 html:not(.m) .search input:focus,html:not(.m) .search input:focus-visible{outline:0;box-shadow:none;border:0}
 html:not(.m) .search #q:focus,html:not(.m) .search #q:focus-visible,html:not(.m) .search input[type=search]:focus-visible{outline:0;box-shadow:none;border:0}
+
+/* 선택 컨트롤 물결(ripple) 모션 — Figma 컴포넌트처럼 가운데에서 원이 퍼지듯 커짐 */
+html:not(.m) .chk input::before,html:not(.m) .cbx::before,html:not(.m) .st-cbx-ui::before,html:not(.m) .card .ck::before,html:not(.m) .fsv.rd::before,html:not(.m) .kc-card .kc-chk::before{transform:scale(.3);transition:opacity .25s ease-out,transform .3s cubic-bezier(.2,.8,.2,1),background-color .2s}
+html:not(.m) .chk:hover input:not(:disabled)::before,html:not(.m) label:hover>.cbx:not(:disabled)::before,html:not(.m) .cbx:hover::before,html:not(.m) label:hover .st-cbx-ui::before,html:not(.m) .selecting .card:hover .ck::before,html:not(.m) .brow-pick:hover .fsv.rd::before,html:not(.m) .kc-card.on:hover .kc-chk::before,
+html:not(.m) .chk input:focus-visible::before,html:not(.m) .cbx:focus-visible::before,html:not(.m) .st-cbx:focus-visible+.st-cbx-ui::before,html:not(.m) .selecting .card:focus-visible .ck::before,html:not(.m) .brow-pick:focus-visible .fsv.rd::before{transform:scale(1)}
+@keyframes rf-ripple{0%{transform:scale(.2);opacity:.2}100%{transform:scale(1);opacity:.1}}
+html:not(.m) .chk:active input:not(:disabled)::before,html:not(.m) label:active>.cbx::before,html:not(.m) .cbx:active::before,html:not(.m) label:active .st-cbx-ui::before,html:not(.m) .selecting .card:active .ck::before,html:not(.m) .brow-pick:active .fsv.rd::before,html:not(.m) .kc-card.on:active .kc-chk::before{animation:rf-ripple .35s cubic-bezier(.2,.8,.2,1) both}
+/* 라디오(.srow) · 스위치: 테두리 그림자 반지름이 0에서 퍼짐 */
+html:not(.m) .srow .rd{box-shadow:0 0 0 0 rgba(24,23,26,0);transition:border-color .15s,box-shadow .3s cubic-bezier(.2,.8,.2,1)}
+html:not(.m) .sw-ui::after,html:not(.m) .upd-vis .sw-ui::after,html:not(.m) .st-tg i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 0 rgba(24,23,26,0);transition:transform .2s var(--ease,ease),width .15s var(--ease,ease),box-shadow .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes rf-ripple-sw{0%{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 0 rgba(116,37,246,.2)}100%{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(116,37,246,.1)}}
+@keyframes rf-ripple-sw0{0%{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 0 rgba(24,23,26,.2)}100%{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(24,23,26,.1)}}
+html:not(.m) .sw-in:active+.sw-ui::after,html:not(.m) .st-tg-in:active+i::after{animation:rf-ripple-sw0 .35s cubic-bezier(.2,.8,.2,1) both}
+html:not(.m) .sw-in:checked:active+.sw-ui::after,html:not(.m) .st-tg-in:checked:active+i::after{animation:rf-ripple-sw .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rf-ripple-rd{0%{box-shadow:0 0 0 0 rgba(116,37,246,.2)}100%{box-shadow:0 0 0 11px rgba(116,37,246,.1)}}
+html:not(.m) .srow:active .rd{animation:rf-ripple-rd .35s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion:reduce){html:not(.m) :is(.chk input,.cbx,.st-cbx-ui,.card .ck,.fsv.rd,.kc-card .kc-chk)::before{transition:opacity .1s;transform:scale(1)}html:not(.m) :is(.sw-ui,.st-tg i)::after,html:not(.m) .srow .rd{animation:none!important}html:not(.m) :is(.chk input,.cbx,.st-cbx-ui,.card .ck,.fsv.rd,.kc-card .kc-chk)::before{animation:none!important}}
