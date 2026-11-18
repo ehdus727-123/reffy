@@ -336,7 +336,7 @@ function drawColorPanel() {
 }
 async function pullPalette(id) {
   if (!(await (isM() ? confirmDialog("해당 이미지의 컬러를 ‘무드’에 덮어씌울까요?", "무드 필터에 이 이미지의 컬러가 적용돼요.", { ok: "적용", cancel: "취소" })
-    : confirmDialog("해당 이미지의 컬러를 ‘현재 팔레트’에 얹어 씌우겠습니까?", "이미지 대표 색 5개를 현재 팔레트로 불러와요.", { remember: "reffy.palAsk" })))) return;
+    : confirmDialog("해당 이미지의 컬러를 ‘무드’에\n덮어 씌우겠습니까?", "이미지 대표 색을 현재 팔레트로 가져와요.", { remember: "reffy.palAsk", fig: true, no: "아니오", yes: "예" })))) return;
   try {
     const r = await api(`/api/images/${id}/colors`);
     if (!r.colors.length) return toast("이 이미지에서 색을 찾지 못했어요.");
@@ -659,7 +659,8 @@ function materialsSec(d) {
 }
 /* 이미지 기반 관절 검색 (COM_0104): 3D 포즈 필터로 이동. 검색 자체는 준비 중 */
 async function pullPose() {
-  if (!(await confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" }))) return;
+  if (!(await (isM() ? confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" })
+    : confirmDialog("해당 이미지의 구도를 ‘3D 포즈’에\n덮어 씌우겠습니까?", "이미지에서 뽑은 관절 핀이 3D 모델 포즈로 바뀌어요.", { fig: true, no: "아니오", yes: "예" })))) return;
   if (isM() && !$("#panel").hidden) closeDetail();
   setFilterOpen(true); showTab("pose");
   toast("3D 포즈 검색은 준비 중이에요. 구도를 보고 포즈를 만들어 보세요");

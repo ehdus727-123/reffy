@@ -40,6 +40,15 @@ function menuCard(anchor, items, title) {
   setTimeout(() => document.addEventListener("click", () => m.remove(), { once: true }), 0);
 }
 
+/* Figma Common/Dialog 닫기 32 · 라디오 20 · 더하기 24 (고정 SVG 문자열) */
+const FIG_SVG = {
+  close: '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M22.6275 7.9594C23.0181 7.56887 23.6511 7.56887 24.0416 7.9594C24.4321 8.34992 24.4321 8.98294 24.0416 9.37346L17.4153 15.9998L24.0416 22.6261C24.4321 23.0166 24.4321 23.6496 24.0416 24.0401C23.6511 24.4307 23.0181 24.4307 22.6275 24.0401L16.0012 17.4138L9.37492 24.0401C8.9844 24.4307 8.35139 24.4307 7.96086 24.0401C7.57034 23.6496 7.57034 23.0166 7.96086 22.6261L14.5872 15.9998L7.96086 9.37346C7.57034 8.98294 7.57034 8.34992 7.96086 7.9594C8.35139 7.56887 8.9844 7.56887 9.37492 7.9594L16.0012 14.5857L22.6275 7.9594Z" fill="currentColor"/></svg>',
+  plus: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  radioOn: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.88889" stroke="#7425F6" stroke-width="2.22222"/><circle cx="9.99913" cy="10.0001" r="4.44444" fill="#7425F6"/></svg>',
+  radioOff: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.88889" stroke="#6F6D72" stroke-width="2.22222"/></svg>',
+};
+const figSvg = (k, cls) => { const sp = h("span", { class: "fsv " + (cls || "") }); sp.innerHTML = FIG_SVG[k]; return sp; };
+const figClose = (fn) => h("button", { class: "icon-btn fclose", type: "button", "aria-label": "닫기", onclick: fn }, figSvg("close"));
 /* 확인 모달: 제목 + [아니요][네] (Figma 삭제 확인 양식) */
 function confirmDialog(title, sub, opt = {}) {
   if (opt.remember && store.get(opt.remember, false)) return Promise.resolve(true);   // ‘다시 보지 않기’를 고른 뒤에는 바로 진행
@@ -53,11 +62,11 @@ function confirmDialog(title, sub, opt = {}) {
       wf ? h("div", { class: "dlg confirm wf", role: "alertdialog", "aria-modal": "true", "aria-label": title },
         h("h2", {}, title), sub ? h("p", { class: "csub" }, sub) : null,
         h("div", { class: "cft" }, btn(opt.cancel || "취소", "", () => done(false)), btn(opt.ok, opt.danger ? "danger" : "primary", () => done(true), { id: "cYes" })))
-      : h("div", { class: "dlg confirm" + (title.length > 24 ? " long" : ""), role: "alertdialog", "aria-modal": "true", "aria-label": title },
-        h("div", { class: "chd" }, h("h2", {}, title), h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => done(false) }, icon("close", 24))),
+      : h("div", { class: "dlg confirm" + (opt.fig ? " fg" : title.length > 24 ? " long" : ""), role: "alertdialog", "aria-modal": "true", "aria-label": title },
+        h("div", { class: "chd" }, h("h2", {}, title), opt.fig ? figClose(() => done(false)) : h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => done(false) }, icon("close", 24))),
         sub ? h("p", { class: "csub" }, sub) : null,
         h("div", { class: "cft" }, opt.remember ? h("label", { class: "cskip" }, h("input", { class: "cbx", type: "checkbox", onchange: (e) => (skip = e.target.checked) }), "다시 보지 않기") : null,
-          btn("아니요", "", () => done(false)), btn("네", "primary", () => done(true), { id: "cYes" }))));
+          btn(opt.no || "아니요", "", () => done(false)), btn(opt.yes || "네", "primary", () => done(true), { id: "cYes" }))));
     document.body.append(m); document.addEventListener("keydown", key); setTimeout(() => $("#cYes")?.focus(), 0);
   });
 }
@@ -95,9 +104,9 @@ async function saveToBook(ids, o = {}) {
   try { books = (await api("/api/books")).items; } catch (e) { toast(e.message); return; }
   let chosen = books[0]?.id ?? null, rm = false;
   const list = h("div", {});
-  const name = h("input", { type: "text", maxlength: "40", placeholder: "예) 앉은 포즈 모음", "aria-label": "새 북 이름" });
+  const name = h("input", { type: "text", maxlength: "40", placeholder: isM() ? "예) 앉은 포즈 모음" : "예: 역동적인 구도", "aria-label": "새 북 이름" });
   const drawList = () => list.replaceChildren(...(books.length ? books.map((b) => h("button", { class: "brow-pick" + (chosen === b.id ? " on" : ""), type: "button", role: "radio", "aria-checked": String(chosen === b.id), onclick: () => { chosen = b.id; drawList(); } },
-    b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "th" }), h("span", { class: "bt" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)), h("span", { class: "radio" })))
+    b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "th" }), h("span", { class: "bt" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)), isM() ? h("span", { class: "radio" }) : figSvg(chosen === b.id ? "radioOn" : "radioOff", "rd")))
     : [h("p", { class: "hint" }, "아직 북이 없어요. 위에서 새 북을 만들어 주세요.")]));
   drawList();
   const make = async () => {
@@ -105,11 +114,14 @@ async function saveToBook(ids, o = {}) {
     try { const b = await api("/api/books", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: v }) }); books.unshift(b); chosen = b.id; name.value = ""; drawList(); } catch (e) { toast(e.message); }
   };
   const cb = h("input", { class: "cbx", type: "checkbox", onchange: (e) => (rm = e.target.checked) });
-  const m = modal(isM() ? "북에 저장" : "저장하기", h("div", {}, h("div", { class: "newbook" }, h("b", {}, "+ 새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "새 북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make, { style: "height:44px" }))), h("span", { class: "lbl" }, "내 북"), list),
+  const m = modal(isM() ? "북에 저장" : "저장하기", h("div", {}, isM() ? h("div", { class: "newbook" }, h("b", {}, "+ 새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "새 북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make, { style: "height:44px" })))
+      : h("div", { class: "newbook" }, h("b", {}, figSvg("plus"), "새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make))),
+    h("span", { class: "lbl" }, "내 북"), list),
     h("div", { class: "foot" }, h("label", {}, cb, "저장 후 킵 스페이스에서 비우기"), btn("취소", "", () => m.remove()), btn("저장하기", "primary", async () => {
       if (chosen == null) return toast("저장할 북을 골라 주세요.");
       try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); m.remove(); toast(`“${b.name}”에 저장했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
     })));
+  if (!isM()) { const d = m.querySelector(".dlg"); d.classList.add("savebk"); d.querySelector("header .icon-btn").replaceWith(figClose(() => m.remove())); }
   setTimeout(() => name.focus(), 0);
 }
 function bookDialog(book, done) {

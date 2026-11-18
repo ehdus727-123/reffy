@@ -2124,3 +2124,44 @@ html:not(.m) .kc-acts{gap:24px}
 html:not(.m) .kc-del{width:40px;height:40px;padding:0}
 html:not(.m) .kc-del .ic{width:40px;height:40px}
 html:not(.m) .kc-del .kc-tr{width:40px;height:40px;display:block;color:#18171a}
+
+/* ================================================================ Figma Common/Dialog (2727:50274 · 2727:50310) — 이미지 → 3D 포즈 / 무드 적용 확인
+   폭 520 · 모서리 16 · 안쪽 24 28 20 · 제목 22 SemiBold · 닫기 32 · 설명 14 #5B595F(위 4) · 버튼 줄(위 32) [아니오: 보라 테두리][예: 보라] 높이 42 · 16 Medium */
+.fsv{display:inline-grid;place-items:center;line-height:0;flex:none}
+.fsv svg{display:block}
+html:not(.m) .dlg.confirm.fg{width:min(520px,100%);padding:24px 28px 20px;border-radius:16px;box-sizing:border-box}
+html:not(.m) .dlg.confirm.fg .chd{display:flex;align-items:flex-start;gap:8px}
+html:not(.m) .dlg.confirm.fg .chd h2{flex:1;margin:0;font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px;color:#18171a}
+html:not(.m) .fclose{width:32px;height:32px;padding:0;color:#18171a;flex:none}
+html:not(.m) .dlg.confirm.fg .csub{margin:4px 0 0;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+html:not(.m) .dlg.confirm.fg .cft{margin-top:32px;gap:8px;justify-content:flex-end;align-items:center}
+html:not(.m) .dlg.confirm.fg .cft .btn,html:not(.m) .dlg.savebk .foot .btn{height:42px;min-width:64px;padding:0 16px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;border:1px solid #7425f6;background:#fff;color:#7425f6}
+html:not(.m) .dlg.confirm.fg .cft .btn.primary,html:not(.m) .dlg.savebk .foot .btn.primary{background:#7425f6;color:#fff}
+html:not(.m) .dlg.confirm.fg .cskip{margin-right:auto}
+
+/* 저장하기 모달 (2727:50346): 폭 520 · 최대 657 · 제목 22 + 닫기 32 · '새 북 만들기' 상자(#F8F7F8 · 모서리 12 · 16/20 · 간격 15)
+   북 이름 14 SemiBold #6F6D72 · 입력 48 · 모서리 10 · '만들기'(보라 테두리, 입력 안 오른쪽) · 내 북 14 Medium · 행 56(썸네일 56 · 제목 18 · 설명 14 · 라디오 20) 간격 10
+   아래 줄: 위 그림자 · 20/28/24 · [취소][저장하기] */
+html:not(.m) .dlg.savebk{width:min(520px,100%);max-height:min(657px,92vh);padding:0;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+html:not(.m) .dlg.savebk header{display:flex;align-items:center;gap:8px;padding:22px 28px 0;margin:0}
+html:not(.m) .dlg.savebk header h2{flex:1;margin:0;font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px;color:#18171a}
+html:not(.m) .dlg.savebk .body{flex:1;min-height:0;overflow-y:auto;padding:18px 28px 20px}
+html:not(.m) .dlg.savebk .newbook{background:#f8f7f8;border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:0;margin:0;border:0}
+html:not(.m) .dlg.savebk .newbook>b{display:flex;align-items:center;gap:10px;height:28px;margin:0 0 15px;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#18171a}
+html:not(.m) .dlg.savebk .newbook .lbl{display:block;margin:0 0 4px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#6f6d72}
+html:not(.m) .dlg.savebk .newbook .row{position:relative;display:block}
+html:not(.m) .dlg.savebk .newbook input{width:100%;height:48px;padding:0 90px 0 14px;border:1px solid #c3c2c5;border-radius:10px;background:#fff;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a;box-sizing:border-box}
+html:not(.m) .dlg.savebk .newbook input::placeholder{color:#6f6d72}
+html:not(.m) .dlg.savebk .newbook .row .btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);height:32px;min-width:64px;padding:0 12px;border:1px solid #7425f6;border-radius:6px;background:#fff;color:#7425f6;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .dlg.savebk .body>div>.lbl{display:block;margin:20px 0 10px;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#6f6d72}
+html:not(.m) .dlg.savebk .body>div>div:last-child{display:flex;flex-direction:column;gap:10px}
+html:not(.m) .dlg.savebk .brow-pick{height:56px;padding:0;gap:12px;border-radius:0;background:none}
+html:not(.m) .dlg.savebk .brow-pick:hover{background:none}
+html:not(.m) .dlg.savebk .brow-pick img,html:not(.m) .dlg.savebk .brow-pick .th{width:56px;height:56px;border-radius:8px;background:#f1f0f2}
+html:not(.m) .dlg.savebk .brow-pick .bt{display:flex;flex-direction:column;gap:2px;min-width:0}
+html:not(.m) .dlg.savebk .brow-pick b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:not(.m) .dlg.savebk .brow-pick .bt span{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+html:not(.m) .dlg.savebk .foot{display:flex;align-items:center;gap:8px;margin:0;padding:20px 28px 24px;background:#fff;box-shadow:0 -1px 15px rgba(0,0,0,.08);border:0;position:relative}
+html:not(.m) .dlg.savebk .foot label{margin-right:auto;display:flex;align-items:center;gap:8px;font:400 14px/20px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) .dlg.confirm.fg .chd h2{white-space:pre-line;word-break:keep-all}
+html:not(.m) .dlg.savebk .newbook input:focus{outline:0;border-color:#7425f6}
