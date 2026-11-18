@@ -726,6 +726,23 @@ function dpSvg(k, size) {
   s.innerHTML = body;   // 위 상수(고정 문자열)만 넣음 — 사용자 입력 아님
   return s;
 }
+/* 상세 이미지 위쪽(뒤로 · 닫기 아이콘 자리)이 어두우면 아이콘을 흰색으로 — 화면에 보이는 그대로(가운데 맞춤 · 비율 유지) 그려서 위쪽 띠의 밝기를 잰다 */
+function dpTone(img) {
+  const box = img.parentElement; if (!box) return;
+  try {
+    const W = box.clientWidth, H = box.clientHeight, iw = img.naturalWidth, ih = img.naturalHeight; if (!W || !H || !iw || !ih) return;
+    const sc = Math.min(W / iw, H / ih), dw = iw * sc, dh = ih * sc, dx = (W - dw) / 2, dy = (H - dh) / 2;
+    const c = document.createElement("canvas"); c.width = Math.round(W / 4); c.height = Math.round(80 / 4);
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.fillStyle = "#f1f0f2"; x.fillRect(0, 0, c.width, c.height);   // 이미지 바깥은 패널 바탕색
+    x.drawImage(img, dx / 4, dy / 4, dw / 4, dh / 4);
+    const px = x.getImageData(0, 0, c.width, c.height).data;
+    const lum = (sx0, sx1) => { let t = 0, n = 0; for (let yy = 0; yy < c.height; yy++) for (let xx = sx0; xx < sx1; xx++) { const k = (yy * c.width + xx) * 4; t += 0.2126 * px[k] + 0.7152 * px[k + 1] + 0.0722 * px[k + 2]; n++; } return t / n; };
+    const q = Math.round(c.width * 0.18);   // 왼쪽 위(뒤로) · 오른쪽 위(닫기) 영역
+    box.classList.toggle("dk-l", lum(0, q) < 140);
+    box.classList.toggle("dk-r", lum(c.width - q, c.width) < 140);
+  } catch { /* 색을 읽을 수 없으면 기본(검정) */ }
+}
 function drawDetail(d, edit = false) {
   if (isM()) return drawDetailM(d, edit);
   const panel = $("#panel"); const so = d.so || { likes: 0, comments: [], owner: null, editable: false };
@@ -781,7 +798,7 @@ function drawDetail(d, edit = false) {
   relMore.onclick = loadRel;
   const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
   panel.replaceChildren(
-    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title) }),
+    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title), onload: (e) => dpTone(e.currentTarget) }),
       h("div", { class: "dp-top" },
         h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, dpSvg("back", 36)),
         h("span", { class: "sp" }),

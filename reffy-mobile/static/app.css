@@ -2295,3 +2295,22 @@ html:not(.m) .dmain.bkd .dhead .btn.primary{height:40px;min-width:64px;padding:0
 html:not(.m) .dmain.bkd .rrgrid{margin:0 0 0 3px}
 html:not(.m) .dmain.bkd{padding-right:24px}
 html:not(.m) .dmain.bkd .back-row{margin:0 -4px 11px 0}
+
+/* ================================================================ 홈 위 줄 = Figma HOM (2770:82568 · 83002)
+   초기화: 글자 버튼(Common/Button Text Black M) 40 · 안쪽 8 · '초기화' 16 Medium #18171A + 아이콘 20 (간격 6)
+   정렬 44 · 필터 버튼 40(좌우 16 · 아이콘 20 · 간격 6) · 적용 칩: 연보라 #F6F0FE · 보라 14 Medium · 지우기 18 · 간격 8 · 초기화 바로 옆 */
+html:not(.m) .bar .resetbtn{height:40px;padding:8px;gap:6px;border-radius:8px;margin:0 0 2px;align-self:flex-end;color:#18171a}
+html:not(.m) .resetbtn .rtx{font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .resetbtn .ric{width:20px;height:20px}
+html:not(.m) .resetbtn:hover{background:rgba(24,23,26,.04)}
+html:not(.m) .resetbtn:hover .rtx{color:#18171a}
+html:not(.m) .bar{gap:1px}
+html:not(.m) .bar .grow{align-self:flex-end;margin-bottom:2px}
+html:not(.m) #filterBtn.fbtn{height:40px;margin-bottom:2px;padding:0 16px;gap:6px}
+html:not(.m) #filterBtn .tic{width:20px;height:20px}
+html:not(.m) .bar .chip.dark{background:#f6f0fe;color:#7425f6}
+html:not(.m) .bar .chips{gap:8px}
+/* 북에 저장 모달 '새 북 만들기' 18 */
+html:not(.m) .dlg.savebk .newbook>b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+/* 상세 이미지 위쪽이 어두우면 뒤로 · 닫기 아이콘을 흰색으로 (app.js dpTone) */
+html:not(.m) .dp-img.dk-l .dp-ib.back,html:not(.m) .dp-img.dk-r .dp-top .dp-ib:last-child{color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.45))}
