@@ -2508,3 +2508,4 @@ html:not(.m) .srow:active .rd{animation:rf-ripple-rd .35s cubic-bezier(.2,.8,.2,
 .sk-list .sk-av{width:40px;height:40px}
 @media (prefers-reduced-motion:reduce){.sk{animation:none}}
 .acct-me b{font-weight:500}
+html:not(.m) .dp-name a,html:not(.m) .dp-name b{font-size:18px;line-height:24px;letter-spacing:-.08px}
