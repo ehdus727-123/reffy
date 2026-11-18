@@ -68,7 +68,7 @@ async function loadVocab() {
   drawGroups();
 }
 const openState = store.get("reffy.open", {});
-const KINDS = [["photo", "사진"], ["illust", "일러스트"]];
+const KINDS = [["illust", "일러스트"], ["photo", "사진"]];
 /* PC: 필터 패널에서 태그를 고르면 바로 적용 → 상단에 칩으로 나타남 (모바일은 시트의 '적용하기'로) */
 function liveApply() { /* 체크만으로는 적용하지 않음 — ‘필터 적용하기’를 눌러야 결과에 반영 */ }
 function drawGroups() {
