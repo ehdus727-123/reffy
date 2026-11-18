@@ -2405,3 +2405,68 @@ html:not(.m) .kc-del .kc-tr,html:not(.m) .kc-del .ic{width:32px;height:32px}
 /* 비교 화면 넘기기 꺾쇠: Figma icon/chevronLeft · chevronRight (104) */
 html:not(.m) .kc-nav .kc-chev{display:block;width:104px;height:104px;color:#18171a}
 html:not(.m) .kc-nav .kc-chev svg{width:104px;height:104px;display:block}
+
+/* ===== Figma Common/Selection controls (2131:625) — 체크박스 · 라디오 · 스위치 + 상태 레이어(원 40: Hover 4% · Focused 12% · Pressed 10%) ===== */
+html:not(.m){--chk-svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M13.3132 5.64645C13.5084 5.45118 13.8249 5.45118 14.0202 5.64645C14.2154 5.84171 14.2154 6.15822 14.0202 6.35348L7.68685 12.6868C7.49159 12.8821 7.17508 12.8821 6.97982 12.6868L3.97982 9.68681C3.78456 9.49155 3.78456 9.17504 3.97982 8.97978C4.17508 8.78452 4.49159 8.78452 4.68685 8.97978L7.33334 11.6263L13.3132 5.64645Z' fill='white'/%3E%3C/svg%3E")}
+/* 체크박스: 18 · 모서리 4 · 끔 = 테두리 2 #6f6d72 / 켬 = 보라 + 흰 체크 / 비활성 #c3c2c5 */
+html:not(.m) .card .ck{width:18px;height:18px;box-sizing:border-box;border:2px solid #6f6d72;border-radius:4px;background:#fff;overflow:visible;transition:background-color .15s,border-color .15s}
+html:not(.m) .chk input,html:not(.m) .cbx,html:not(.m) .st-cbx-ui{position:relative;width:18px;height:18px;box-sizing:border-box;border:2px solid #6f6d72;border-radius:4px;background:#fff;overflow:visible;transition:background-color .15s,border-color .15s}
+html:not(.m) .chk input:checked,html:not(.m) .cbx:checked,html:not(.m) .st-cbx:checked+.st-cbx-ui,html:not(.m) .card.on .ck{border:0;background:#7425f6 var(--chk-svg) center/18px 18px no-repeat;color:transparent}
+html:not(.m) .chk input:checked::after,html:not(.m) .cbx:checked::after{display:none}
+html:not(.m) .st-cbx-ui svg,html:not(.m) .st-cbx-ui .ic{visibility:hidden}
+html:not(.m) .chk input:disabled,html:not(.m) .cbx:disabled{border-color:#c3c2c5}
+html:not(.m) .chk input:checked:disabled,html:not(.m) .cbx:checked:disabled{background-color:#c3c2c5}
+/* 상태 레이어 (원 40) */
+html:not(.m) .chk input::before,html:not(.m) .cbx::before,html:not(.m) .st-cbx-ui::before,html:not(.m) .card .ck::before,html:not(.m) .fsv.rd::before,html:not(.m) .kc-card .kc-chk::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#18171a;opacity:0;pointer-events:none;transition:opacity .15s}
+html:not(.m) .kc-card .kc-chk::before{width:62px;height:62px;margin:-31px 0 0 -31px}
+html:not(.m) .chk input:checked::before,html:not(.m) .cbx:checked::before,html:not(.m) .st-cbx:checked+.st-cbx-ui::before,html:not(.m) .card.on .ck::before,html:not(.m) .fsv.rd.on::before,html:not(.m) .brow-pick.on .fsv.rd::before,html:not(.m) .kc-card.on .kc-chk::before{background:#7425f6}
+html:not(.m) .chk:hover input:not(:disabled)::before,html:not(.m) label:hover>.cbx:not(:disabled)::before,html:not(.m) .cbx:hover::before,html:not(.m) label:hover .st-cbx-ui::before,html:not(.m) .selecting .card:hover .ck::before,html:not(.m) .brow-pick:hover .fsv.rd::before,html:not(.m) .kc-card.on:hover .kc-chk::before{opacity:.04}
+html:not(.m) .chk input:focus-visible::before,html:not(.m) .cbx:focus-visible::before,html:not(.m) .st-cbx:focus-visible+.st-cbx-ui::before,html:not(.m) .selecting .card:focus-visible .ck::before,html:not(.m) .brow-pick:focus-visible .fsv.rd::before{opacity:.12}
+html:not(.m) .chk:active input:not(:disabled)::before,html:not(.m) label:active>.cbx::before,html:not(.m) .cbx:active::before,html:not(.m) label:active .st-cbx-ui::before,html:not(.m) .selecting .card:active .ck::before,html:not(.m) .brow-pick:active .fsv.rd::before,html:not(.m) .kc-card.on:active .kc-chk::before{opacity:.1}
+html:not(.m) .chk input:focus-visible,html:not(.m) .cbx:focus-visible,html:not(.m) .st-cbx:focus-visible+.st-cbx-ui,html:not(.m) .brow-pick:focus-visible{outline:0}
+html:not(.m) .fsv.rd{position:relative;display:inline-grid;place-items:center}
+html:not(.m) .fsv.rd svg{position:relative}
+html:not(.m) .card .ck{left:8px;top:8px}
+/* 라디오: 18 · 테두리 2 #6f6d72 / 켬 = 보라 테두리 + 점 8 */
+html:not(.m) .srow .rd{position:relative;width:18px;height:18px;border:2px solid #6f6d72;border-radius:50%;box-sizing:border-box;background:#fff;transition:border-color .15s,box-shadow .15s}
+html:not(.m) .srow[aria-checked=true] .rd{border:2px solid #7425f6;background:radial-gradient(circle,#7425f6 0 4px,#fff 4.5px)}
+html:not(.m) .srow:hover .rd{box-shadow:0 0 0 11px rgba(24,23,26,.04)}
+html:not(.m) .srow[aria-checked=true]:hover .rd{box-shadow:0 0 0 11px rgba(116,37,246,.04)}
+html:not(.m) .srow:active .rd{box-shadow:0 0 0 11px rgba(24,23,26,.1)}
+html:not(.m) .srow[aria-checked=true]:active .rd{box-shadow:0 0 0 11px rgba(116,37,246,.1)}
+/* 스위치 M: 트랙 44×26 (끔 #c3c2c5 · 켬 보라) · 손잡이 20 흰색 그림자 · 상태 레이어는 손잡이 둘레 원 40 */
+html:not(.m) .sw-ui,html:not(.m) .upd-vis .sw-ui{width:44px;height:26px;border-radius:13px;background:#c3c2c5}
+html:not(.m) .sw-in{width:44px;height:26px}
+html:not(.m) .sw-ui::after,html:not(.m) .upd-vis .sw-ui::after{left:3px;top:3px;width:20px;height:20px;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s var(--ease,ease),box-shadow .15s}
+html:not(.m) .sw-in:checked+.sw-ui{background:#7425f6}
+html:not(.m) .sw-in:checked+.sw-ui::after,html:not(.m) .upd-vis .sw-in:checked+.sw-ui::after{transform:translateX(18px)}
+html:not(.m) .st-tg i{background:#c3c2c5;border:0}
+html:not(.m) .st-tg i::after{top:3px;left:3px;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s var(--ease,ease),width .15s var(--ease,ease),box-shadow .15s}
+html:not(.m) .st-tg-in:checked+i{background:#7425f6}
+html:not(.m) .sw-in:hover+.sw-ui::after,html:not(.m) .st-tg-in:hover+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(24,23,26,.04)}
+html:not(.m) .sw-in:checked:hover+.sw-ui::after,html:not(.m) .st-tg-in:checked:hover+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(116,37,246,.04)}
+html:not(.m) .sw-in:focus-visible+.sw-ui,html:not(.m) .st-tg-in:focus-visible+i{outline:0}
+html:not(.m) .sw-in:focus-visible+.sw-ui::after,html:not(.m) .st-tg-in:focus-visible+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(24,23,26,.12)}
+html:not(.m) .sw-in:checked:focus-visible+.sw-ui::after,html:not(.m) .st-tg-in:checked:focus-visible+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(116,37,246,.12)}
+html:not(.m) .sw-in:active+.sw-ui::after,html:not(.m) .st-tg-in:active+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(24,23,26,.1)}
+html:not(.m) .sw-in:checked:active+.sw-ui::after,html:not(.m) .st-tg-in:checked:active+i::after{box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 10px rgba(116,37,246,.1)}
+html:not(.m) .sw-in:disabled+.sw-ui,html:not(.m) .st-tg-in:disabled+i{opacity:.38}
+
+/* ===== Figma Common/Text field (2134:1018) — Outlined: 48 · 모서리 10 · 테두리 1 #c3c2c5 · Hover #6f6d72 · Focused 2 보라(라벨도 보라) · Disabled #f8f7f8 · Error 2 #c43a49 ===== */
+html:not(.m) .inp,html:not(.m) .st-inp,html:not(.m) .upd .inp,html:not(.m) .dlg.bk input[type=text],html:not(.m) .dlg.bk textarea,html:not(.m) .dlg.savebk .newbook input,html:not(.m) .st-ta,html:not(.m) .pe .inp.ta{border:1px solid #c3c2c5;border-radius:10px;background:#fff;color:#18171a;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;box-sizing:border-box;transition:border-color .15s,box-shadow .15s,background-color .15s}
+html:not(.m) .inp:not(.ta),html:not(.m) .st-inp{height:48px;padding:0 14px}
+html:not(.m) :is(.inp,.st-inp,.st-ta,.dlg.bk input[type=text],.dlg.bk textarea,.dlg.savebk .newbook input)::placeholder{color:#6f6d72}
+html:not(.m) :is(.inp,.st-inp,.st-ta,.dlg.bk input[type=text],.dlg.bk textarea,.dlg.savebk .newbook input):hover:not(:focus):not(:disabled){border-color:#6f6d72}
+html:not(.m) :is(.inp,.st-inp,.st-ta,.dlg.bk input[type=text],.dlg.bk textarea,.dlg.savebk .newbook input):focus,html:not(.m) :is(.inp,.st-inp,.st-ta,.dlg.bk input[type=text],.dlg.bk textarea,.dlg.savebk .newbook input):focus-visible{outline:0;border-color:#7425f6;box-shadow:inset 0 0 0 1px #7425f6}
+html:not(.m) :is(.inp,.st-inp,.st-ta):disabled{background:#f8f7f8;border-color:#f1f0f2;color:#8e8c91}
+html:not(.m) :is(.inp,.st-inp,.st-ta):is(.bad,.err,[aria-invalid=true]){border-color:#c43a49;box-shadow:inset 0 0 0 1px #c43a49}
+html:not(.m) :is(.lbl,label,.st-lbl):has(+ :is(input,textarea):focus),html:not(.m) :is(.lbl,label):has(+ .row input:focus),html:not(.m) :is(.lbl,label):has(+ :is(.nickrow,.pe-nick,.upd-mrow) input:focus){color:#7425f6}
+/* Search field L: 44 · #f1f0f2 · Hover #e4e3e5(글자 #5b595f) · Focused 테두리 2 보라 · 글자 #18171a */
+html:not(.m) .search{transition:background-color .15s,box-shadow .15s}
+html:not(.m) .search:hover:not(:focus-within){background:#e4e3e5}
+html:not(.m) .search:hover:not(:focus-within) input::placeholder{color:#5b595f}
+html:not(.m) .search:focus-within{background:#f1f0f2;box-shadow:inset 0 0 0 2px #7425f6}
+html:not(.m) .search input{color:#18171a}
+html:not(.m) .search input::placeholder{color:#6f6d72}
+html:not(.m) .search input:focus,html:not(.m) .search input:focus-visible{outline:0;box-shadow:none;border:0}
+html:not(.m) .search #q:focus,html:not(.m) .search #q:focus-visible,html:not(.m) .search input[type=search]:focus-visible{outline:0;box-shadow:none;border:0}
