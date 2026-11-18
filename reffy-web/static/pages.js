@@ -191,6 +191,35 @@ function keepCompare(items, start, kind, setKind, onDone) {
   const key = (e) => { if ($(".modal:not(.closing)")) return; if (e.key === "ArrowRight") go(idx + 1); else if (e.key === "ArrowLeft") go(idx - 1); else if (e.key === "Escape") close(); else if (e.key === " ") { e.preventDefault(); toggle(items[idx]); } };
   document.addEventListener("keydown", key);
   const track = h("div", { class: "kc-track" });
+  let tx = 0;   // 지금 트랙 위치(px)
+  /* 카드를 누른 채 옆으로 끌어서 넘기기: 놓으면 끈 거리만큼(카드 폭 기준) 앞/뒤 카드로 이동, 조금만 끌어도(60px) 한 장 넘어감 */
+  let drag = null, eatClick = false;
+  track.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || !items.length) return;
+    drag = { x: e.clientX, id: e.pointerId, moved: false };
+  });
+  track.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) < 6) return;
+    if (!drag.moved) { drag.moved = true; track.setPointerCapture(e.pointerId); track.style.transition = "none"; track.classList.add("dragging"); }
+    track.style.transform = `translateX(${tx + dx}px)`;
+  });
+  const endDrag = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; drag = null;
+    if (!d.moved) return;
+    track.classList.remove("dragging"); track.style.transition = "";
+    eatClick = true; setTimeout(() => (eatClick = false), 0);
+    const dx = e.clientX - d.x, c = track.children[idx];
+    const step = c ? c.offsetWidth + parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap || 0) : 400;
+    let n = Math.round(-dx / step);
+    if (n === 0 && Math.abs(dx) > 60) n = dx < 0 ? 1 : -1;
+    go(idx + n);
+  };
+  track.addEventListener("pointerup", endDrag);
+  track.addEventListener("pointercancel", endDrag);
+  track.addEventListener("click", (e) => { if (eatClick) { e.stopPropagation(); e.preventDefault(); } }, true);   // 끌기 뒤 클릭(선택)은 무시
   const strip = h("div", { class: "kc-strip" });
   const count = h("b", { class: "kc-count" });
 const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M32.0846 10C32.775 10 33.3346 10.5597 33.3346 11.25C33.3346 11.9404 32.775 12.5 32.0846 12.5H7.91797C7.22761 12.5 6.66797 11.9404 6.66797 11.25C6.66797 10.5597 7.22761 10 7.91797 10H32.0846Z" fill="currentColor"/><path d="M23.3346 11.25V8.75004C23.3346 8.63953 23.2907 8.53359 23.2126 8.45544C23.1344 8.3773 23.0285 8.33337 22.918 8.33337H17.0846C16.9741 8.33337 16.8682 8.3773 16.79 8.45544C16.7119 8.53359 16.668 8.63953 16.668 8.75004V11.25C16.668 11.9404 16.1083 12.5 15.418 12.5C14.7276 12.5 14.168 11.9404 14.168 11.25V8.75004C14.168 7.97649 14.4755 7.23485 15.0225 6.68787C15.5694 6.14089 16.3111 5.83337 17.0846 5.83337H22.918C23.6915 5.83337 24.4332 6.14089 24.9801 6.68787C25.5271 7.23485 25.8346 7.97649 25.8346 8.75004V11.25C25.8346 11.9404 25.275 12.5 24.5846 12.5C23.8943 12.5 23.3346 11.9404 23.3346 11.25Z" fill="currentColor"/><path d="M29.5846 10C29.932 10 30.2645 10.1443 30.501 10.3988C30.7373 10.6532 30.8567 10.9949 30.8314 11.3412L29.4154 30.6755L29.4137 30.6771C29.3269 31.832 28.8071 32.9115 27.957 33.698C27.1077 34.4835 25.9921 34.9176 24.8353 34.9154L15.1673 34.917C14.0105 34.9192 12.8949 34.4835 12.0456 33.698C11.1955 32.9115 10.6757 31.832 10.5889 30.6771L10.5872 30.6755L9.17122 11.3412C9.14591 10.9949 9.26532 10.6532 9.50163 10.3988C9.73812 10.1443 10.0706 10 10.418 10H29.5846ZM13.0807 30.4899L13.1051 30.6853C13.1822 31.1352 13.4055 31.5494 13.7432 31.862C14.1296 32.2194 14.6377 32.4184 15.1641 32.417H24.8385C25.3649 32.4184 25.873 32.2194 26.2594 31.862C26.6454 31.5046 26.8824 31.0145 26.9219 30.4899L28.2402 12.5H11.7624L13.0807 30.4899Z" fill="currentColor"/><path d="M15.8346 27.5V17.5C15.8346 16.8097 16.3943 16.25 17.0846 16.25C17.775 16.25 18.3346 16.8097 18.3346 17.5V27.5C18.3346 28.1904 17.775 28.75 17.0846 28.75C16.3943 28.75 15.8346 28.1904 15.8346 27.5ZM21.668 27.5V17.5C21.668 16.8097 22.2276 16.25 22.918 16.25C23.6083 16.25 24.168 16.8097 24.168 17.5V27.5C24.168 28.1904 23.6083 28.75 22.918 28.75C22.2276 28.75 21.668 28.1904 21.668 27.5Z" fill="currentColor"/></svg>';   // Figma icon/trash 40 (고정 문자열)
@@ -210,7 +239,7 @@ const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" 
   const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, icon("chevR", 48));
   function build() {
     track.replaceChildren(...items.map((it, i) => h("div", { class: "kc-card", "data-i": i, onclick: () => { if (i !== idx) go(i); toggle(it); } },   // 카드를 누르면 바로 선택/해제 (가운데로도 이동)
-      h("img", { src: full(it), alt: it.title || "레퍼런스 이미지", loading: Math.abs(i - idx) < 4 ? "eager" : "lazy" }),
+      h("img", { src: full(it), alt: it.title || "레퍼런스 이미지", draggable: "false", loading: Math.abs(i - idx) < 4 ? "eager" : "lazy" }),
       h("span", { class: "kc-chk", role: "checkbox", "aria-label": "선택" }, icon("check", 18)))));
     strip.replaceChildren(...items.map((it, i) => h("button", { class: "kc-th", type: "button", "aria-label": `${i + 1}번째 레퍼런스`, onclick: () => go(i) },
       h("img", { src: it.thumb, alt: "", loading: "lazy" }), h("span", { class: "kc-chk" }, icon("check", 14)))));
@@ -229,7 +258,8 @@ const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" 
     const card = track.children[idx]; if (!card) return;
     const vw = track.parentElement.clientWidth;
     track.style.transition = instant ? "none" : "";
-    track.style.transform = `translateX(${Math.round(vw / 2 - (card.offsetLeft + card.offsetWidth / 2))}px)`;
+    tx = Math.round(vw / 2 - (card.offsetLeft + card.offsetWidth / 2));
+    track.style.transform = `translateX(${tx}px)`;
     const th = strip.children[idx]; if (th) strip.scrollTo({ left: th.offsetLeft - strip.clientWidth / 2 + th.offsetWidth / 2, behavior: instant ? "auto" : "smooth" });
     paint();
   }

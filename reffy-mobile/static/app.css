@@ -2187,3 +2187,8 @@ html:not(.m) .notif .nitem.unread .nt{font-weight:400}
 html:not(.m) .notif .nitem .nt small{margin:0;font:500 12px/16px Pretendard,sans-serif;letter-spacing:0;color:#6f6d72}
 html:not(.m) .notif .nitem img{width:40px;height:40px;border-radius:0;object-fit:cover;flex:none}
 html:not(.m) .notif .nitem .btn{height:32px;min-width:64px;padding:0 12px;border-radius:6px;background:#7425f6;border-color:#7425f6;color:#fff;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;flex:none}
+/* 킵 스페이스 비교: 카드를 누른 채 옆으로 끌어 넘기기 */
+.kc-track{touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}
+.kc-track.dragging{cursor:grabbing}
+.kc-track.dragging .kc-card{pointer-events:none}
+.kc-card img{-webkit-user-drag:none}
