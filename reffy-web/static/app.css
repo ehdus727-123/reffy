@@ -2278,3 +2278,20 @@ html:not(.m) .dlg.bk .cft .btn{height:40px;min-width:64px;padding:0 16px;border-
 html:not(.m) .dlg.bk .cft .btn.primary{background:#7425f6;color:#fff}
 html:not(.m) .dlg.bk input[type=text]:focus,html:not(.m) .dlg.bk textarea:focus,html:not(.m) .dlg.savebk .newbook input:focus{box-shadow:none;outline:0}
 html:not(.m) .dlg.bk input[type=text]:focus-visible,html:not(.m) .dlg.bk textarea:focus-visible,html:not(.m) .dlg.savebk .newbook input:focus-visible{outline:0}
+
+/* ================================================================ 북 안 화면 = Figma DRW_0000 (2733:132707)
+   위 16: 뒤로(36) · 더보기(36) / 북 이름 28 Bold + 'N개 · 시간' 16 Regular(간격 12, 아래 맞춤) · 편집(보라 40) / 아래 18 · 카드 5열 간격 12 · 위아래 16 */
+html:not(.m) .dmain.bkd{padding-top:16px}
+html:not(.m) .dmain.bkd .back-row{display:flex;justify-content:space-between;align-items:center;height:51px;margin:0 0 15px}
+html:not(.m) .dmain.bkd .back-row .icon-btn,html:not(.m) .dmain.bkd .back-row .more-btn{width:36px;height:36px;padding:0;color:#18171a}
+html:not(.m) .dmain.bkd .back-row .more-btn .ic{width:36px;height:36px}
+html:not(.m) .dmain.bkd .dhead{margin:0 0 18px;align-items:flex-end}
+html:not(.m) .dmain.bkd .dhead>div:first-child{padding-left:1px}
+html:not(.m) .dmain.bkd .bkt{display:flex;align-items:flex-end;gap:12px}
+html:not(.m) .dmain.bkd .bkt h1{margin:0;font:700 28px/36px Pretendard,sans-serif!important;letter-spacing:-.28px;color:#18171a}
+html:not(.m) .dmain.bkd .bkt .sub{margin:0 0 2px;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .dmain.bkd .bkdesc{margin:4px 0 0;font:400 14px/20px Pretendard,sans-serif;color:#6f6d72}
+html:not(.m) .dmain.bkd .dhead .btn.primary{height:40px;min-width:64px;padding:0 16px;border-radius:8px;background:#7425f6;border-color:#7425f6;color:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .dmain.bkd .rrgrid{margin:0 0 0 3px}
+html:not(.m) .dmain.bkd{padding-right:24px}
+html:not(.m) .dmain.bkd .back-row{margin:0 -4px 11px 0}

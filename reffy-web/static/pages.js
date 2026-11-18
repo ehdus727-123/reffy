@@ -159,12 +159,13 @@ function kpEx() {
   return e;
 }
 /* 홈 피드와 같은 배치: n번째 카드는 (n % 열 수)번째 열 — 왼쪽 → 오른쪽으로 한 줄씩. 열 수는 폭에 맞춰(카드 약 217 · 간격 18) */
-function rrGrid(items, o) {
-  const g = h("div", { class: "rrgrid" });
+function rrGrid(items, o, opt = {}) {
+  const cg = opt.gap ?? 18;
+  const g = h("div", { class: "rrgrid", style: opt.gap != null ? `gap:${opt.gap}px` : null });
   const cards = items.map((it) => { const c = pcard(it, typeof o === "function" ? o(it) : o); const im = c.querySelector(".im"); if (im) im.style.setProperty("--ch", cardH(it)); return c; });
   const lay = () => {
     const W = g.clientWidth; if (!W) return;
-    const n = Math.max(2, Math.floor((W + 18) / 218)); if (g._n === n) return; g._n = n;
+    const n = Math.max(2, Math.floor((W + cg) / (200 + cg))); if (g._n === n) return; g._n = n;   // 카드 최소 폭 200
     const cols = Array.from({ length: n }, () => h("div", { class: "rrcol" }));
     cards.forEach((c, i) => cols[i % n].append(c));
     g.replaceChildren(...cols);
@@ -345,10 +346,11 @@ async function bookList(main, sort = "recent") {
 }
 async function bookDetail(main, id) {
   const b = await api("/api/books/" + id); const redo = () => bookDetail(main, id);
-  main.replaceChildren(h("div", { class: "back-row" }, h("button", { class: "icon-btn", type: "button", "aria-label": "북 목록으로", onclick: () => (location.hash = "#/drawer") }, icon("back", 24)),
+  main.classList.add("bkd");
+  main.replaceChildren(h("div", { class: "back-row" }, h("button", { class: "icon-btn", type: "button", "aria-label": "북 목록으로", onclick: () => (location.hash = "#/drawer") }, isM() ? icon("back", 24) : dpSvg("back", 36)),
     h("button", { class: "more-btn", type: "button", "aria-label": "북 메뉴", onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["북 삭제", async () => { if (await confirmDialog(`“${b.name}” 북을 삭제할까요? 담긴 게시물은 삭제되지 않아요.`)) { try { await api("/api/books/" + id, { method: "DELETE" }); location.hash = "#/drawer"; } catch (er) { toast(er.message); } } }]]); } }, moreIc())),
-    h("div", { class: "dhead" }, h("div", {}, h("h1", { style: "font-size:28px" }, b.name), h("p", { class: "sub" }, `총 ${b.count}장 · ${ago(b.updated)}`), b.description ? h("p", { class: "sub" }, b.description) : null), h("span", { class: "sp" }), btn("편집", "primary", () => bookDialog(b, redo))),
-    b.items.length ? pgrid(b.items, { more: (a, it) => popMenu(a, [["북에서 빼기", async () => { try { await api(`/api/books/${id}/items/remove`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [it.id] }) }); redo(); } catch (e) { toast(e.message); } }]]) }, "c5")
+    h("div", { class: "dhead" }, h("div", {}, h("div", { class: "bkt" }, h("h1", { style: "font-size:28px" }, b.name), h("p", { class: "sub" }, `${b.count}개 · ${ago(b.updated)}`)), b.description ? h("p", { class: "sub bkdesc" }, b.description) : null), h("span", { class: "sp" }), btn("편집", "primary", () => bookDialog(b, redo))),
+    b.items.length ? (isM() ? pgrid : (items, o) => rrGrid(items, o, { gap: 12 }))(b.items, { more: (a, it) => popMenu(a, [["북에서 빼기", async () => { try { await api(`/api/books/${id}/items/remove`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [it.id] }) }); redo(); } catch (e) { toast(e.message); } }]]) }, "c5")
       : notice("이 북은 비어 있어요", "게시물 상세에서 ‘북에 저장’을 눌러 담아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
 }
 
