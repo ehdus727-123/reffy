@@ -206,6 +206,12 @@ async function keepPage() {
 
 /* ---------------------------------------------------------------- 킵 스페이스 비교 보기 (KEP_0100 · 0101 · 0102)
    레퍼런스를 하나씩 넘겨 가며 비교 · 체크해서 삭제하거나 북에 저장 · ←/→ 키, 화살표, 아래 썸네일로 이동 */
+/* 꺾쇠 아이콘 (Figma Common · Icon — icon/chevronLeft 2126:628 · icon/chevronRight 2126:637, 24 기준) */
+const CHEV_SVG = {
+  L: '<path d="M13.9697 5.4697C14.2626 5.1768 14.7374 5.1768 15.0303 5.4697C15.3232 5.7626 15.3232 6.2374 15.0303 6.5303L9.5606 12L15.0303 17.4697C15.3232 17.7626 15.3232 18.2374 15.0303 18.5303C14.7374 18.8232 14.2626 18.8232 13.9697 18.5303L7.9697 12.5303C7.6768 12.2374 7.6768 11.7626 7.9697 11.4697L13.9697 5.4697Z" fill="currentColor"/>',
+  R: '<path d="M8.9697 5.4697C9.2626 5.1768 9.7373 5.1768 10.0302 5.4697L16.0302 11.4697C16.3231 11.7626 16.3231 12.2374 16.0302 12.5303L10.0302 18.5303C9.7373 18.8232 9.2626 18.8232 8.9697 18.5303C8.6768 18.2374 8.6768 17.7626 8.9697 17.4697L14.4394 12L8.9697 6.5303C8.6768 6.2374 8.6768 5.7626 8.9697 5.4697Z" fill="currentColor"/>',
+};
+const chevSvg = (d) => { const sp = h("span", { class: "kc-chev" }); sp.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">${CHEV_SVG[d]}</svg>`; return sp; };
 function keepCompare(items, start, kind, setKind, onDone) {
   const root = $("#page"); let idx = Math.max(0, start); const picked = new Set();
   const full = (it) => (it.thumb || "").replace("s=thumb", "s=full");
@@ -260,8 +266,8 @@ function keepCompare(items, start, kind, setKind, onDone) {
   delBtn.innerHTML = KC_TRASH;
   const saveBtn = h("button", { class: "btn primary kc-save", type: "button", disabled: true, title: "저장할 이미지를 먼저 골라 주세요", onclick: () => picked.size && saveToBook([...picked], { after: () => { picked.clear(); onDone(); } }) }, "북에 저장");
   const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { document.removeEventListener("keydown", key); document.removeEventListener("click", navBack, true); setKind(k); } }, l));
-  const prev = h("button", { class: "kc-nav prev", type: "button", "aria-label": "이전 레퍼런스", onclick: () => go(idx - 1) }, icon("chevR", 48));
-  const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, icon("chevR", 48));
+  const prev = h("button", { class: "kc-nav prev", type: "button", "aria-label": "이전 레퍼런스", onclick: () => go(idx - 1) }, isM() ? icon("chevR", 48) : chevSvg("L"));
+  const next = h("button", { class: "kc-nav next", type: "button", "aria-label": "다음 레퍼런스", onclick: () => go(idx + 1) }, isM() ? icon("chevR", 48) : chevSvg("R"));
   function build() {
     track.replaceChildren(...items.map((it, i) => h("div", { class: "kc-card", "data-i": i, onclick: () => { if (i !== idx) go(i); toggle(it); } },   // 카드를 누르면 바로 선택/해제 (가운데로도 이동)
       h("img", { src: full(it), alt: it.title || "레퍼런스 이미지", draggable: "false", loading: Math.abs(i - idx) < 4 ? "eager" : "lazy" }),

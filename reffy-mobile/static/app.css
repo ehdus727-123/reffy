@@ -2401,3 +2401,7 @@ html:not(.m) .kc-th.on::after,html:not(.m) .kc-card.on::after{content:"";positio
 /* 휴지통 아이콘 32 (킵 스페이스 목록 · 비교 화면) */
 html:not(.m) .kc-del,html:not(.m) .kp-acts0 .kc-del{width:32px;height:32px;padding:0}
 html:not(.m) .kc-del .kc-tr,html:not(.m) .kc-del .ic{width:32px;height:32px}
+
+/* 비교 화면 넘기기 꺾쇠: Figma icon/chevronLeft · chevronRight (104) */
+html:not(.m) .kc-nav .kc-chev{display:block;width:104px;height:104px;color:#18171a}
+html:not(.m) .kc-nav .kc-chev svg{width:104px;height:104px;display:block}
