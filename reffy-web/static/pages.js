@@ -537,14 +537,15 @@ function followsDialog(u, kind, after) {
 
 async function profilePage(uid) {
   const root = h("div", { class: "pf" }); page(root);
-  let u, tab = "posts", posts = [], books = [], scope = "";
+  let u, tab = "posts", posts = [], books = [], scope = "", kind = "";   // kind: 웹 탭(Figma MYP 2410:115952) 전체 · 일러스트 · 사진
   async function loadAll() {
     u = await api("/api/users/" + uid);
-    posts = (await api(`/api/users/${uid}/posts?limit=100` + (u && u.me && scope ? "&scope=" + scope : ""))).items;
-    books = u.me ? (await api(`/api/users/${uid}/books`)).items : [];
+    posts = (await api(`/api/users/${uid}/posts?limit=100` + (u && u.me && scope ? "&scope=" + scope : "") + (kind ? "&kind=" + kind : ""))).items;
+    books = u.me && isM() ? (await api(`/api/users/${uid}/books`)).items : [];
   }
   function draw() {
-    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, icon("link", 18), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
+    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : dpSvg("link", 16), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
+    const shareBtn = h("button", { class: "btn pf-share", type: "button", "aria-label": "프로필 링크 복사", title: "프로필 링크 복사", onclick: async () => { const url = location.origin + location.pathname + "#/u/" + encodeURIComponent(u.uid); try { await navigator.clipboard.writeText(url); toast("프로필 링크를 복사했어요"); } catch { toast(url); } } }, dpSvg("share", 24));
     const stat = (n, l, fn) => (fn ? h("button", { class: "pf-stat", type: "button", onclick: fn }, h("b", {}, compact(n)), h("span", {}, l)) : h("span", { class: "pf-stat" }, h("b", {}, compact(n)), h("span", {}, l)));
     const blockAsk = async () => {
       if (!needLogin()) return;
@@ -554,7 +555,11 @@ async function profilePage(uid) {
     const unblock = async () => { try { await api(`/api/users/${u.uid}/block`, { method: "DELETE" }); toast("차단을 해제했어요"); await loadAll(); draw(); } catch (e) { toast(e.message); } };
     const moreBtn = u.me ? null : h("span", { class: "vdots pf-more" }, h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
       u.blocked ? { label: "차단 해제", fn: unblock } : { label: "차단하기", fn: blockAsk }, { label: "신고하기", danger: true, fn: () => reportSheet("user", u.uid) }]); } }, icon("more", 24)));
-    const acts = u.me
+    const upBtn = () => { const b = btn("새 게시물 업로드", "primary up", () => openUpload()); b.prepend(dIc("plus")); return b; };
+    const acts = !isM() ? (u.me ? h("div", { class: "pf-acts" }, h("div", { class: "pf-row" }, btn("프로필 수정", "", () => (location.hash = "#/me/edit")), shareBtn), upBtn())
+        : u.blocked ? h("div", { class: "pf-acts" }, h("div", { class: "pf-row" }, btn("차단 해제", "", unblock), shareBtn))
+        : h("div", { class: "pf-acts" }, h("div", { class: "pf-row" }, btn(u.isFollowing ? "팔로잉" : "팔로우", u.isFollowing ? "" : "primary", async () => { if (!ME) return needLogin(); try { await toggleFollow(u.uid, u.isFollowing); await loadAll(); draw(); } catch (e) { toast(e.message); } }), shareBtn)))
+      : u.me
       ? h("div", { class: "pf-acts" }, btn(isM() ? "프로필 수정" : "프로필 편집", "", () => (location.hash = "#/me/edit")), btn("+ 새 게시물 업로드", "primary up", () => openUpload()))
       : u.blocked ? h("div", { class: "pf-acts" }, btn("차단 해제", "", unblock))
       : h("div", { class: "pf-acts" }, btn(u.isFollowing ? "팔로잉" : "팔로우", u.isFollowing ? "" : "primary", async () => { if (!ME) return needLogin(); try { await toggleFollow(u.uid, u.isFollowing); await loadAll(); draw(); } catch (e) { toast(e.message); } }));
@@ -562,7 +567,7 @@ async function profilePage(uid) {
     const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => (isM() ? goPost(it.id) : postModal(it.id, async () => { await loadAll(); draw(); })) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
     const grid = u.blocked ? notice("차단한 유저예요", `차단을 해제하면 ${u.nick}님의 게시물을 다시 볼 수 있어요.`) : tab === "posts"
       ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
-        : notice(scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
+        : notice(kind === "illust" ? "일러스트 게시물이 없어요" : kind === "photo" ? "사진 게시물이 없어요" : scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
       : (books.length ? h("div", { class: "pf-grid" }, books.map((b) => h("button", { class: "pf-cell book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) },
         b.cover ? h("img", { src: b.cover, alt: "" }) : (b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "ph" })), h("span", { class: "bn" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)))))
         : notice("아직 북이 없어요", "서랍에서 새 북을 만들어 보세요.", btn("서랍으로", "primary", () => (location.hash = "#/drawer"))));
@@ -578,7 +583,7 @@ async function profilePage(uid) {
           h("div", { class: "pf-mid" }, u.bio ? h("p", { class: "pf-bio" }, u.bio) : null, acts),
           links),
         h("section", { class: "pf-main" },
-          h("div", { class: "pf-tabs", role: "tablist" }, u.me ? [tabBtn("posts", "전체", ""), tabBtn("posts", isM() ? "공개" : "공개 게시물", "public"), tabBtn("posts", isM() ? "비공개" : "비공개 게시물", "private"), tabBtn("books", `북 ${u.books}`)] : tabBtn("posts", isM() ? `게시물 ${u.posts}` : "게시물")),
+          h("div", { class: "pf-tabs", role: "tablist" }, !isM() ? [["", "전체"], ["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { class: "pf-tab" + (kind === k ? " on" : ""), type: "button", role: "tab", "aria-selected": String(kind === k), onclick: async () => { if (kind === k) return; kind = k; try { await loadAll(); } catch (e) { toast(e.message); } draw(); } }, l)) : u.me ? [tabBtn("posts", "전체", ""), tabBtn("posts", isM() ? "공개" : "공개 게시물", "public"), tabBtn("posts", isM() ? "비공개" : "비공개 게시물", "private"), tabBtn("books", `북 ${u.books}`)] : tabBtn("posts", isM() ? `게시물 ${u.posts}` : "게시물")),
           grid)));
   }
   const refresh = async () => { try { await loadAll(); draw(); } catch { /* 유지 */ } };

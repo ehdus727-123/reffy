@@ -631,13 +631,15 @@ def profile(uid: str, request: Request):
 
 
 @router.get("/users/{uid}/posts")
-def user_posts(uid: str, request: Request, offset: int = 0, limit: int = 60, scope: str = ""):
-    """scope: '' 전체 / public 공개 / private 비공개 (비공개는 본인에게만)"""
+def user_posts(uid: str, request: Request, offset: int = 0, limit: int = 60, scope: str = "", kind: str = ""):
+    """scope: '' 전체 / public 공개 / private 비공개 (비공개는 본인에게만) · kind: '' 전체 / illust 일러스트 / photo 사진"""
     t = _user_row(uid)
     v = me(request)
     own = bool(v and v["id"] == t["id"])
     cond = "" if own and scope == "" else " AND COALESCE(private,0) = 1" if own and scope == "private" else " AND COALESCE(private,0) = 0"
-    ids = [r["id"] for r in db.rows(f"SELECT id FROM images WHERE user_id = :i{cond} ORDER BY id DESC LIMIT :l OFFSET :o", i=t["id"], l=min(limit, 100), o=max(0, offset))]
+    if kind in ("illust", "photo"):
+        cond += " AND COALESCE(kind,'illust') = :k"
+    ids = [r["id"] for r in db.rows(f"SELECT id FROM images WHERE user_id = :i{cond} ORDER BY id DESC LIMIT :l OFFSET :o", i=t["id"], l=min(limit, 100), o=max(0, offset), k=kind)]
     return {"items": with_likes(cards(ids), v)}
 
 

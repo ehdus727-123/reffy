@@ -2343,3 +2343,38 @@ html:not(.m) .selbar.bkbar .sp{flex:1}
 /* 홈 위 줄: 초기화 · 칩 · 정렬 · 필터를 세로 가운데로 */
 html:not(.m) .bar{align-items:center}
 html:not(.m) .bar>*,html:not(.m) .bar .resetbtn,html:not(.m) .bar .grow{align-self:center;margin-top:0;margin-bottom:0}
+
+/* 마이페이지 (Figma MYP 2410:115952) — 배너 200 · 왼쪽 360(내용 299) · 탭 전체/일러스트/사진 · 5열 */
+html:not(.m) .pf-banner{height:200px}
+html:not(.m) .pf-body{grid-template-columns:360px minmax(0,1fr);padding-right:12px}
+html:not(.m) .pf-side{padding:0 30px 48px 31px}
+html:not(.m) .pf-name{margin-top:25px}
+html:not(.m) .pf-name h1{font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px;color:#111}
+html:not(.m) .pf-name span{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#5b595f}
+html:not(.m) .pf-stats{margin-top:26px;gap:30px;flex-wrap:nowrap}
+html:not(.m) .pf-stat{gap:8px;align-items:center}
+html:not(.m) .pf-stat b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#111}
+html:not(.m) .pf-stat span{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#5b595f}
+html:not(.m) .pf-mid{margin-top:24px;gap:23px}
+html:not(.m) .pf-bio{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .pf-acts{gap:6px}
+html:not(.m) .pf-row{display:flex;gap:5px}
+html:not(.m) .pf-row .btn:first-child{flex:1;min-width:0}
+html:not(.m) .pf-acts .btn{height:40px;border-radius:8px;border:1px solid #c3c2c5;background:#fff;color:#18171a;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px}
+html:not(.m) .pf-acts .btn.primary{background:#7425f6;border-color:#7425f6;color:#fff}
+html:not(.m) .pf-acts .btn.pf-share{width:40px;min-width:40px;flex:none;padding:0;color:#18171a}
+html:not(.m) .pf-acts .btn .dic2{display:inline-flex;width:20px;height:20px;color:#fff}
+html:not(.m) .pf-links{margin-top:40px}
+html:not(.m) .pf-links h2{margin:0 0 3px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .pf-links ul{gap:5px;padding:10px 16px;min-height:57px;box-sizing:border-box;background:#f8f7f8;border-radius:8px}
+html:not(.m) .pf-links li{gap:6px;align-items:center;font:400 12px/16px Pretendard,sans-serif;color:#5b595f;min-width:0}
+html:not(.m) .pf-links li svg{width:16px;height:16px;color:#5b595f}
+html:not(.m) .pf-links a{font:400 12px/16px Pretendard,sans-serif;color:#5b595f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal;min-width:0}
+html:not(.m) .pf-main{padding-top:22px}
+html:not(.m) .pf-tabs{gap:0;border-bottom:1px solid #f1f0f2}
+html:not(.m) .pf-tab,html:not(.m) .pf-tab.on{width:84px;display:flex;justify-content:center;padding:9px 10px 11px;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72}
+html:not(.m) .pf-tab.on{color:#7425f6;border-bottom-color:#7425f6}
+html:not(.m) .pf-tabs+*{margin-top:22px}
+html:not(.m) .pf-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+html:not(.m) .pf-row{align-self:stretch}
+html:not(.m) .pf-links li svg.dps{fill:none}
