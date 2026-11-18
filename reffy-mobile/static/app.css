@@ -2063,3 +2063,64 @@ html:not(.m) .top .search{flex:1 1 0;width:auto;min-width:240px;margin:0 calc(52
 html:not(.m) .top .actions{margin-left:0;flex:none;width:auto;gap:calc(20 * var(--u))}
 /* 카드는 누르거나 선택해도 크기가 바뀌지 않게 (눌림 축소 효과 없앰) */
 .card:active{transform:none!important}
+
+/* ================================================================ Web Design (2727:71229) 반영
+   홈 피드 상단 줄 (HOM_0000 2727:50017): 높이 44 · 아래 정렬 · '초기화' 16 Regular #6F6D72 + 아이콘 28 (간격 2)
+   정렬 드롭다운 높이 44 · 왼 12 / 오른 8 · 16 Medium · 화살표 20 / 필터 버튼 높이 42 · 좌우 16 · 16 Medium · 아이콘 20 · 간격 6 / 둘 사이 5 */
+html:not(.m) .bar{min-height:44px;align-items:flex-end}
+html:not(.m) .bar .resetbtn{align-self:flex-end;width:auto;height:28px;gap:2px;padding:0;display:inline-flex;align-items:center;margin-bottom:0;border-radius:6px}
+html:not(.m) .resetbtn .rtx{display:inline;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72}
+html:not(.m) .resetbtn:hover .rtx{color:#18171a}
+.rtx{display:none}
+html:not(.m) .bar .grow{align-self:flex-end}
+html:not(.m) .sortfilter{gap:5px;align-items:flex-end}
+html:not(.m) .sortbtn{height:44px;padding:8px 8px 8px 12px;gap:4px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a;border-radius:6px}
+html:not(.m) .sortbtn .dic{width:20px;height:20px}
+html:not(.m) #filterBtn.fbtn{height:42px;padding:0 16px;gap:6px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) #filterBtn .tic{width:20px;height:20px}
+
+/* 피드 카드 (Common/Card): 이미지 높이는 120~320 여섯 단계(폭 217 기준 비율), 정보 줄 36 · 아바타 16 · 간격 5 · 닉네임 14 Medium */
+html:not(.m) #grid .card .im[style*="--ch"]{aspect-ratio:217 / var(--ch)}
+html:not(.m) #grid .card .im[style*="--ch"] img{width:100%;height:100%;max-height:none;object-fit:cover}
+html:not(.m) .card .meta{gap:5px}
+html:not(.m) .card .meta .av{width:16px;height:16px}
+html:not(.m) .card .meta .tx b{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .card .meta .lk{font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+
+/* 계정 메뉴 (MenuCard 2727:50149): 닉네임 16 Regular · 아이디 12 Regular #5B595F */
+.acct-me b{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+.acct-me small{font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+
+/* 상세 패널 오른쪽 원형 버튼 (DetailedPanel 2727:50238): 48 · 간격 16 · 오른쪽·아래 20 · 테두리 없음 · 아이콘 28 */
+html:not(.m) .dp-fab{right:20px;bottom:20px;gap:16px}
+html:not(.m) .dp-fb{width:48px;height:48px;border:0}
+html:not(.m) .dp-fb.add{border:0}
+
+/* 킵 스페이스 비교 화면 (2727:50067): 선택한 카드만 2px 보라 테두리 + 체크 28, 카드 모서리 16,
+   아래 바: 폭 1038 · 모서리 16 · 썸네일 74 · 간격 12 · 가운데부터 채움 */
+.kc-card{border-radius:16px}
+.kc-card.cur{border-color:transparent}
+.kc-card.on{border-color:#7425f6}
+.kc-card .kc-chk{left:24px;top:24px;display:none}
+.kc-card.on .kc-chk{display:grid}
+.kc-seln{font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#7425f6;white-space:nowrap}
+.kc-seln:empty{display:none}
+.kc-dock{width:min(1038px,calc(100% - 48px));border-radius:16px;padding:18px 0}
+.kc-strip{gap:12px}
+.kc-strip>.kc-th:first-child{margin-left:auto}
+.kc-strip>.kc-th:last-child{margin-right:auto}
+.kc-th{width:74px;height:74px;border-radius:8px}
+.kc-th .kc-chk{left:8px;top:8px}
+/* 홈: 상단 바 아래 22 → 초기화 줄(44) → 16 → 카드 (HOM_0000: 줄 y110 · 카드 y170) */
+html:not(.m) .main{padding-top:22px}
+html:not(.m) .bar{margin-bottom:16px}
+/* 킵 스페이스 칩 (Common/Chip): 높이 34 · 14 Medium · 선택 = 연보라 바탕 + 보라 테두리·글자 / 위치 '1/16' 20 SemiBold / '북에 저장' 보라 버튼 */
+html:not(.m) .kc-chips .pill,html:not(.m) .kbar .pill{height:34px;padding:0 12px;border:1px solid #c3c2c5;border-radius:999px;background:#fff;color:#18171a;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .kc-chips .pill.on,html:not(.m) .kbar .pill.on{background:#f6f0fe;border-color:#7425f6;color:#7425f6}
+html:not(.m) .kc-count{font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#18171a}
+html:not(.m) .kc-save{height:42px;padding:0 16px;border-radius:8px;background:#7425f6;border-color:#7425f6;color:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .kc-save:hover:not(:disabled){background:#6628d5;border-color:#6628d5}
+html:not(.m) .kc-acts{gap:24px}
+html:not(.m) .kc-del{width:40px;height:40px;padding:0}
+html:not(.m) .kc-del .ic{width:40px;height:40px}
+html:not(.m) .kc-del .kc-tr{width:40px;height:40px;display:block;color:#18171a}

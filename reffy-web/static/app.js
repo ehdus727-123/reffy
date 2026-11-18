@@ -431,10 +431,16 @@ document.addEventListener("load", (e) => { if (e.target.tagName === "IMG") wbgCh
 new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) (n.tagName === "IMG" ? [n] : n.querySelectorAll("img")).forEach((i) => { if (i.complete && i.naturalWidth) wbgCheck(i); }); }).observe(document.documentElement, { childList: true, subtree: true });
 
 /* ---------------------------------------------------------------- 피드(무한 스크롤) */
+/* 피드 카드 이미지 높이 (Figma Common/Image Height): 폭 217 기준 120 · 160 · 200 · 240 · 280 · 320 중 원본 비율에 가장 가까운 값 */
+const CARD_HS = [120, 160, 200, 240, 280, 320];
+function cardH(it) {
+  const want = it.w && it.h ? 217 * it.h / it.w : 240;
+  return CARD_HS.reduce((a, b) => (Math.abs(b - want) < Math.abs(a - want) ? b : a));
+}
 function card(it) {
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
-    h("span", { class: "im" }, img, cardLike(it)),
+    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
