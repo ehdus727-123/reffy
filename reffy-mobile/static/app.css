@@ -2571,3 +2571,29 @@ html:not(.m) .upd .upd-sec>label:has(+ * input:focus),html:not(.m) .upd .upd-sec
 html:not(.m) .pf-links ul{display:grid;justify-content:center;align-content:start;gap:5px;padding:11px 12px;min-height:68px}
 html:not(.m) .pf-links li{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;min-width:0;max-width:100%}
 html:not(.m) .pf-links a{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+/* 마이페이지 — 디자인 시스템 컴포넌트 그대로 (Common/Avatar · icon/link · Common/Button · .Tab/Brand 상태 레이어) */
+html:not(.m) .pf-av.ph{display:block;width:134px;height:134px;background:none;border-radius:50%;overflow:hidden}
+html:not(.m) .pf-av.ph svg{display:block;width:134px;height:134px}
+html:not(.m) .pf-links .lic{display:inline-flex;flex:none;width:16px;height:16px;color:#5b595f}
+html:not(.m) .pf-links .lic svg{width:16px;height:16px}
+/* 버튼 상태 레이어: Outlined(검정) Hover 4 · Focused 12 · Pressed 10% / Contained(보라) 흰색 8 · 24 · 24% */
+html:not(.m) .pf-acts .btn{position:relative;overflow:hidden}
+html:not(.m) .pf-acts .btn::before{content:"";position:absolute;inset:0;background:#18171a;opacity:0;pointer-events:none;transition:opacity .15s}
+html:not(.m) .pf-acts .btn.primary::before{background:#fff}
+html:not(.m) .pf-acts .btn:hover::before{opacity:.04}
+html:not(.m) .pf-acts .btn:focus-visible::before{opacity:.12}
+html:not(.m) .pf-acts .btn:active::before{opacity:.1}
+html:not(.m) .pf-acts .btn.primary:hover::before{opacity:.08}
+html:not(.m) .pf-acts .btn.primary:focus-visible::before,html:not(.m) .pf-acts .btn.primary:active::before{opacity:.24}
+html:not(.m) .pf-acts .btn:hover{background:#fff}
+html:not(.m) .pf-acts .btn.primary:hover{background:#7425f6;border-color:#7425f6}
+html:not(.m) .pf-acts .btn:focus-visible{outline:0}
+/* 탭 상태 레이어: 선택 = 보라, 아니면 검정 · Hover 4 · Focused 12 · Pressed 10% */
+html:not(.m) .pf-tab{position:relative}
+html:not(.m) .pf-tab::before{content:"";position:absolute;inset:0;background:#18171a;opacity:0;pointer-events:none;transition:opacity .15s}
+html:not(.m) .pf-tab.on::before{background:#7425f6}
+html:not(.m) .pf-tab:hover::before{opacity:.04}
+html:not(.m) .pf-tab:focus-visible::before{opacity:.12}
+html:not(.m) .pf-tab:active::before{opacity:.1}
+html:not(.m) .pf-tab:focus-visible{outline:0}
+html:not(.m) .pf-tab:not(.on):hover{color:#6f6d72}

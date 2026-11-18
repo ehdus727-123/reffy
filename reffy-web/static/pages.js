@@ -545,6 +545,10 @@ function followsDialog(u, kind, after) {
   drawTabs(); document.body.append(m); load();
 }
 
+/* Figma Common · Icon icon/link (24) · Common/Avatar 빈 상태(사람 아이콘, #E4E3E5 원) */
+const IC_LINK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12C3 10.6739 3.52716 9.40253 4.46484 8.46484C5.40253 7.52716 6.67392 7 8 7H10.25C10.6642 7 11 7.33579 11 7.75C11 8.16421 10.6642 8.5 10.25 8.5H8C7.07174 8.5 6.18177 8.86901 5.52539 9.52539C4.86901 10.1818 4.5 11.0717 4.5 12C4.5 12.9283 4.86901 13.8182 5.52539 14.4746C6.18177 15.131 7.07174 15.5 8 15.5H10.25C10.6642 15.5 11 15.8358 11 16.25C11 16.6642 10.6642 17 10.25 17H8C6.67392 17 5.40253 16.4728 4.46484 15.5352C3.52716 14.5975 3 13.3261 3 12ZM19.5 12C19.5 11.0717 19.131 10.1818 18.4746 9.52539C17.8182 8.86901 16.9283 8.5 16 8.5H13.75C13.3358 8.5 13 8.16421 13 7.75C13 7.33579 13.3358 7 13.75 7H16C17.3261 7 18.5975 7.52716 19.5352 8.46484C20.4728 9.40253 21 10.6739 21 12C21 13.3261 20.4728 14.5975 19.5352 15.5352C18.5975 16.4728 17.3261 17 16 17H13.75C13.3358 17 13 16.6642 13 16.25C13 15.8358 13.3358 15.5 13.75 15.5H16C16.9283 15.5 17.8182 15.131 18.4746 14.4746C19.131 13.8182 19.5 12.9283 19.5 12ZM15.25 11.25C15.6642 11.25 16 11.5858 16 12C16 12.4142 15.6642 12.75 15.25 12.75H8.75C8.33579 12.75 8 12.4142 8 12C8 11.5858 8.33579 11.25 8.75 11.25H15.25Z" fill="currentColor"/></svg>';
+const AV_PH = '<svg width="100%" height="100%" viewBox="0 0 80 80" fill="none" aria-hidden="true"><circle cx="40" cy="40" r="40" fill="#E4E3E5"/><path d="M45.001 31C45.001 29.6741 44.4736 28.4025 43.5361 27.4648C42.5986 26.5274 41.3268 26.0002 40.001 26L39.5068 26.0254C38.3622 26.1391 37.2863 26.6444 36.4658 27.4648C35.5284 28.4025 35.001 29.6741 35.001 31C35.0011 32.326 35.5282 33.5976 36.4658 34.5352C37.4035 35.4728 38.675 36 40.001 36C41.327 36 42.5985 35.4728 43.5361 34.5352C44.4737 33.5976 45.0009 32.326 45.001 31ZM48.001 31C48.0008 33.1215 47.1574 35.1561 45.6572 36.6562C44.157 38.1564 42.1226 39 40.001 39C37.8794 39 35.845 38.1564 34.3447 36.6562C32.8446 35.1561 32.0011 33.1215 32.001 31C32.001 28.8787 32.8431 26.844 34.3428 25.3438C35.8426 23.8435 37.8777 23.0005 39.999 23H40.0029L40.3994 23.0098C42.3764 23.1083 44.253 23.9373 45.6592 25.3438C47.1589 26.844 48.001 28.8787 48.001 31Z" fill="#6F6D72"/><path d="M53 54.5C53 49.3055 47.7074 45 40 45C32.2926 45 27 49.3055 27 54.5C27 54.6326 27.0527 54.7597 27.1465 54.8535C27.2403 54.9473 27.3674 55 27.5 55H52.5C52.6326 55 52.7598 54.9473 52.8535 54.8535C52.9473 54.7598 53 54.6326 53 54.5ZM56 54.5C56 55.4283 55.631 56.3182 54.9746 56.9746C54.3182 57.631 53.4283 58 52.5 58H27.5C26.5717 58 25.6818 57.631 25.0254 56.9746C24.369 56.3182 24 55.4283 24 54.5C24 46.8945 31.5074 42 40 42C48.4926 42 56 46.8945 56 54.5Z" fill="#6F6D72"/></svg>';
+const htmlSpan = (cls, html) => { const sp = h("span", { class: cls }); sp.innerHTML = html; return sp; };
 async function profilePage(uid) {
   const root = h("div", { class: "pf" }); page(root);
   let u, tab = "posts", posts = [], books = [], scope = "", kind = "";   // kind: 웹 탭(Figma MYP 2410:115952) 전체 · 일러스트 · 사진
@@ -554,7 +558,7 @@ async function profilePage(uid) {
     books = u.me && isM() ? (await api(`/api/users/${uid}/books`)).items : [];
   }
   function draw() {
-    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : dpSvg("link", 16), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
+    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : htmlSpan("lic", IC_LINK), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
     const shareBtn = h("button", { class: "btn pf-share", type: "button", "aria-label": "프로필 링크 복사", title: "프로필 링크 복사", onclick: async () => { const url = location.origin + location.pathname + "#/u/" + encodeURIComponent(u.uid); try { await navigator.clipboard.writeText(url); toast("프로필 링크를 복사했어요"); } catch { toast(url); } } }, dpSvg("share", 24));
     const stat = (n, l, fn) => (fn ? h("button", { class: "pf-stat", type: "button", onclick: fn }, h("b", {}, compact(n)), h("span", {}, l)) : h("span", { class: "pf-stat" }, h("b", {}, compact(n)), h("span", {}, l)));
     const blockAsk = async () => {
@@ -587,7 +591,7 @@ async function profilePage(uid) {
       h("div", { class: "pf-banner" + (u.cover ? " has" : "") }, u.cover ? h("img", { src: u.cover, alt: "" }) : null, isM() ? null : pcBack("#/", "on-banner")),
       h("div", { class: "pf-body" },
         h("aside", { class: "pf-side" },
-          avatarEl(u, 134, "pf-av"), isM() ? null : moreBtn,
+          !isM() && !u.avatar ? htmlSpan("pf-av avt ph", AV_PH) : avatarEl(u, 134, "pf-av"), isM() ? null : moreBtn,
           h("div", { class: "pf-name" }, h("h1", {}, u.nick), h("span", {}, "@" + u.uid)),
           h("div", { class: "pf-stats" }, stat(u.posts, "게시물"), stat(u.followers, "팔로워", () => followsDialog(u, "followers", refresh)), stat(u.following, "팔로잉", () => followsDialog(u, "following", refresh))),
           h("div", { class: "pf-mid" }, u.bio ? h("p", { class: "pf-bio" }, u.bio) : null, acts),
