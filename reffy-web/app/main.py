@@ -247,7 +247,7 @@ def detail(image_id: int, request: Request):
     d["colors"] = colormod.palette_of(colormod.loads((db.rows("SELECT colors FROM images WHERE id = :i", i=image_id) or [{}])[0].get("colors")))
     e = posemod.ext_of(image_id)
     if e:
-        d["ext"] = {"src": e.get("src"), "pid": e.get("pid"), "name": e.get("name"), "user": e.get("user")}
+        d["ext"] = {"src": e.get("src"), "pid": e.get("pid"), "name": e.get("name"), "user": e.get("user"), "lic": e.get("lic"), "flickr": e.get("flickr")}
     return d
 
 

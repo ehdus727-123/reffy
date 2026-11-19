@@ -102,11 +102,11 @@ export function makePhoto(id: string, normalized: LM[], world: LM[], extra: any 
     return p;
 }
 
-/* pose-search 실사 데이터(Unsplash): photos.json + landmarks.dat */
-export async function loadDataset(base: string): Promise<Photo[]> {
+/* 실사 데이터(COCO 2017): photos.json + landmarks.dat. ver 는 브라우저 캐시를 새로 받게 하는 꼬리표 */
+export async function loadDataset(base: string, ver = ''): Promise<Photo[]> {
     const [photos, buf] = await Promise.all([
-        fetch(base + 'photos.json').then(r => r.json()),
-        fetch(base + 'landmarks.dat').then(r => r.arrayBuffer()),
+        fetch(base + 'photos.json' + ver).then(r => r.json()),
+        fetch(base + 'landmarks.dat' + ver).then(r => r.arrayBuffer()),
     ]);
     const f = new Float32Array(buf);
     return photos.map((j: any[], i: number) => {

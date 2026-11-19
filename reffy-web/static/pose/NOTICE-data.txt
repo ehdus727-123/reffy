@@ -1,0 +1,7 @@
+REFFY 3D 포즈 검색 실사 데이터
+
+- 관절 정답(2D 17점): COCO 2017 Keypoints — COCO Consortium, Creative Commons Attribution 4.0 (https://cocodataset.org/#termsofuse)
+- 사진: COCO 가 모은 Flickr 사진. COCO Consortium 은 사진 저작권을 갖지 않으며, 사진 이용은 Flickr 이용 규칙과 사진별 Creative Commons 라이선스(photos.json 9번째 값 = COCO 라이선스 번호)를 따릅니다.
+  REFFY 는 비상업 졸업 프로젝트로, 사진을 저장하지 않고 COCO 주소에서 받아 보여 주며 라이선스와 Flickr 원본을 함께 표시합니다.
+- 앞뒤 깊이 · 손 · 발 · 얼굴 세부점: RTMW3D-x (OpenMMLab, Apache-2.0) 로 추정 — tools/pose-data/run_coco.py
+- 검색 엔진: pose-search (MIT) — LICENSE-pose-search.txt

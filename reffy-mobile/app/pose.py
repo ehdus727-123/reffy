@@ -105,21 +105,51 @@ def ext_of(image_id: int) -> Optional[dict]:
         return None
 
 
-@router.post("/pose/ext/{pid}")
-def pose_ext(pid: str, request: Request):
-    """실사 사진 한 장을 REFFY 이미지로 등록(이미 있으면 그 번호). 사진 주소 · 작가는 서버의 데이터 파일에서만 가져옴."""
-    S.need(request)
+COCO_TERMS = "https://cocodataset.org/#termsofuse"
+
+
+def _photo_info(pid: str) -> Optional[dict]:
+    """실사 데이터 한 장의 출처 정보. COCO: [id, w, h, url, url, 라이선스, flickr 주소, 0, 라이선스 번호]"""
     ph = _dataset().get(pid)
     if not ph:
+        return None
+    if pid.startswith("coco"):
+        return {"src": "coco", "pid": pid, "w": ph[1], "h": ph[2], "url": ph[3], "lic": ph[5], "flickr": ph[6],
+                "full": f"/api/pose/photo/{pid}", "regular": f"/api/pose/photo/{pid}", "name": "COCO 2017"}
+    return {"src": "unsplash", "pid": pid, "w": ph[1], "h": ph[2], "url": ph[4], "name": ph[5], "user": ph[6], "full": ph[3], "regular": ph[4]}
+
+
+@router.get("/pose/photo/{pid}")
+def pose_photo(pid: str):
+    """COCO 사진은 http 로만 제공돼서(https 사이트에서 막힘) 서버가 대신 받아 전해 줌. 데이터에 있는 사진만."""
+    from fastapi import Response
+    import urllib.request
+    info = _photo_info(pid)
+    if not info or info["src"] != "coco":
+        raise HTTPException(404)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(info["url"], headers={"User-Agent": "REFFY"}), timeout=20) as r:
+            data = r.read()
+    except Exception:
+        raise HTTPException(502, "사진을 불러오지 못했어요.")
+    return Response(data, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=2592000, immutable"})
+
+
+@router.post("/pose/ext/{pid}")
+def pose_ext(pid: str, request: Request):
+    """실사 사진 한 장을 REFFY 이미지로 등록(이미 있으면 그 번호). 사진 주소 · 출처는 서버의 데이터 파일에서만 가져옴."""
+    S.need(request)
+    info = _photo_info(pid)
+    if not info:
         raise HTTPException(404, "사진을 찾을 수 없어요.")
     key = "ext:" + pid
     have = db.rows("SELECT id FROM images WHERE file = :f", f=key)
     if have:
         return {"id": have[0]["id"]}
     from sqlalchemy import text
-    ext = json.dumps({"src": "unsplash", "pid": pid, "name": ph[5], "user": ph[6], "full": ph[3], "regular": ph[4]}, ensure_ascii=False)
+    ext = json.dumps({k: v for k, v in info.items() if k not in ("w", "h", "url")}, ensure_ascii=False)
     with db.engine.begin() as c:
-        r = c.execute(db.images.insert().values(title="", author=(ph[5] or "Unsplash")[:40], file=key, w=int(ph[1] or 0), h=int(ph[2] or 0),
+        r = c.execute(db.images.insert().values(title="", author=(info.get("name") or "")[:40], file=key, w=int(info["w"] or 0), h=int(info["h"] or 0),
                                                  kind="photo", private=0, ext=ext))
         iid = r.inserted_primary_key[0]
         c.execute(text("INSERT INTO poses (image_id, lm) VALUES (:i, '')"), {"i": iid})   # 관절은 실사 데이터에 이미 있으므로 다시 뽑지 않음
