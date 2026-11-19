@@ -48,7 +48,9 @@ TAGGER_INT8 = (os.getenv("TAGGER_INT8") or "0").strip().lower() in ("1", "true",
 MODEL_DIR = Path(os.getenv("MODEL_DIR") or (BASE / "models"))
 if not MODEL_DIR.is_absolute():
     MODEL_DIR = (BASE / MODEL_DIR).resolve()
-CLASSIFIER = Path(os.getenv("CLASSIFIER") or (BASE / "models" / "team_classifier.joblib"))
+# 팀 분류기: 직접 지정 > models/ (로컬에서 export 한 것) > data/ (GitHub 에 올라가는 기본본, tools/train_team.py 가 만듦)
+_cls_local = BASE / "models" / "team_classifier.joblib"
+CLASSIFIER = Path(os.getenv("CLASSIFIER") or (_cls_local if _cls_local.exists() else BASE / "data" / "team_classifier.joblib"))
 if not CLASSIFIER.is_absolute():
     CLASSIFIER = BASE / CLASSIFIER
 WD_THRESHOLD = float(os.getenv("WD_THRESHOLD", "0.35"))        # WD 태그를 키워드 추천에 쓰는 최소 확률
