@@ -2785,3 +2785,37 @@ html:not(.m) .pm-c.rep .pm-cmeta{padding-left:36px}
 /* Figma 아이콘 컴포넌트(2126:501): 경로 그대로, 선 두께 보정 없음 */
 .ic.icm.fig{fill:currentColor;stroke:none}
 .ic.icm.fig .ico,.ic.icm.fig .icf{stroke:none;paint-order:normal}
+
+/* ---- 이미지 상세 패널 정보 (Figma Info 3020:83333) ---- 안쪽 28, 사용자 · 닫기 / 제목 / 하트 · 댓글 · 공유 · 더보기 / 구분선 / 사용 툴 · 사용 소재 · 태그 · 댓글 */
+html:not(.m) #panel .dp-info{padding:28px 28px 24px;gap:0}
+html:not(.m) #panel .dp-head{gap:24px;margin-right:0}
+html:not(.m) #panel .dp-user{align-items:flex-start;gap:10px;min-height:0}
+html:not(.m) #panel .dp-user>.avt{width:36px;height:36px;flex:none}
+html:not(.m) #panel .dp-name a,html:not(.m) #panel .dp-name b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) #panel .dp-name span{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+html:not(.m) #panel .dp-uacts{display:flex;align-items:center;gap:12px;flex:none;margin-left:auto}
+html:not(.m) #panel .dp-uacts .fclose{width:32px;height:32px;padding:0;margin:0;display:grid;place-items:center;color:#18171a}
+html:not(.m) #panel .dp-title{margin:0;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#18171a}
+html:not(.m) #panel .dp-acts{height:34px;margin-top:24px;padding-bottom:24px;gap:12px;border-bottom:1px solid #e4e3e5}
+html:not(.m) #panel .dp-react{gap:12px}
+html:not(.m) #panel .dp-st{gap:4px;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html:not(.m) #panel .dp-st svg{width:24px;height:24px}
+html:not(.m) #panel .dp-st.on svg{color:#e5484d}
+html:not(.m) #panel .dp-ab{width:24px;height:24px;padding:0}
+html:not(.m) #panel .dp-acts .dp-ab+.dp-ab{margin-left:0}
+html:not(.m) #panel .dp-body{gap:28px;margin-top:24px}
+html:not(.m) #panel .dp-h h3{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) #panel .dp-toolsec{gap:4px}
+html:not(.m) #panel .dp-h4{margin:0;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000}
+html:not(.m) #panel .dp-tool{height:30px;box-sizing:border-box;padding:0 10px;border:1px solid #c3c2c5;border-radius:999px;background:none;font:500 12px/16px Pretendard,sans-serif;color:#18171a;display:inline-flex;align-items:center}
+html:not(.m) #panel .dp-links{gap:5px;padding:0 1px}
+html:not(.m) #panel .dp-links a{gap:6px;font:500 12px/16px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) #panel .dp-links a:hover{color:#245cb3}
+html:not(.m) #panel .dp-link{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+html:not(.m) #panel .tags{gap:6px}
+html:not(.m) #panel .dp-cmt .dp-h{margin-bottom:2px}
+html:not(.m) #panel .dp-cin{height:42px;padding:0 11px 0 16px;gap:10px;border-radius:10px;background:#f1f0f2}
+html:not(.m) #panel .dp-cin .cin{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+html:not(.m) #panel .dp-cin .cin::placeholder{color:#5b595f}
+html:not(.m) #panel .pm-send{border:0;background:none;padding:0;display:grid;place-items:center;color:#18171a;cursor:pointer}
+html:not(.m) #panel .dp-clist,html:not(.m) #panel .dp-cmt>div:has(>.pm-c){display:flex;flex-direction:column;gap:23px;margin-top:19px}

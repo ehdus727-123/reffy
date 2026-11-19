@@ -951,7 +951,16 @@ function drawDetail(d, edit = false) {
     rto.replaceChildren(...(c ? [h("span", {}, `${c.nick}님에게 답글 다는 중`), h("button", { type: "button", onclick: () => setReply(null) }, "취소")] : []));
     if (c) comment.focus();
   };
-  const cRow = (c, isRep) => h("div", { class: "dp-c" + (isRep ? " rep" : "") }, avatarEl({ nick: c.nick, avatar: c.avatar }, isRep ? 24 : 28, "dp-cav"),
+  const cMenu = (c, isRep) => (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
+      ? [{ ic: "trash", label: isRep ? "답글 삭제" : "댓글 삭제", danger: true, fn: () => act(d, "DELETE", `/api/comments/${c.id}`, null, edit) }]
+      : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); };
+  /* PC 댓글 (Figma Info 3020:83399): 아바타 30 · 닉네임 · 내용 · 더보기 / 아래 '시간 · 답글 쓰기' */
+  const cRowPC = (c, isRep) => h("div", { class: "pm-c" + (isRep ? " rep" : "") },
+    h("div", { class: "pm-crow" }, avatarEl({ nick: c.nick, avatar: c.avatar }, isRep ? 24 : 30),
+      h("div", { class: "pm-ctx" }, h("b", {}, c.nick), h("p", {}, c.body)),
+      h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: cMenu(c, isRep) }, icon("more", 24))),
+    h("div", { class: "pm-cmeta" }, h("span", {}, ago(c.created)), h("button", { type: "button", class: "pm-reply", onclick: () => needLogin() && setReply(c) }, "답글 쓰기")));
+  const cRow = (c, isRep) => !isM() ? cRowPC(c, isRep) : h("div", { class: "dp-c" + (isRep ? " rep" : "") }, avatarEl({ nick: c.nick, avatar: c.avatar }, isRep ? 24 : 28, "dp-cav"),
     h("div", { class: "dp-ct" }, h("div", { class: "dp-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body),
       h("button", { type: "button", class: "dp-reply", onclick: () => needLogin() && setReply(c) }, "답글 쓰기")),
     h("button", { class: "icon-btn dp-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
@@ -962,8 +971,8 @@ function drawDetail(d, edit = false) {
   const drawComments = (all) => clist.replaceChildren(...tops.slice(0, all ? tops.length : 3).flatMap((c) => [cRow(c, false), ...(reps.get(c.id) || []).map((r) => cRow(r, true))]));
   drawComments(false);
   const allBtn = tops.length > 3 ? h("button", { class: "dp-all", type: "button", onclick: (e) => { drawComments(true); e.currentTarget.remove(); } }, `댓글 ${tops.length}개 모두 보기`) : null;
-  comment.placeholder = "댓글을 남겨보세요";
-  const postBtn = h("button", { class: "dp-post", type: "button", onclick: send }, "게시");
+  comment.placeholder = isM() ? "댓글을 남겨보세요" : "댓글을 작성해보세요.";
+  const postBtn = isM() ? h("button", { class: "dp-post", type: "button", onclick: send }, "게시") : h("button", { class: "pm-send", type: "button", "aria-label": "댓글 등록", onclick: send }, icon("send", 20));
   comment.addEventListener("input", () => postBtn.classList.toggle("on", !!comment.value.trim()));
   /* 연관 이미지: 2열, '더보기'를 누를 때마다 이어서 */
   const relCols = [h("div", { class: "dp-col" }), h("div", { class: "dp-col" })];
@@ -988,7 +997,7 @@ function drawDetail(d, edit = false) {
       h("div", { class: "dp-top" },
         h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, dpSvg("back", 36)),
         h("span", { class: "sp" }),
-        h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, dpSvg("close", 36))),
+        isM() ? h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, dpSvg("close", 36)) : null),
       h("div", { class: "dp-fab" },
         h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, dpSvg("pose", 28)),
         d.ext ? null : h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, dpSvg("palette", 28)),   // 실사(Unsplash)는 색 추출 없음
@@ -1001,27 +1010,29 @@ function drawDetail(d, edit = false) {
           : d.ext ? h("div", { class: "dp-name" }, h("a", { href: `https://unsplash.com/@${d.ext.user}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, d.author),
               h("span", {}, "Photo on ", h("a", { href: `https://unsplash.com/photos/${d.ext.pid}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, "Unsplash")))
             : h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
-          o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
+          h("div", { class: "dp-uacts" },
+            o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null,
+            isM() ? null : figClose(closeDetail))),
         d.ext ? null : h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),   // 실사(Unsplash)는 제목 없이
       h("div", { class: "dp-acts" },
         h("div", { class: "dp-react" },
-          h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, dpSvg(so.liked ? "heart:f" : "heart", 20), String(so.likes)),
-          h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, dpSvg("comment", 20), String(so.comments.length))),
+          h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, isM() ? dpSvg(so.liked ? "heart:f" : "heart", 20) : icon(so.liked ? "heart:f" : "heart", 24), String(so.likes)),
+          h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, isM() ? dpSvg("comment", 20) : icon("comment", 24), String(so.comments.length))),
         h("span", { class: "sp" }),
         h("button", { class: "dp-ab", type: "button", "aria-label": "공유하기", title: "공유하기", onclick: () => sharePost(d) }, dpSvg("share", 24)),
         so.editable || o ? h("button", { class: "dp-ab", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: postMenu }, dpSvg("more", 24)) : null),
       h("div", { class: "dp-body" },
-      (d.tools || []).length ? h("div", { class: "dp-sec" }, head("사용한 툴"), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
+      (d.tools || []).length ? h("div", { class: "dp-sec dp-toolsec" }, isM() ? head("사용한 툴") : h("h4", { class: "dp-h4" }, "사용 툴"), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
+      mats.length ? h("div", { class: "dp-sec" }, head("사용 소재", mats.length > 3 ? h("button", { class: "dp-link", type: "button", onclick: (e) => { drawMats(true); e.currentTarget.remove(); } }, "더보기") : null), matList) : null,
       h("div", { class: "dp-sec" },
         head("태그"),   // 태그 고치기는 더보기(⋮) → 수정하기에서
         edit ? kindTag(d, true, () => drawDetail(d, true)) : null,
         h("div", { class: "tags" }, edit ? null : kindTag(d, false), act_.length ? act_.map(tagEl) : (edit ? h("span", { class: "hint" }, "아직 태그가 없어요.") : null)),
         edit ? h("div", { class: "tags", style: "margin-top:10px" }, pickButton(box, (t) => save(d, { add: [t.ikey] }, t), () => new Set(d.tags.filter((x) => x.active).map((x) => x.ikey))),
           off.map((t) => h("button", { class: "tag off", type: "button", title: "눌러서 되돌리기", onclick: () => save(d, { restore: [t.ikey] }, t) }, "#" + t.label))) : null),
-      mats.length ? h("div", { class: "dp-sec" }, head("사용 소재", mats.length > 3 ? h("button", { class: "dp-link", type: "button", onclick: (e) => { drawMats(true); e.currentTarget.remove(); } }, "더보기") : null), matList) : null,
       h("div", { class: "dp-sec dp-cmt" },
         h("div", { class: "dp-cw" }, head(`댓글 ${so.comments.length}`),
-          rto, h("div", { class: "dp-cin" }, ME ? avatarEl(ME, 24, "dp-cav") : h("span", { class: "dp-cav avt" }), comment, postBtn)),
+          rto, h("div", { class: "dp-cin" }, !isM() ? null : ME ? avatarEl(ME, 24, "dp-cav") : h("span", { class: "dp-cav avt" }), comment, postBtn)),
         so.comments.length ? clist : null, allBtn),
       h("div", { class: "dp-sec dp-rel" }, head("연관 이미지"), h("div", { class: "dp-grid" }, relCols))),
       relMore));
