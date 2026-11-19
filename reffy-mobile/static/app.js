@@ -387,6 +387,7 @@ function drawPosePanel() {
   const freeSw = h("label", { class: "pose-free" }, h("input", { type: "checkbox", class: "cbx", onchange: (e) => (POSE.free = e.target.checked) }), h("span", {}, "보는 각도는 상관없이 찾기"));
   pp.replaceChildren(
     h("div", { class: "pose-vpw" }, vp, h("div", { class: "pose-ctl" }, resetB)),
+    h("p", { class: "pose-hint" }, "관절을 드래그하거나 신체 파츠를 눌러 포즈를 만드세요"),
     h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "비교할 부위")), h("div", { class: "pose-chips", id: "poseParts" }), freeSw),
     h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: savePose }, "지금 포즈 저장")), h("div", { class: "pose-chips", id: "poseSaved" })),
     h("p", { class: "pose-credit" }, "3D 포즈 검색: ", h("a", { href: "https://github.com/x6ud/pose-search", target: "_blank", rel: "noopener" }, "pose-search"), " (MIT) · 실사 사진: ", h("a", { href: "https://unsplash.com/?utm_source=reffy&utm_medium=referral", target: "_blank", rel: "noopener" }, "Unsplash")));
