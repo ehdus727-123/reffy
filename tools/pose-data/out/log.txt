@@ -1,12 +1,105 @@
-[0;93m2026-11-19 15:46:05.007985516 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
+[0;93m2026-11-19 16:19:11.114787026 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
 Downloading: "https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip" to /home/runner/.cache/rtmlib/hub/checkpoints/yolox_m_8xb8-300e_humanart-c2c7a14a.zip
-  0%|          | 0.00/89.9M [00:00<?, ?B/s]  2%|▏         | 1.84M/89.9M [00:00<00:04, 19.2MB/s]  5%|▌         | 4.59M/89.9M [00:00<00:03, 24.8MB/s]  8%|▊         | 7.39M/89.9M [00:00<00:03, 26.9MB/s] 11%|█▏        | 10.2M/89.9M [00:00<00:03, 27.7MB/s] 14%|█▍        | 13.0M/89.9M [00:00<00:02, 27.9MB/s] 18%|█▊        | 15.9M/89.9M [00:00<00:02, 28.5MB/s] 21%|██        | 18.7M/89.9M [00:00<00:02, 28.8MB/s] 24%|██▍       | 21.6M/89.9M [00:00<00:02, 28.9MB/s] 27%|██▋       | 24.5M/89.9M [00:00<00:02, 28.7MB/s] 31%|███       | 27.6M/89.9M [00:01<00:02, 29.5MB/s] 34%|███▍      | 30.4M/89.9M [00:01<00:02, 29.5MB/s] 37%|███▋      | 33.2M/89.9M [00:01<00:02, 29.5MB/s] 40%|████      | 36.0M/89.9M [00:01<00:01, 29.4MB/s] 43%|████▎     | 38.9M/89.9M [00:01<00:01, 29.3MB/s] 46%|████▋     | 41.7M/89.9M [00:01<00:01, 29.3MB/s] 50%|████▉     | 44.5M/89.9M [00:01<00:01, 28.9MB/s] 53%|█████▎    | 47.4M/89.9M [00:01<00:01, 29.0MB/s] 56%|█████▌    | 50.2M/89.9M [00:01<00:01, 29.1MB/s] 59%|█████▉    | 53.1M/89.9M [00:01<00:01, 29.1MB/s] 62%|██████▏   | 56.1M/89.9M [00:02<00:01, 29.4MB/s] 66%|██████▌   | 58.9M/89.9M [00:02<00:01, 29.5MB/s] 69%|██████▉   | 61.8M/89.9M [00:02<00:00, 29.6MB/s] 72%|███████▏  | 64.6M/89.9M [00:02<00:00, 29.6MB/s] 75%|███████▌  | 67.4M/89.9M [00:02<00:00, 29.5MB/s] 78%|███████▊  | 70.3M/89.9M [00:02<00:00, 29.5MB/s] 82%|████████▏ | 73.3M/89.9M [00:02<00:00, 30.2MB/s] 85%|████████▍ | 76.2M/89.9M [00:02<00:00, 30.1MB/s] 88%|████████▊ | 79.1M/89.9M [00:02<00:00, 29.9MB/s] 91%|█████████ | 81.9M/89.9M [00:02<00:00, 29.8MB/s] 94%|█████████▍| 84.8M/89.9M [00:03<00:00, 29.5MB/s] 97%|█████████▋| 87.6M/89.9M [00:03<00:00, 29.2MB/s]100%|██████████| 89.9M/89.9M [00:03<00:00, 29.1MB/s]
+  0%|          | 0.00/89.9M [00:00<?, ?B/s]  3%|▎         | 2.52M/89.9M [00:00<00:03, 26.4MB/s]  7%|▋         | 6.27M/89.9M [00:00<00:02, 33.9MB/s] 11%|█         | 9.51M/89.9M [00:00<00:02, 32.7MB/s] 14%|█▍        | 13.0M/89.9M [00:00<00:02, 33.6MB/s] 18%|█▊        | 16.5M/89.9M [00:00<00:02, 34.5MB/s] 22%|██▏       | 19.8M/89.9M [00:00<00:02, 30.8MB/s] 27%|██▋       | 24.5M/89.9M [00:00<00:01, 35.9MB/s] 31%|███       | 28.0M/89.9M [00:00<00:01, 33.1MB/s] 35%|███▍      | 31.4M/89.9M [00:00<00:01, 33.8MB/s] 39%|███▊      | 34.7M/89.9M [00:01<00:01, 31.7MB/s] 42%|████▏     | 38.0M/89.9M [00:01<00:01, 32.2MB/s] 46%|████▋     | 41.6M/89.9M [00:01<00:01, 33.7MB/s] 51%|█████     | 45.5M/89.9M [00:01<00:01, 35.3MB/s] 55%|█████▌    | 49.5M/89.9M [00:01<00:01, 37.1MB/s] 60%|██████    | 54.0M/89.9M [00:01<00:00, 39.1MB/s] 66%|██████▌   | 59.5M/89.9M [00:01<00:00, 44.3MB/s] 71%|███████   | 63.8M/89.9M [00:01<00:00, 40.5MB/s] 75%|███████▌  | 67.7M/89.9M [00:01<00:00, 38.4MB/s] 81%|████████  | 73.0M/89.9M [00:02<00:00, 42.7MB/s] 86%|████████▋ | 77.5M/89.9M [00:02<00:00, 43.4MB/s] 92%|█████████▏| 82.4M/89.9M [00:02<00:00, 45.3MB/s] 97%|█████████▋| 86.8M/89.9M [00:02<00:00, 43.7MB/s]100%|██████████| 89.9M/89.9M [00:02<00:00, 37.3MB/s]
 Downloading: "https://huggingface.co/Soykaf/RTMW3D-x/resolve/main/onnx/rtmw3d-x_8xb64_cocktail14-384x288-b0a0eab7_20240626.onnx" to /home/runner/.cache/rtmlib/hub/checkpoints/rtmw3d-x_8xb64_cocktail14-384x288-b0a0eab7_20240626.onnx
 load /home/runner/.cache/rtmlib/hub/checkpoints/yolox_m_8xb8-300e_humanart-c2c7a14a.onnx with onnxruntime backend
-  0%|          | 0.00/352M [00:00<?, ?B/s]  0%|          | 184k/352M [00:00<03:20, 1.84MB/s]  1%|          | 1.82M/352M [00:00<00:34, 10.8MB/s]  5%|▌         | 18.1M/352M [00:00<00:04, 83.6MB/s] 20%|█▉        | 70.1M/352M [00:00<00:01, 265MB/s]  34%|███▎      | 119M/352M [00:00<00:00, 353MB/s]  46%|████▋     | 164M/352M [00:00<00:00, 393MB/s] 57%|█████▋    | 201M/352M [00:00<00:00, 362MB/s] 68%|██████▊   | 238M/352M [00:00<00:00, 368MB/s] 78%|███████▊  | 273M/352M [00:00<00:00, 355MB/s] 94%|█████████▍| 331M/352M [00:01<00:00, 429MB/s]100%|██████████| 352M/352M [00:01<00:00, 342MB/s]
+  0%|          | 0.00/352M [00:00<?, ?B/s]  5%|▍         | 16.3M/352M [00:00<00:02, 171MB/s]  9%|▉         | 32.6M/352M [00:00<00:02, 160MB/s] 18%|█▊        | 61.9M/352M [00:00<00:01, 225MB/s] 24%|██▎       | 83.6M/352M [00:00<00:01, 142MB/s] 28%|██▊       | 100M/352M [00:00<00:01, 148MB/s]  33%|███▎      | 116M/352M [00:00<00:01, 145MB/s] 37%|███▋      | 132M/352M [00:01<00:02, 103MB/s] 41%|████▏     | 146M/352M [00:01<00:01, 112MB/s] 45%|████▍     | 158M/352M [00:01<00:02, 89.9MB/s] 50%|████▉     | 175M/352M [00:01<00:01, 107MB/s]  53%|█████▎    | 187M/352M [00:01<00:01, 89.8MB/s] 56%|█████▌    | 198M/352M [00:01<00:01, 84.1MB/s] 61%|██████▏   | 216M/352M [00:01<00:01, 107MB/s]  65%|██████▍   | 228M/352M [00:02<00:01, 109MB/s] 68%|██████▊   | 240M/352M [00:02<00:01, 111MB/s] 71%|███████▏  | 251M/352M [00:02<00:00, 107MB/s] 77%|███████▋  | 272M/352M [00:02<00:00, 135MB/s] 82%|████████▏ | 288M/352M [00:02<00:00, 144MB/s] 86%|████████▌ | 303M/352M [00:02<00:00, 148MB/s] 91%|█████████ | 320M/352M [00:02<00:00, 156MB/s] 98%|█████████▊| 344M/352M [00:02<00:00, 182MB/s]100%|██████████| 352M/352M [00:02<00:00, 131MB/s]
 load /home/runner/.cache/rtmlib/hub/checkpoints/rtmw3d-x_8xb64_cocktail14-384x288-b0a0eab7_20240626.onnx with onnxruntime backend
-0 90v3asMhhL0 1 0.6s
-10 C20uzP6-juU 1 4.6s
-20 l8V8q01KVxA 1 8.7s
-30 4ydjTMLKdR4 1 13.8s
-done 40 19.3s
+0 90v3asMhhL0 1 0.8s
+10 C20uzP6-juU 1 10.6s
+20 l8V8q01KVxA 1 19.3s
+30 4ydjTMLKdR4 1 30.3s
+40 lJWMnNaSI5I 1 41.8s
+50 FAEddzG2bsE 1 53.9s
+60 TCb22b_nYcU 1 63.0s
+70 B6YLpF4P-m0 2 73.7s
+80 n6gnCa77Urc 1 81.6s
+90 hWn9AiZQpkg 1 96.1s
+100 2i9hqT5qPgI 1 106.9s
+110 iTzUDUjeOj4 3 121.4s
+120 U5kQvbQWoG0 1 131.0s
+130 Yv2VoSBPBcE 1 139.3s
+140 ILpinYasGQI 4 153.2s
+150 LSnNnxRyssI 1 163.8s
+160 de5OZMjb5ww 1 181.6s
+170 pumE5ixJAgQ 1 192.4s
+180 uBysuAVwiH0 1 205.4s
+190 7uoMmzPd2JA 2 214.8s
+200 WWesmHEgXDs 1 223.6s
+210 nIz3Er4bk3U 1 232.7s
+220 h4i9G-de7Po 1 242.8s
+230 CDI_VKNFbr4 2 252.7s
+240 MXnkWolg3Ug 1 268.1s
+250 ngd2uo1eyZg 1 280.7s
+260 IRG0n9Px6lM 1 308.6s
+270 gjBn9RD9Wrw 2 318.7s
+280 YfJLk9PD06Y 1 327.4s
+290 tpivPdQgC20 1 340.3s
+300 sU7apmXKyCA 1 349.7s
+310 DC5akQJyH4I 1 361.2s
+320 zdLdgGbi9Ow 1 371.5s
+330 vLYBnT1rTnE 1 380.3s
+340 WkjbPFcr3y8 1 390.7s
+350 92YQRw3-__I 1 400.6s
+360 oLapu_IzzVA 14 419.5s
+370 6lTre65C00E 2 431.9s
+380 _8Wljh2ygik 1 444.8s
+390 Cs73R4ZO50E 1 455.3s
+400 aVscF83pOxk 1 464.6s
+410 nS3HSEBrcik 9 478.2s
+420 qW2OKOzPYYY 8 496.4s
+430 nmWQ2SKvj5M 1 512.0s
+440 1Y7CkiW8Q9s 1 522.4s
+450 QUXnNAdKYMc 3 537.0s
+460 eot-ka5dM7Q 1 549.4s
+470 iCw9vsUvUmQ 1 558.5s
+480 Lz_0h-2rHhA 1 582.5s
+490 YY-INIrhaoM 1 593.4s
+500 oAwDU4cRkKg 1 602.8s
+510 RdBuoPdyL3I 1 612.5s
+520 PO-fSor8od0 1 621.6s
+530 ybLtRkjHprE 1 630.6s
+540 u6DuzNq2jMg 1 641.8s
+550 MQQTIxlbZww 1 651.5s
+560 VeMWKFiTCf8 1 660.9s
+570 z-JKxfzYM7U 1 671.7s
+580 A9IQk33Bunw 2 683.2s
+590 _LZbDkRaedE 1 692.4s
+600 L3SArjeHU4g 1 702.5s
+610 _HvALkQDOYs 1 711.3s
+620 T9xkgHKF4WM 1 720.4s
+630 69bBvvFkg9I 1 730.1s
+640 G7pbHOI1R7I 1 738.8s
+650 yfgptSTq2SQ 2 747.9s
+660 hnRWJ6RggiI 1 757.4s
+670 Q0pF_fOIMwU 1 766.1s
+680 p-v1DBkTrgo 1 775.1s
+690 Nou47XhGyto 1 784.4s
+700 lsDuUGrGzcw 2 794.6s
+710 BAlBUJb-SXQ 1 806.1s
+720 amgv9YUg-MA 1 815.5s
+730 mSA09ggYEp4 1 824.6s
+740 kVX6MBa2uNk 2 834.0s
+750 0dE0eNphJk8 1 844.7s
+760 BrVi7Z6Ngc0 1 853.9s
+770 4uypEK4FXRY 1 863.2s
+780 7yONARoUsbY 1 872.8s
+790 Zx99q6Rggwo 1 885.4s
+800 4331fD7aXCs 2 894.8s
+810 101ARIWpQxE 1 907.0s
+820 X-8ZDV55TVc 1 916.4s
+830 J3g9EdgK7z4 1 925.4s
+840 syx5GyrkeZ8 1 934.2s
+850 zfPEja1D0YA 1 942.9s
+860 tBmmA3pTciA 2 953.0s
+870 MgJBjnJs_UU 1 965.0s
+880 Qa44Ttpmo4U 1 975.2s
+890 DkGIAjlIJu0 3 985.5s
+900 vqKnuG8GaQc 1 994.7s
+910 oA1-rirIJ2E 4 1006.6s
+920 fLaB8LlEMNo 1 1018.4s
+930 LPvloZJu1Pk 1 1032.2s
+940 RmO3If0EYHM 4 1045.7s
+950 mGFJIUD9yiM 10 1064.1s
+960 IwWr58ck4x4 2 1073.8s
+done 968 1081.3s
