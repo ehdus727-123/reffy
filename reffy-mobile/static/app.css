@@ -2631,3 +2631,7 @@ html:not(.m) .kbar>.btn:hover::before{opacity:.04}html:not(.m) .kbar>.btn:focus-
 html:not(.m) .kbar>.btn.primary:hover::before{opacity:.08}html:not(.m) .kbar>.btn.primary:focus-visible::before,html:not(.m) .kbar>.btn.primary:active::before{opacity:.24}
 html:not(.m) .kbar>.btn:hover{background:#fff;color:#18171a}html:not(.m) .kbar>.btn.primary:hover{background:#7425f6;color:#fff;border-color:#7425f6}
 html:not(.m) .kbar>.btn:focus-visible{outline:0}
+/* 크게 보기 X · + · − 원형 버튼 자체를 작게: 80 → 64 (아이콘은 Figma 비율 그대로 함께 축소) */
+html:not(.m) .lb-close,html:not(.m) .lb-z{width:64px;height:64px}
+html:not(.m) :is(.lb-close,.lb-z) .fic svg[width="64"],html:not(.m) :is(.lb-close,.lb-z) .fic.f80{width:64px;height:64px}
+html:not(.m) .lb-zoom{gap:10px}
