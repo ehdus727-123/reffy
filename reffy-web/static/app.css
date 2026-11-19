@@ -2616,3 +2616,7 @@ html:not(.m) .pm-nav.next{left:calc(50% + 457.5px + 80px)}
 html:not(.m) .pm-wrap.swap .pm{animation:none}
 html:not(.m) .modal.pm-wrap.swap{animation:none}
 html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic.f80:has(svg[width="80"]),html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic svg[width="80"]{width:80px;height:80px}
+/* 초기화: 누르면 화살표 아이콘이 시계 반대 방향으로 한 바퀴 (처음 빠르게 → 끝에서 부드럽게 멈춤) */
+@keyframes rf-reset-spin{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
+.rf-spin{animation:rf-reset-spin .6s cubic-bezier(.4,0,.2,1);transform-origin:50% 50%}
+@media (prefers-reduced-motion:reduce){.rf-spin{animation:none}}

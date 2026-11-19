@@ -288,7 +288,7 @@ function setFilterOpen(o) {
   L.classList.toggle("f-open", o); $("#filterBtn").setAttribute("aria-expanded", String(o));
 }
 $("#filterBtn").onclick = () => setFilterOpen(!$("#layout").classList.contains("f-open"));
-$("#resetAll").onclick = () => $("#reset").click();   // 피드 위 초기화 아이콘 (HOM_0000)
+$("#resetAll").onclick = (e) => { const ic = e.currentTarget.querySelector("svg, .ric, .ic"); if (ic) { ic.classList.remove("rf-spin"); void ic.getBoundingClientRect(); ic.classList.add("rf-spin"); ic.addEventListener("animationend", () => ic.classList.remove("rf-spin"), { once: true }); } $("#reset").click(); };   // 누르면 화살표가 한 바퀴 돌아요   // 피드 위 초기화 아이콘 (HOM_0000)
 if (isTablet()) setFilterOpen(false);
 $("#home").onclick = (e) => { e.preventDefault(); $("#reset").click(); closeDetail(); };
 
