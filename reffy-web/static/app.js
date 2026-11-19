@@ -389,7 +389,7 @@ function drawPosePanel() {
     h("p", { class: "pose-hint" }, "관절을 드래그하거나 신체 파츠를 눌러 포즈를 만드세요"),
     h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "비교할 부위")), h("div", { class: "pose-chips", id: "poseParts" })),
     h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: savePose }, "지금 포즈 저장")), h("div", { class: "pose-chips", id: "poseSaved" })),
-    h("p", { class: "pose-credit" }, "3D 포즈 검색: ", h("a", { href: "https://github.com/x6ud/pose-search", target: "_blank", rel: "noopener" }, "pose-search"), " (MIT) · 실사 사진: ", h("a", { href: "https://unsplash.com/?utm_source=reffy&utm_medium=referral", target: "_blank", rel: "noopener" }, "Unsplash")));
+    h("p", { class: "pose-credit" }, "3D 포즈 검색: ", h("a", { href: "https://github.com/x6ud/pose-search", target: "_blank", rel: "noopener" }, "pose-search"), " (MIT) · 관절 정답: ", h("a", { href: "https://cocodataset.org/#termsofuse", target: "_blank", rel: "noopener" }, "COCO 2017"), " (CC BY 4.0) · 사진: Flickr, 사진별 CC 라이선스"));
   drawPoseParts(); drawPoseSaved();
   loadPoseEngine().then((R) => requestAnimationFrame(() => {
     vp.replaceChildren(); const box = h("div", { class: "pose-ed" }); vp.append(box);
@@ -462,14 +462,15 @@ async function extId(it) {
   it.rid = r.id; return it.rid;
 }
 function extCard(it) {
-  const img = h("img", { src: it.thumb, alt: `${it.author}의 사진 (Unsplash)`, loading: "lazy", width: it.w || null, height: it.h || null, referrerpolicy: "no-referrer" });
-  return h("button", { class: "card ext" + (it.rid && S.open === it.rid ? " sel" : ""), type: "button", "data-id": it.id, "aria-label": `실사 포즈 사진 · ${it.author} (Unsplash)`,
+  const srcName = it.coco ? (it.lic || "COCO") : "Unsplash";
+  const img = h("img", { src: it.thumb, alt: it.coco ? "COCO 실사 포즈 사진" : `${it.author}의 사진 (Unsplash)`, loading: "lazy", width: it.w || null, height: it.h || null, referrerpolicy: "no-referrer" });
+  return h("button", { class: "card ext" + (it.rid && S.open === it.rid ? " sel" : ""), type: "button", "data-id": it.id, "aria-label": `실사 포즈 사진 · ${it.author} (${srcName})`,
     onclick: async () => {
       if (!needLogin()) return;
       try { const id = await extId(it); if (S.open === id && !$("#panel").hidden && !isM()) closeDetail(); else openDetail(id); } catch (e) { toast(e.message); }
     } },
     h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
-    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, "Unsplash")));
+    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, it.coco ? "COCO" : "Unsplash")));
 }
 
 /* ---------------------------------------------------------------- 검색창 */
@@ -659,7 +660,9 @@ async function more(first) {
     masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;
     if (S.pose) {   // REFFY 사진을 다 보여 준 뒤 pose-search 실사 사진(Unsplash)을 이어 붙임
-      const ext = S.pose.ext.map((ph) => ({ id: "u:" + ph.id, ext: true, pid: ph.id, rid: ph.rid, likes: ph.likes, liked: ph.liked, thumb: ph.regular, full: ph.full, w: ph.width, h: ph.height, author: ph.authorName, user: ph.authorUsername }));
+      const ext = S.pose.ext.map((ph) => { const coco = String(ph.id).startsWith("coco"); const src = coco ? `/api/pose/photo/${ph.id}` : null;
+        return { id: "u:" + ph.id, ext: true, coco, pid: ph.id, rid: ph.rid, likes: ph.likes, liked: ph.liked, thumb: src || ph.regular, full: src || ph.full, w: ph.width, h: ph.height,
+          author: coco ? "COCO 2017" : ph.authorName, lic: coco ? ph.authorName : "", user: ph.authorUsername }; });
       d.total = S.total = d.total + ext.length;
       if (S.done && !S.pose.extShown) { S.pose.extShown = true; S.items.push(...ext); masAdd(ext); }
     }
@@ -943,7 +946,9 @@ function drawDetail(d, edit = false) {
     h("div", { class: "dp-info" },
       h("div", { class: "dp-head" },
         h("div", { class: "dp-user" }, o ? avatarEl(o, 36, "dp-av40") : h("span", { class: "dp-av40 avt" }, (d.author || "?").slice(0, 1)),
-          d.ext ? h("div", { class: "dp-name" }, h("a", { href: `https://unsplash.com/@${d.ext.user}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, d.author),
+          d.ext && d.ext.src === "coco" ? h("div", { class: "dp-name" }, h("a", { href: "https://cocodataset.org/#termsofuse", target: "_blank", rel: "noopener" }, "COCO 2017"),
+              h("span", {}, d.ext.lic || "Flickr", d.ext.flickr ? " · " : "", d.ext.flickr ? h("a", { href: d.ext.flickr.replace(/^http:/, "https:"), target: "_blank", rel: "noopener" }, "Flickr 원본") : null))
+          : d.ext ? h("div", { class: "dp-name" }, h("a", { href: `https://unsplash.com/@${d.ext.user}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, d.author),
               h("span", {}, "Photo on ", h("a", { href: `https://unsplash.com/photos/${d.ext.pid}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, "Unsplash")))
             : h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
           o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
