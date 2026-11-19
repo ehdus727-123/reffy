@@ -366,6 +366,39 @@ $("#tabColor").onclick = () => showTab("color");
 const POSE = { ed: null, eng: null, part: "all", free: false, ds: null, built: false };
 const POSE_PARTS = [["all", "전체 자세"], ["Face", "얼굴"], ["Chest", "가슴"], ["Crotch", "골반"], ["Left Shoulder", "왼쪽 어깨"], ["Right Shoulder", "오른쪽 어깨"], ["Left Elbow", "왼쪽 팔꿈치"], ["Right Elbow", "오른쪽 팔꿈치"], ["Left Hip", "왼쪽 고관절"], ["Right Hip", "오른쪽 고관절"], ["Left Knee", "왼쪽 무릎"], ["Right Knee", "오른쪽 무릎"]];
 const POSE_KEYS = POSE_PARTS.slice(1).map((p) => p[0]);
+/* 파츠 검색 결과 크롭: 고른 부위의 관절(MediaPipe 33점 번호)이 보이도록 사진을 잘라 카드에 보여 줌 */
+const POSE_CROP = { Face: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], Chest: [11, 12, 23, 24], Crotch: [23, 24, 25, 26],
+  "Left Shoulder": [11, 12, 13], "Right Shoulder": [11, 12, 14], "Left Elbow": [11, 13, 15], "Right Elbow": [12, 14, 16],
+  "Left Hip": [23, 24, 25], "Right Hip": [23, 24, 26], "Left Knee": [23, 25, 27], "Right Knee": [24, 26, 28] };
+function poseCrop(nl, W, H, part) {
+  const ids = POSE_CROP[part];
+  if (!ids || !nl || !W || !H) return null;
+  const P = (i) => nl[i] && { x: nl[i].point[0] * W, y: nl[i].point[1] * H, v: nl[i].visibility };
+  let pts = ids.map(P).filter((q) => q && q.v >= 0.3);
+  if (pts.length < 2) pts = ids.map(P).filter(Boolean);
+  if (!pts.length) return null;
+  const mid = (a, b) => a && b && { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const sh = mid(P(11), P(12)), hp = mid(P(23), P(24));
+  const torso = sh && hp ? Math.hypot(sh.x - hp.x, sh.y - hp.y) : Math.min(W, H) / 3;   // 몸 크기 기준: 어깨 가운데 ~ 골반 가운데
+  let x0 = Math.min(...pts.map((q) => q.x)), x1 = Math.max(...pts.map((q) => q.x)), y0 = Math.min(...pts.map((q) => q.y)), y1 = Math.max(...pts.map((q) => q.y));
+  const pad = torso * (part === "Face" ? 0.45 : 0.35), minS = torso * (part === "Face" ? 0.7 : 0.9);
+  let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (part === "Face" ? torso * 0.12 : 0),   // 얼굴: 눈·귀 기준이라 이마 쪽으로 조금 올림
+      w = Math.max(x1 - x0 + pad * 2, minS), hh = Math.max(y1 - y0 + pad * 2, minS);
+  const ch = cardH({ w, h: hh }), r = ch / 217;   // 카드 높이 단계(120~320)에 맞춰 비율을 정확히 맞춤
+  if (hh / w < r) hh = w * r; else w = hh / r;
+  if (w > W) { w = W; hh = w * r; }
+  if (hh > H) { hh = H; w = hh / r; }
+  if (w >= W * 0.92 && hh >= H * 0.92) return null;   // 거의 전체면 자르지 않음
+  cx = Math.min(Math.max(cx, w / 2), W - w / 2); cy = Math.min(Math.max(cy, hh / 2), H - hh / 2);
+  return { x: (cx - w / 2) / W, y: (cy - hh / 2) / H, w: w / W, h: hh / H, ch };
+}
+/* 카드 이미지 영역: 크롭이 있으면 잘라서, 없으면 원래대로 */
+function cardIm(it, img) {
+  const c = it.crop;
+  if (!c) return h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it));
+  img.style.cssText = `width:${100 / c.w}%;height:${100 / c.h}%;left:${-100 * c.x / c.w}%;top:${-100 * c.y / c.h}%`;
+  return h("span", { class: "im crop", style: `--ch:${c.ch}` }, img, cardLike(it));
+}
 function loadPoseEngine() {
   if (POSE.eng) return POSE.eng;
   return (POSE.eng = new Promise((ok, bad) => {
@@ -450,7 +483,8 @@ async function runPoseSearch() {
     const st = {};
     if (regIds.length) { try { (await api("/api/images?limit=100&ids=" + regIds.slice(0, 100).join(","))).items.forEach((c) => (st[c.id] = c)); } catch { /* 없으면 생략 */ } }
     ext.forEach((p) => { const id = reg[p.id]; p.rid = id || null; p.likes = id && st[id] ? st[id].likes : 0; p.liked = !!(id && st[id] && st[id].liked); });
-    S.pose = { label: POSE_PARTS.find((p) => p[0] === POSE.part)[1], ids: rr.map((x) => x.photo.reffy), ext, extShown: false };
+    const lm = {}; rr.forEach((x) => (lm[x.photo.reffy] = x.photo.normalizedLandmarks));   // 크롭용 관절 위치
+    S.pose = { label: POSE_PARTS.find((p) => p[0] === POSE.part)[1], part: POSE.part, ids: rr.map((x) => x.photo.reffy), lm, ext, extShown: false };
     fpClose(); reload();
     if (isM()) setFilterOpen(false);
   } catch (e) { toast(e.message); } finally { b.disabled = false; b.textContent = old; }
@@ -469,7 +503,7 @@ function extCard(it) {
       if (!needLogin()) return;
       try { const id = await extId(it); if (S.open === id && !$("#panel").hidden && !isM()) closeDetail(); else openDetail(id); } catch (e) { toast(e.message); }
     } },
-    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
+    cardIm(it, img),
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, it.coco ? "COCO" : "Unsplash")));
 }
 
@@ -544,7 +578,7 @@ function card(it) {
   if (it.ext) return extCard(it);
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
-    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
+    cardIm(it, img),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     h("span", { class: "meta" + (it.liked ? " liked" : "") }, cardAv(it), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "like" }, cardHeart(), h("span", { class: "lk" }, String(it.likes ?? 0)))));
 }
@@ -656,13 +690,15 @@ async function more(first) {
     const d = S.pose && !S.pose.ids.length ? { items: [], total: 0, sort: S.sort || "recent" } : await api("/api/images?" + p);
     if (my !== S.req) return;
     if (first) { MAS.cols = []; MAS.el.clear(); masReset(); }
+    if (S.pose && S.pose.part !== "all") d.items.forEach((it) => { it.crop = poseCrop(S.pose.lm[it.id], it.w, it.h, S.pose.part); });
     S.items.push(...d.items); S.total = d.total;
     masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;
-    if (S.pose) {   // REFFY 사진을 다 보여 준 뒤 pose-search 실사 사진(Unsplash)을 이어 붙임
+    if (S.pose) {   // REFFY 사진을 다 보여 준 뒤 실사 사진(COCO)을 이어 붙임
       const ext = S.pose.ext.map((ph) => { const coco = String(ph.id).startsWith("coco"); const src = coco ? `/api/pose/photo/${ph.id}` : null;
         return { id: "u:" + ph.id, ext: true, coco, pid: ph.id, rid: ph.rid, likes: ph.likes, liked: ph.liked, thumb: src || ph.regular, full: src || ph.full, w: ph.width, h: ph.height,
-          author: coco ? "COCO 2017" : ph.authorName, lic: coco ? ph.authorName : "", user: ph.authorUsername }; });
+          author: coco ? "COCO 2017" : ph.authorName, lic: coco ? ph.authorName : "", user: ph.authorUsername,
+          crop: S.pose.part !== "all" ? poseCrop(ph.normalizedLandmarks, ph.width, ph.height, S.pose.part) : null }; });
       d.total = S.total = d.total + ext.length;
       if (S.done && !S.pose.extShown) { S.pose.extShown = true; S.items.push(...ext); masAdd(ext); }
     }

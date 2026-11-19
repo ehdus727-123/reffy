@@ -2666,3 +2666,7 @@ html:not(.m) .lb-zoom{gap:10px}
 /* 3D 포즈: 확대(+/−) 버튼도 숨김 — 확대·축소는 마우스 휠로 */
 .pose-ed .skeleton .camera-zoom-btn,.pose-ed .skeleton .anchor[style*="top: 60px"]{display:none!important}
 .dp-name span a{color:inherit;text-decoration:underline}
+
+/* 3D 포즈 파츠 검색: 고른 부위만 잘라 보여 주는 카드 */
+.card .im.crop{position:relative;display:block;aspect-ratio:217 / var(--ch);overflow:hidden}
+html #grid .card .im.crop[style*="--ch"] img{position:absolute;max-width:none;max-height:none;object-fit:fill}
