@@ -869,7 +869,11 @@ const FIG_IC = {
   chevL: "M13.9697 5.4697C14.2626 5.1768 14.7374 5.1768 15.0303 5.4697C15.3232 5.7626 15.3232 6.2374 15.0303 6.5303L9.5606 12L15.0303 17.4697C15.3232 17.7626 15.3232 18.2374 15.0303 18.5303C14.7374 18.8232 14.2626 18.8232 13.9697 18.5303L7.9697 12.5303C7.6768 12.2374 7.6768 11.7626 7.9697 11.4697L13.9697 5.4697Z",
   chevR: "M8.9697 5.4697C9.2626 5.1768 9.7373 5.1768 10.0302 5.4697L16.0302 11.4697C16.3231 11.7626 16.3231 12.2374 16.0302 12.5303L10.0302 18.5303C9.7373 18.8232 9.2626 18.8232 8.9697 18.5303C8.6768 18.2374 8.6768 17.7626 8.9697 17.4697L14.4394 12L8.9697 6.5303C8.6768 6.2374 8.6768 5.7626 8.9697 5.4697Z",
 };
-const figIc = (k, size = 24) => { const sp = h("span", { class: "fic" }); sp.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${FIG_IC[k]}" fill="currentColor"/></svg>`; return sp; };
+/* 떠 있는 원형 버튼용 아이콘: Figma 2789:154737 화면처럼 선 굵기 2.5로 그림 (56 상자) */
+const FLOAT_IC = { close: "M12 12L44 44M44 12L12 44", plus: "M28 10V46M10 28H46", minus: "M10 28H46", chevL: "M33.8 14L19.8 28L33.8 42", chevR: "M22.2 14L36.2 28L22.2 42" };
+const figIc = (k, size = 24) => { const sp = h("span", { class: "fic" }); sp.innerHTML = size >= 40 && FLOAT_IC[k]
+  ? `<svg width="${size}" height="${size}" viewBox="0 0 56 56" fill="none" aria-hidden="true"><path d="${FLOAT_IC[k]}" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  : `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${FIG_IC[k]}" fill="currentColor"/></svg>`; return sp; };
 function openLightbox(src, title) {
   let z = 1, x = 0, y = 0, drag = null;
   const img = h("img", { src, alt: title || "레퍼런스 이미지", draggable: "false" });
