@@ -18,3 +18,5 @@ cp dist-lib/style.css <REFFY>/reffy-web/static/pose/pose-engine.css
 ```
 
 `window.RPose` 로 쓰는 기능: `mountEditor(el, {onPart})`, `loadDataset(base)`, `makePhoto(id, normalized, world)`, `search(model, part, photos)`, `searchAll(model, parts, photos)`, `detect(img)`, `setAssetBase(url)`, `PARTS`.
+
+> REFFY 수정: `SkeletonModelCanvas.ts` 의 `render()` 맨 앞에 `if (!renderer) return;` 한 줄을 넣고 빌드했습니다 (마운트 전 호출 오류 방지).

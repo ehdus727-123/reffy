@@ -55,6 +55,8 @@ export type Editor = {
     model: SkeletonModel,
     setPart(key: string | null): void,
     setLandmarks(lm: LM[] | null): void,
+    getPose(): Record<string, { f: number[], u: number[] }>,
+    setPose(p: Record<string, { f: number[], u: number[] }>): void,
     reset(): void,
     destroy(): void,
 };
@@ -77,6 +79,16 @@ export function mountEditor(el: HTMLElement, opts: { onPart?: (key: string) => v
         setPart(key) { const p = PARTS.find(p => p.key === key); state.highlights = p ? p.highlights.slice() : []; },
         setLandmarks(lm) { state.landmarks = lm && lm.length ? lm.slice() : undefined; },
         reset() { state.landmarks = undefined; comp.value?.reset?.(); },
+        getPose() {
+            const out: Record<string, { f: number[], u: number[] }> = {};
+            Object.keys(BodyPart).forEach(n => { const nd = (model as any)[n]; out[n] = {f: Array.from(nd.forward as any), u: Array.from(nd.up as any)}; });
+            return out;
+        },
+        setPose(p) {
+            Object.keys(BodyPart).forEach(n => { const nd = (model as any)[n]; if (p && p[n]) { nd.forward = p[n].f.slice(); nd.up = p[n].u.slice(); } });
+            model.update(camera.camera);
+            state.highlights = state.highlights.slice();   // 다시 그리기
+        },
         destroy() { app.unmount(); },
     };
 }

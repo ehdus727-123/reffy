@@ -264,7 +264,7 @@ document.addEventListener("pointerdown", (e) => {
 }, true);
 document.addEventListener("click", (e) => { if (FP.eat) { FP.eat = false; e.stopPropagation(); e.preventDefault(); } }, true);
 $("#apply").onclick = () => {
-  if (curTab === "pose") { toast("3D 포즈 검색은 준비 중이에요"); return; }
+  if (curTab === "pose") { runPoseSearch(); return; }
   // 무드 탭: 저장하지 않아도 지금 고른 색을 바로 적용(위 색상 칩에 더함). 현재 팔레트(저장 전용)는 그대로
   let newColor = null;
   if (curTab === "color" && !$("#cpanel").hidden) { const c = hsv2hex(CP.h, CP.s, CP.v); if (!S.colors.includes(c)) { S.colors = [...S.colors, c].slice(-5); newColor = c; } CP.dirty = false; }
@@ -272,7 +272,7 @@ $("#apply").onclick = () => {
   S.applied = [...S.picked]; S.kinds = [...(S.pickedKind || [])]; if (newColor) rememberPal([newColor]); if (!$("#cpanel").hidden) drawColorPanel(); reload();
   if (isM()) setFilterOpen(false);
 };
-$("#reset").onclick = () => { S.picked.clear(); S.applied = []; S.pickedKind = new Set(); S.kinds = []; S.colors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
+$("#reset").onclick = () => { S.pose = null; S.picked.clear(); S.applied = []; S.pickedKind = new Set(); S.kinds = []; S.colors = []; drawColorPanel(); S.q = ""; $("#q").value = ""; drawGroups(); reload(); };
 const isTablet = () => !isM() && LAYOUT !== "pc" && innerWidth >= 768 && innerWidth < 1200;
 /* 태블릿: 딤(빈 곳)을 누르면 드로어를 닫는다 */
 $("#layout").addEventListener("click", (e) => { if (e.target !== e.currentTarget || !isTablet()) return; if (!$("#panel").hidden) closeDetail(); else setFilterOpen(false); });
@@ -360,16 +360,104 @@ function showTab(t) {
 $("#tabTag").onclick = () => showTab("tag");
 $("#tabPose").onclick = () => showTab("pose");
 $("#tabColor").onclick = () => showTab("color");
-/* 3D 포즈 (HOM_0202): 화면만 있고 검색은 아직 준비 중 */
+/* 3D 포즈 (HOM_0202) — pose-search(MIT, github.com/x6ud/pose-search) 엔진.
+   마네킹 관절을 끌어 자세를 만들고 '포즈 적용하기'를 누르면 비슷한 자세의 '사진'만 찾는다 (실사용이라 일러스트는 보여 주지 않음).
+   결과: REFFY 사진 게시물 + pose-search 실사 데이터(Unsplash) */
+const POSE = { ed: null, eng: null, part: "all", free: false, ds: null, built: false };
+const POSE_PARTS = [["all", "전체 자세"], ["Face", "얼굴"], ["Chest", "가슴"], ["Crotch", "골반"], ["Left Shoulder", "왼쪽 어깨"], ["Right Shoulder", "오른쪽 어깨"], ["Left Elbow", "왼쪽 팔꿈치"], ["Right Elbow", "오른쪽 팔꿈치"], ["Left Hip", "왼쪽 고관절"], ["Right Hip", "오른쪽 고관절"], ["Left Knee", "왼쪽 무릎"], ["Right Knee", "오른쪽 무릎"]];
+const POSE_KEYS = POSE_PARTS.slice(1).map((p) => p[0]);
+function loadPoseEngine() {
+  if (POSE.eng) return POSE.eng;
+  return (POSE.eng = new Promise((ok, bad) => {
+    if (window.RPose) return ok(window.RPose);
+    document.head.append(h("link", { rel: "stylesheet", href: "pose/pose-engine.css?v=1" }));
+    const sc = h("script", { src: "pose/pose-engine.js?v=1" });
+    sc.onload = () => (window.RPose ? ok(window.RPose) : bad(new Error("3D 포즈 엔진을 불러오지 못했어요")));
+    sc.onerror = () => { POSE.eng = null; bad(new Error("3D 포즈 엔진을 불러오지 못했어요")); };
+    document.head.append(sc);
+  }));
+}
+const poseSaved = () => store.get("reffy.poses", []);
 function drawPosePanel() {
-  const vbtn = (l) => h("button", { class: "pill sm", type: "button", onclick: () => toast("3D 포즈 조작은 준비 중이에요") }, l);
-  $("#ppanel").replaceChildren(
-    h("div", { class: "pose-vp", role: "img", "aria-label": "3D 포즈 뷰포트 (준비 중)" }, icon("person", 72), h("div", { class: "pose-ctl" }, vbtn("회전"), vbtn("확대"), vbtn("시점 초기화"))),
-    h("p", { class: "pose-hint" }, "관절을 드래그하거나 신체 파츠를 눌러 포즈를 만드세요"),
-    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "신체 파츠"), h("button", { class: "linkbtn", type: "button", onclick: () => toast("준비 중이에요") }, "전체 보기")),
-      h("div", { class: "pose-parts" }, ["머리", "몸통", "팔", "다리"].map((p) => h("button", { type: "button", onclick: () => toast("준비 중이에요") }, h("span", { class: "ph" }), p)))),
-    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: () => toast("준비 중이에요") }, "전체 보기")),
-      h("p", { class: "hint" }, "저장한 포즈가 없어요.")));
+  const pp = $("#ppanel");
+  if (POSE.built) { drawPoseParts(); drawPoseSaved(); return; }
+  POSE.built = true;
+  const vp = h("div", { class: "pose-vp", role: "application", "aria-label": "3D 포즈 마네킹 — 관절 핀을 끌어 자세를 바꿔요" }, h("span", { class: "sk pose-load" }));
+  const resetB = h("button", { class: "pill sm", type: "button", onclick: () => { if (POSE.ed) { POSE.ed.reset(); toast("마네킹 자세를 처음으로 돌렸어요"); } } }, "포즈 초기화");
+  const freeSw = h("label", { class: "pose-free" }, h("input", { type: "checkbox", class: "cbx", onchange: (e) => (POSE.free = e.target.checked) }), h("span", {}, "보는 각도는 상관없이 찾기"));
+  pp.replaceChildren(
+    h("div", { class: "pose-vpw" }, vp, h("div", { class: "pose-ctl" }, resetB)),
+    h("p", { class: "pose-hint" }, "관절 핀을 끌어 자세를 만들고, 비교할 부위를 고른 뒤 ‘포즈 적용하기’를 누르세요. 실사 사진에서만 찾아요."),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "비교할 부위")), h("div", { class: "pose-chips", id: "poseParts" }), freeSw),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: savePose }, "지금 포즈 저장")), h("div", { class: "pose-chips", id: "poseSaved" })),
+    h("p", { class: "pose-credit" }, "3D 포즈 검색: ", h("a", { href: "https://github.com/x6ud/pose-search", target: "_blank", rel: "noopener" }, "pose-search"), " (MIT) · 실사 사진: ", h("a", { href: "https://unsplash.com/?utm_source=reffy&utm_medium=referral", target: "_blank", rel: "noopener" }, "Unsplash")));
+  drawPoseParts(); drawPoseSaved();
+  loadPoseEngine().then((R) => requestAnimationFrame(() => {
+    vp.replaceChildren(); const box = h("div", { class: "pose-ed" }); vp.append(box);
+    POSE.ed = R.mountEditor(box, { onPart: (k) => { POSE.part = k; drawPoseParts(); } });
+    POSE.ed.setPart(POSE.part === "all" ? null : POSE.part);
+    if (POSE.pending) { POSE.ed.setLandmarks(POSE.pending); POSE.pending = null; }
+  })).catch((e) => { vp.replaceChildren(h("p", { class: "pose-err" }, e.message)); });
+}
+function drawPoseParts() {
+  const box = $("#poseParts"); if (!box) return;
+  box.replaceChildren(...POSE_PARTS.map(([k, l]) => h("button", { class: "pill sm" + (POSE.part === k ? " on" : ""), type: "button", "aria-pressed": String(POSE.part === k), onclick: () => { POSE.part = k; if (POSE.ed) POSE.ed.setPart(k === "all" ? null : k); drawPoseParts(); } }, l)));
+  if (POSE.ed) POSE.ed.setPart(POSE.part === "all" ? null : POSE.part);
+}
+function drawPoseSaved() {
+  const box = $("#poseSaved"); if (!box) return;
+  const list = poseSaved();
+  if (!list.length) return box.replaceChildren(h("p", { class: "hint" }, "저장한 포즈가 없어요."));
+  box.replaceChildren(...list.map((p, i) => h("span", { class: "pill sm pose-sv" },
+    h("button", { type: "button", onclick: () => { if (!POSE.ed) return; POSE.ed.setPose(p.pose); toast(`‘${p.name}’ 포즈를 불러왔어요`); } }, p.name),
+    h("button", { type: "button", class: "x", "aria-label": `${p.name} 지우기`, onclick: () => { store.set("reffy.poses", poseSaved().filter((_, j) => j !== i)); drawPoseSaved(); } }, "✕"))));
+}
+function savePose() {
+  if (!POSE.ed) return toast("마네킹을 불러오는 중이에요");
+  const list = poseSaved(); const n = list.length + 1;
+  store.set("reffy.poses", [...list, { name: `포즈 ${n}`, pose: POSE.ed.getPose() }].slice(-12));
+  drawPoseSaved(); toast(`‘포즈 ${n}’으로 저장했어요`);
+}
+/* REFFY 사진 게시물 중 아직 관절을 안 뽑은 것을 몇 장씩 채워 넣음 (로그인한 브라우저에서, 사진만) */
+async function poseFill(max = 8, onlyIds) {
+  if (!ME || POSE.filling) return; POSE.filling = true;
+  try {
+    const R = await loadPoseEngine();
+    const list = onlyIds ? onlyIds.map((id) => ({ id, src: `/img/${id}` })) : (await api(`/api/pose/missing?limit=${max}`)).items;
+    for (const it of list) {
+      const img = new Image(); img.crossOrigin = "anonymous"; img.src = it.src;
+      try { await img.decode(); } catch { continue; }
+      let r = null; try { r = await R.detect(img); } catch { r = null; }
+      const lm = r && r.normalized.length === 33 ? r.normalized.flatMap((n, i) => [n.point[0], n.point[1], n.point[2], r.world[i].point[0], r.world[i].point[1], r.world[i].point[2], n.visibility]) : null;
+      await api(`/api/images/${it.id}/pose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lm }) }).catch(() => {});
+    }
+  } catch { /* 다음에 다시 */ } finally { POSE.filling = false; }
+}
+/* '포즈 적용하기': 지금 마네킹 자세와 비슷한 사진을 찾아 피드에 보여 줌 */
+async function runPoseSearch() {
+  if (!POSE.ed) return toast("마네킹을 불러오는 중이에요");
+  const b = $("#apply"); b.disabled = true; const old = b.textContent; b.textContent = "포즈 찾는 중…";
+  try {
+    const R = await loadPoseEngine();
+    await poseFill(10);
+    if (!POSE.ds) POSE.ds = await R.loadDataset("pose/");
+    const idx = (await api("/api/pose/index")).items.filter((x) => x.kind === "photo");
+    const mine = idx.map((x) => { const n = [], w = []; for (let k = 0; k < 33; k++) { const o = k * 7; n.push({ point: [x.lm[o], x.lm[o + 1], x.lm[o + 2]], visibility: x.lm[o + 6] }); w.push({ point: [x.lm[o + 3], x.lm[o + 4], x.lm[o + 5]], visibility: x.lm[o + 6] }); } return R.makePhoto("r" + x.id, n, w, { reffy: x.id }); });
+    const run = (list) => POSE.part === "all" ? R.searchAll(POSE.ed.model, POSE_KEYS, list, { cameraFree: POSE.free, limit: 120 }) : R.search(POSE.ed.model, POSE.part, list, { cameraFree: POSE.free, limit: 120 });
+    const rr = mine.length ? run(mine) : [];
+    const ext = run(POSE.ds).map((x) => x.photo).filter((p) => p.regular);
+    S.pose = { label: POSE_PARTS.find((p) => p[0] === POSE.part)[1], ids: rr.map((x) => x.photo.reffy), ext, extShown: false };
+    fpClose(); reload();
+    if (isM()) setFilterOpen(false);
+  } catch (e) { toast(e.message); } finally { b.disabled = false; b.textContent = old; }
+}
+/* pose-search 실사 사진 카드 (Unsplash: 작가 표시 · 누르면 크게 보기) */
+function extCard(it) {
+  const img = h("img", { src: it.thumb, alt: `${it.author}의 사진 (Unsplash)`, loading: "lazy", width: it.w || null, height: it.h || null, referrerpolicy: "no-referrer" });
+  return h("button", { class: "card ext", type: "button", "data-id": it.id, "aria-label": `실사 포즈 사진 · ${it.author} (Unsplash)`,
+    onclick: () => openLightbox(it.full, `${it.author}의 사진`, { name: it.author, user: it.user, pid: it.pid }) },
+    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img),
+    h("span", { class: "meta" }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, "Unsplash")));
 }
 
 /* ---------------------------------------------------------------- 검색창 */
@@ -440,6 +528,7 @@ function cardH(it) {
 /* 카드 아래 프로필: 올린 사람의 프로필 사진이 있으면 그 사진, 없으면 회색 원 */
 const cardAv = (it, cls = "av", txt) => h("span", { class: cls + (it.avatar ? " has" : "") }, it.avatar ? h("img", { src: it.avatar, alt: "", loading: "lazy" }) : (txt || null));
 function card(it) {
+  if (it.ext) return extCard(it);
   const img = h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null });
   return h("button", { class: "card" + (S.open === it.id ? " sel" : ""), type: "button", "data-id": it.id, title: it.title || "", "aria-label": (it.title || "레퍼런스 이미지") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
@@ -548,13 +637,19 @@ async function more(first) {
   if (S.sort) p.set("sort", S.sort);
   if (S.colors.length) p.set("color", S.colors.join(","));
   if ((S.kinds || []).length) p.set("kind", S.kinds.join(","));
+  if (S.pose) p.set("ids", S.pose.ids.join(",") || "0");
   try {
-    const d = await api("/api/images?" + p);
+    const d = S.pose && !S.pose.ids.length ? { items: [], total: 0, sort: S.sort || "recent" } : await api("/api/images?" + p);
     if (my !== S.req) return;
     if (first) { MAS.cols = []; MAS.el.clear(); masReset(); }
     S.items.push(...d.items); S.total = d.total;
     masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;
+    if (S.pose) {   // REFFY 사진을 다 보여 준 뒤 pose-search 실사 사진(Unsplash)을 이어 붙임
+      const ext = S.pose.ext.map((ph) => ({ id: "u:" + ph.id, ext: true, pid: ph.id, thumb: ph.regular, full: ph.full, w: ph.width, h: ph.height, author: ph.authorName, user: ph.authorUsername }));
+      d.total = S.total = d.total + ext.length;
+      if (S.done && !S.pose.extShown) { S.pose.extShown = true; S.items.push(...ext); masAdd(ext); }
+    }
     drawBar(d);
     if (first && d.total === 0) drawZero();
   } catch (e) {
@@ -565,12 +660,12 @@ async function more(first) {
 /* 검색 결과 0개 (HOM_0501 빈 상태): 추천 키워드 · 추천 레퍼런스 */
 async function drawZero() {
   const z = $("#zero"); z.hidden = false;
-  const any = S.q || S.applied.length || S.colors.length || (S.kinds || []).length;
+  const any = S.q || S.pose || S.applied.length || S.colors.length || (S.kinds || []).length;
   const kw = h("div", { class: "z-kw" }), rec = h("div", { class: "z-rec" });
   z.replaceChildren(
     h("div", { class: "z-empty" }, h("span", { class: "z-ic" }, icon("search", 40)),
       h("div", { class: "z-tx" }, h("h2", {}, any ? "검색 결과가 없어요" : "아직 레퍼런스가 없어요"), h("p", {}, any ? "다른 키워드로 검색하거나 필터를 바꿔 보세요" : "첫 레퍼런스를 올려 보세요")),
-      any ? h("button", { class: "btn m", type: "button", onclick: () => { S.q = ""; qEl.value = ""; S.applied = []; S.picked = new Set(); S.kinds = []; S.pickedKind = new Set(); S.colors = []; drawGroups(); reload(); } }, "피드 둘러보기")
+      any ? h("button", { class: "btn m", type: "button", onclick: () => { S.pose = null; S.q = ""; qEl.value = ""; S.applied = []; S.picked = new Set(); S.kinds = []; S.pickedKind = new Set(); S.colors = []; drawGroups(); reload(); } }, "피드 둘러보기")
         : h("button", { class: "btn m", type: "button", onclick: () => openUpload() }, "+ 업로드"), kw),
     rec);
   try {
@@ -590,11 +685,12 @@ function drawBar(d) {
   const hasQ = !!S.q;
   mobileBar(hasQ);
   $("#qClear").hidden = !qEl.value;
-  const t = $("#resultTitle"); t.textContent = isM() ? "검색 결과" : hasQ ? `“${S.q}”` : (S.applied.length || S.colors.length || (S.kinds || []).length ? "검색 결과" : "레퍼런스"); t.className = hasQ ? "q" : "";
+  const t = $("#resultTitle"); t.textContent = isM() ? "검색 결과" : hasQ ? `“${S.q}”` : S.pose ? "3D 포즈 검색 결과" : (S.applied.length || S.colors.length || (S.kinds || []).length ? "검색 결과" : "레퍼런스"); t.className = hasQ ? "q" : "";
   $("#count").textContent = `${S.total.toLocaleString()}개`;
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
   const seen = new Set();
+  if (S.pose) chips.append(h("span", { class: "chip dark" }, `3D 포즈 · ${S.pose.label}`, h("button", { type: "button", "aria-label": "3D 포즈 검색 지우기", onclick: () => { S.pose = null; reload(); } }, isM() ? "✕" : chipX())));
   if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, isM() ? "✕" : chipX())));
   S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k, short: S.labels[k]?.short || S.labels[k]?.label || k })).forEach((m) => {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
@@ -675,9 +771,18 @@ function materialsSec(d) {
 async function pullPose() {
   if (!(await (isM() ? confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" })
     : confirmDialog("해당 이미지의 구도를 ‘3D 포즈’에\n덮어 씌우겠습니까?", "이미지에서 뽑은 관절 핀이 3D 모델 포즈로 바뀌어요.", { fig: true, no: "아니오", yes: "예" })))) return;
+  const id = S.open;
   if (isM() && !$("#panel").hidden) closeDetail();
   setFilterOpen(true); showTab("pose");
-  toast("3D 포즈 검색은 준비 중이에요. 구도를 보고 포즈를 만들어 보세요");
+  toast("이미지에서 자세를 읽는 중이에요…");
+  try {
+    const R = await loadPoseEngine();
+    const img = new Image(); img.crossOrigin = "anonymous"; img.src = `/img/${id}`; await img.decode();
+    const r = await R.detect(img);
+    if (!r || r.world.filter((x) => x.visibility > 0.4).length < 8) return toast("이 이미지에서 사람 자세를 찾지 못했어요. 마네킹을 직접 움직여 보세요.");
+    if (POSE.ed) POSE.ed.setLandmarks(r.world); else POSE.pending = r.world;
+    toast("이미지 구도를 마네킹에 옮겼어요. ‘포즈 적용하기’로 비슷한 사진을 찾아보세요.");
+  } catch (e) { toast(e.message || "자세를 읽지 못했어요"); }
 }
 /* 게시물 수정 (MYP_0200 수정 모드): 제목 · 사용 소재 · 공개 설정. 태그는 상세 화면의 ‘태그 수정’에서 */
 function editPost(d, after) {
@@ -878,7 +983,7 @@ const FLOAT_IC = {
 const figIc = (k, size = 24) => { const sp = h("span", { class: "fic" + (size >= 40 ? " f80" : "") }); sp.innerHTML = size >= 40 && FLOAT_IC[k]
   ? `<svg width="64" height="64" viewBox="0 0 80 80" fill="none" aria-hidden="true"><path d="${FLOAT_IC[k]}" fill="currentColor"/></svg>`
   : `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${FIG_IC[k]}" fill="currentColor"/></svg>`; return sp; };
-function openLightbox(src, title) {
+function openLightbox(src, title, credit) {
   let z = 1, x = 0, y = 0, drag = null;
   const img = h("img", { src, alt: title || "레퍼런스 이미지", draggable: "false" });
   const stage = h("div", { class: "lb-stage" }, img);
@@ -891,7 +996,8 @@ function openLightbox(src, title) {
   const m = h("div", { class: "modal lightbox", role: "dialog", "aria-modal": "true", "aria-label": "이미지 크게 보기",
     onclick: (e) => { if (e.target === m || e.target === stage) close(); } },
     h("button", { class: "lb-close", type: "button", "aria-label": "닫기", onclick: close }, isM() ? icon("close", 28) : figIc("close", 56)),
-    stage, h("div", { class: "lb-zoom" }, plus, minus));
+    stage, h("div", { class: "lb-zoom" }, plus, minus),
+    credit ? h("p", { class: "lb-credit" }, "Photo by ", h("a", { href: `https://unsplash.com/@${credit.user}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, credit.name), " on ", h("a", { href: `https://unsplash.com/photos/${credit.pid}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, "Unsplash")) : null);
   img.addEventListener("dblclick", (e) => { e.stopPropagation(); zoomTo(z > 1 ? 1 : 2); });
   stage.addEventListener("wheel", (e) => { e.preventDefault(); zoomTo(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)); }, { passive: false });
   img.addEventListener("pointerdown", (e) => { if (z <= 1) return; drag = { sx: e.clientX - x, sy: e.clientY - y, moved: false }; img.setPointerCapture(e.pointerId); });
@@ -1008,6 +1114,7 @@ async function publish() {
   const b = $("#pub"); b.disabled = true; b.textContent = "게시하는 중…";
   try {
     const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: up.token, title: up.title || "", kind: up.kind || "illust", tags: [...up.tags.keys()], materials: up.materials || [], tools: up.tools || [], private: !!up.private }) });
+    if ((up.kind || "illust") === "photo") poseFill(1, [r.id]);   // 사진이면 3D 포즈 검색용 관절을 뽑아 둠
     store.set("reffy.draft", null); closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
   } catch (e) { b.disabled = false; b.textContent = isM() ? "등록" : "게시하기"; toast(e.message); }
 }
@@ -1129,10 +1236,13 @@ async function puPublish() {
   const b = $("#pPub"); b.disabled = true; b.textContent = "등록 중…";
   const ready = pu.items.filter((it) => it.token);
   try {
+    const made = [];
     for (const it of ready) {
-      await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" },
+      const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: it.token, title: pu.title || "", kind: pu.kind, tags: [...it.tags.keys()], materials: pu.materials, tools: pu.tools || [], private: !!pu.private }) });
+      if (r && r.id) made.push(r.id);
     }
+    if (pu.kind === "photo" && made.length) poseFill(made.length, made);   // 사진이면 3D 포즈 검색용 관절을 뽑아 둠
     store.set("reffy.draft", null); await puClose(true); toast("게시물을 등록했어요");
     loadVocab().catch(() => {});
     if (location.hash.startsWith("#/me") || location.hash.startsWith("#/u/")) route(); else reload();
