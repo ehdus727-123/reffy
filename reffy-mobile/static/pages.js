@@ -91,7 +91,7 @@ function pcard(it, o = {}) {
     h("span", { class: "im" }, h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지", loading: "lazy", width: it.w || null, height: it.h || null })), h("span", { class: "ck" }),
     it.private ? h("span", { class: "prv" }, "비공개") : null,
     isM() ? h("span", { class: "meta" + (it.liked ? " liked" : "") }, cardAv(it), h("span", { class: "tx" }, h("b", {}, it.author)), it.likes != null ? h("span", { class: "like" }, icon("heart", 16), h("span", { class: "lk" }, String(it.likes))) : null)
-    : h("span", { class: "meta" }, cardAv(it, "av", (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, h("b", {}, it.title || "제목 없음"), h("span", {}, it.author)),
+    : h("span", { class: "meta" }, cardAv(it, "av", (it.author || "?").slice(0, 1)), h("span", { class: "tx" }, it.unsplash ? null : h("b", {}, it.title || "제목 없음"), h("span", {}, it.unsplash ? `${it.author} · Unsplash` : it.author)),
       o.more ? h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); o.more(e.currentTarget, it); } }, moreIc()) : o.noMore ? null : moreIc()));
   return el;
 }

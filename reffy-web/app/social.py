@@ -187,9 +187,12 @@ def with_likes(items: list, viewer: Optional[dict] = None) -> list:
     mine = {r["image_id"] for r in db.rows(f"SELECT image_id FROM likes WHERE user_id = :u AND image_id IN ({ph})", u=viewer["id"], **p)} if viewer else set()
     # 올린 사람의 지금 닉네임 · 프로필 사진 (프로필을 바꾸면 카드에도 바로 반영)
     who = {r["id"]: r for r in db.rows(f"SELECT i.id, u.uid, u.nick, u.avatar FROM images i JOIN users u ON u.id = i.user_id WHERE i.id IN ({ph})", **p)}
+    ext = {r["id"] for r in db.rows(f"SELECT id FROM images WHERE id IN ({ph}) AND file LIKE 'ext:%'", **p)}   # 3D 포즈 실사(Unsplash)
     for c in items:
         c["likes"] = lk.get(c["id"], 0)
         c["liked"] = c["id"] in mine
+        if c["id"] in ext:
+            c["unsplash"] = True
         w = who.get(c["id"])
         if w:
             c["author"] = w["nick"]

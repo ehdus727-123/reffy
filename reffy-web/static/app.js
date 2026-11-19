@@ -939,7 +939,7 @@ function drawDetail(d, edit = false) {
         h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, dpSvg("close", 36))),
       h("div", { class: "dp-fab" },
         h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, dpSvg("pose", 28)),
-        h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, dpSvg("palette", 28)),
+        d.ext ? null : h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, dpSvg("palette", 28)),   // 실사(Unsplash)는 색 추출 없음
         h("button", { type: "button", class: "dp-fb add" + (so.kept ? " on" : ""), "aria-pressed": String(!!so.kept), "aria-label": so.kept ? "킵 해제" : "킵에 담기", title: so.kept ? "킵 해제" : "킵에 담기", onclick: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) }, so.kept ? dpSvg("check", 28) : dpSvg("plus", 28)))),
     h("div", { class: "dp-info" },
       h("div", { class: "dp-head" },
@@ -948,7 +948,7 @@ function drawDetail(d, edit = false) {
               h("span", {}, "Photo on ", h("a", { href: `https://unsplash.com/photos/${d.ext.pid}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, "Unsplash")))
             : h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
           o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
-        h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),
+        d.ext ? null : h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),   // 실사(Unsplash)는 제목 없이
       h("div", { class: "dp-acts" },
         h("div", { class: "dp-react" },
           h("button", { class: "dp-st" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, dpSvg(so.liked ? "heart:f" : "heart", 20), String(so.likes)),
