@@ -916,7 +916,7 @@ async function postModal(id, onChange, list, swap) {
     if (!(await confirmDialog("게시물을 삭제할까요?", "삭제한 게시물은 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소", danger: true }))) return;
     try { await api("/api/images/" + d.id, { method: "DELETE" }); m.remove(); toast("게시물을 삭제했어요"); if (onChange) onChange(); reload(); } catch (e) { toast(e.message); }
   };
-  let allMats = false, allCmts = false;
+  let allMats = false, allCmts = false, replyTo = null;   // replyTo: 답글을 달 댓글
   function draw() {
     const so = d.so, o = so.owner || {};
     /* 케밥(Figma COM_0102 2967:79984): 내 게시물은 수정 · 삭제, 다른 사람 게시물은 올린 사람 차단 · 신고 (북 · 킵은 아래 버튼에) */
@@ -927,9 +927,21 @@ async function postModal(id, onChange, list, swap) {
     const tags = (d.tags || []).filter((t) => t.active);
     const mats = d.materials || [];
     const cin = h("input", { class: "pm-cin", maxlength: "500", placeholder: "댓글을 작성해보세요.", "aria-label": "댓글 입력" });
-    const send = () => { const v = cin.value.trim(); if (v) act("POST", `/api/images/${d.id}/comments`, { body: v }); };
+    if (replyTo) cin.placeholder = `${replyTo.nick}님에게 답글을 남겨 보세요.`;
+    const send = async () => { const v = cin.value.trim(); if (!v) return; const parent = replyTo ? replyTo.id : null; replyTo = null; await act("POST", `/api/images/${d.id}/comments`, parent ? { body: v, parent } : { body: v }); };
     cin.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
     const cmts = so.comments || [];
+    /* 댓글 · 답글 (Figma 2789:154024): 아바타 30 · 닉네임 · 내용 · 더보기 / 아래 '시간 · 답글 쓰기'. 답글은 원래 댓글 아래로 들여서 */
+    const tops = cmts.filter((c) => !c.parent), reps = new Map();
+    cmts.filter((c) => c.parent).forEach((c) => { if (!reps.has(c.parent)) reps.set(c.parent, []); reps.get(c.parent).push(c); });
+    const cItem = (c, isRep) => h("div", { class: "pm-c" + (isRep ? " rep" : "") },
+      h("div", { class: "pm-crow" }, avatarEl({ nick: c.nick, avatar: c.avatar }, isRep ? 24 : 30),
+        h("div", { class: "pm-ctx" }, h("b", {}, c.nick), h("p", {}, c.body)),
+        h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
+          ? [{ ic: "trash", label: isRep ? "답글 삭제" : "댓글 삭제", danger: true, fn: () => act("DELETE", `/api/comments/${c.id}`) }]
+          : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 24))),
+      h("div", { class: "pm-cmeta" }, h("span", {}, ago(c.created)),
+        h("button", { type: "button", class: "pm-reply", onclick: () => { if (!needLogin()) return; replyTo = { id: c.parent || c.id, nick: c.nick }; draw(); right.querySelector(".pm-cin")?.focus(); } }, "답글 쓰기")));
     const top = right.scrollTop;
     const put = (...k) => right.replaceChildren(...k.filter((x) => x != null && x !== false));
     /* Figma MyPage/PostModal 2789:154452: 사용자 · 닫기 / 제목 / 하트 · 댓글 · 공유 · 더보기 / 구분선 / 사용 툴 · 사용 소재 · 태그 · 댓글 */
@@ -951,14 +963,9 @@ async function postModal(id, onChange, list, swap) {
       tags.length ? h("section", { class: "pm-sec pm-tagsec" }, h("h3", {}, "태그"), h("div", { class: "pm-tags" }, kindTag ? kindTag(d) : null, tags.map((t) => h("span", { class: "pm-tag" }, "#" + t.label)))) : null,
       h("section", { class: "pm-sec pm-cmts" }, h("h3", {}, `댓글 ${cmts.length}`),
         h("div", { class: "pm-cbox" }, cin, h("button", { class: "pm-send", type: "button", "aria-label": "댓글 등록", onclick: send }, icon("send", 20))),
-        cmts.length ? h("div", { class: "pm-clist" }, cmts.slice(0, allCmts ? cmts.length : 5).map((c) => h("div", { class: "pm-c" },
-          h("div", { class: "pm-crow" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 30),
-            h("div", { class: "pm-ctx" }, h("b", {}, c.nick), h("p", {}, c.body)),
-            h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
-              ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act("DELETE", `/api/comments/${c.id}`) }]
-              : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 24))),
-          h("div", { class: "pm-cmeta" }, h("span", {}, ago(c.created)))))) : null,
-        cmts.length > 5 && !allCmts ? h("button", { class: "pm-more", type: "button", onclick: () => { allCmts = true; draw(); } }, `댓글 ${cmts.length}개 모두 보기`) : null));
+        replyTo ? h("div", { class: "pm-rto" }, h("span", {}, `${replyTo.nick}님에게 답글 다는 중`), h("button", { type: "button", onclick: () => { replyTo = null; draw(); } }, "취소")) : null,
+        tops.length ? h("div", { class: "pm-clist" }, tops.slice(0, allCmts ? tops.length : 5).map((c) => h("div", { class: "pm-thread" }, cItem(c, false), ...(reps.get(c.id) || []).map((r) => cItem(r, true))))) : null,
+        tops.length > 5 && !allCmts ? h("button", { class: "pm-more", type: "button", onclick: () => { allCmts = true; draw(); } }, `댓글 ${tops.length}개 모두 보기`) : null));
     /* 이미지 위 플로팅 버튼 (Figma 2789:154677): 3D 포즈 · 팔레트 · + (북에 저장 · 킵에 담기) */
     const home = (fn) => { m.remove(); if ((location.hash || "#/") !== "#/") { location.hash = "#/"; setTimeout(fn, 400); } else fn(); };
     fab.replaceChildren(

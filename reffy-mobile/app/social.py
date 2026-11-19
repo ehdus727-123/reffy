@@ -279,13 +279,13 @@ def social(image_id: int, request: Request):
         if o:
             owner = {"uid": o[0]["uid"], "nick": o[0]["nick"], "avatar": _avatar_url(o[0]["uid"], o[0]["avatar"]), "me": o[0]["id"] == uid,
                      "following": bool(db.rows("SELECT 1 AS x FROM follows WHERE follower_id=:a AND followee_id=:b", a=uid, b=o[0]["id"]))}
-    cm = db.rows("SELECT c.id, c.body, c.created_at, c.user_id, u.nick FROM comments c JOIN users u ON u.id = c.user_id WHERE c.image_id = :i ORDER BY c.id", i=image_id)
+    cm = db.rows("SELECT c.id, c.body, c.created_at, c.user_id, c.parent_id, u.nick, u.uid, u.avatar FROM comments c JOIN users u ON u.id = c.user_id WHERE c.image_id = :i ORDER BY c.id", i=image_id)
     is_ext = bool(db.rows("SELECT 1 AS x FROM images WHERE id = :i AND file LIKE 'ext:%'", i=image_id))   # 3D 포즈 실사(Unsplash)는 누구도 수정 · 삭제 못 함
     return {"owner": owner, "editable": (not is_ext and bool(u) and (img["user_id"] is None or img["user_id"] == uid)) or is_admin(request), "admin": is_admin(request),
             "likes": db.rows("SELECT COUNT(*) AS n FROM likes WHERE image_id=:i", i=image_id)[0]["n"],
             "liked": bool(db.rows("SELECT 1 AS x FROM likes WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),
             "kept": bool(db.rows("SELECT 1 AS x FROM keeps WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),
-            "comments": [{"id": c["id"], "nick": c["nick"], "body": c["body"], "mine": c["user_id"] == uid,
+            "comments": [{"id": c["id"], "nick": c["nick"], "uid": c["uid"], "avatar": _avatar_url(c["uid"], c["avatar"]), "parent": c["parent_id"], "body": c["body"], "mine": c["user_id"] == uid,
                           "created": c["created_at"].isoformat() if hasattr(c["created_at"], "isoformat") else str(c["created_at"])} for c in cm]}
 
 
@@ -310,6 +310,7 @@ def unlike(image_id: int, request: Request):
 
 class CommentIn(BaseModel):
     body: str
+    parent: Optional[int] = None   # 답글이면 원래 댓글 번호
 
 
 @router.post("/images/{image_id}/comments")
@@ -318,9 +319,17 @@ def add_comment(image_id: int, body: CommentIn, request: Request):
     b = body.body.strip()
     if not b:
         raise HTTPException(400, "댓글 내용을 입력해 주세요.")
+    parent, parent_user = None, None
+    if body.parent:   # 답글은 한 단계만: 답글에 단 답글은 원래 댓글 아래로
+        pr = db.rows("SELECT id, user_id, parent_id FROM comments WHERE id = :c AND image_id = :i", c=body.parent, i=image_id)
+        if not pr:
+            raise HTTPException(404, "답글을 달 댓글을 찾을 수 없어요.")
+        parent, parent_user = pr[0]["parent_id"] or pr[0]["id"], pr[0]["user_id"]
     with db.engine.begin() as c:
-        c.execute(db.comments.insert().values(image_id=image_id, user_id=u["id"], body=b[:500]))
+        c.execute(db.comments.insert().values(image_id=image_id, user_id=u["id"], body=b[:500], parent_id=parent))
     _notify(img["user_id"], u["id"], "comment", image_id, b)
+    if parent_user and parent_user != img["user_id"]:
+        _notify(parent_user, u["id"], "comment", image_id, b)
     return {"ok": True}
 
 
@@ -328,7 +337,9 @@ def add_comment(image_id: int, body: CommentIn, request: Request):
 def del_comment(cid: int, request: Request):
     u = need(request)
     with db.engine.begin() as c:
-        c.execute(text("DELETE FROM comments WHERE id=:c AND user_id=:u"), {"c": cid, "u": u["id"]})
+        n = c.execute(text("DELETE FROM comments WHERE id=:c AND user_id=:u"), {"c": cid, "u": u["id"]}).rowcount
+        if n:   # 댓글을 지우면 그 아래 답글도 함께
+            c.execute(text("DELETE FROM comments WHERE parent_id=:c"), {"c": cid})
     return {"ok": True}
 
 

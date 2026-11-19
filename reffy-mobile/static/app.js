@@ -925,7 +925,7 @@ function drawDetail(d, edit = false) {
   const box = h("div", { class: "pick" });
   const o = so.owner;
   const comment = h("input", { class: "cin", maxlength: "500", placeholder: ME ? "댓글을 남겨 보세요" : "로그인하고 댓글을 남겨 보세요", "aria-label": "댓글 입력" });
-  const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
+  const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (!v) return; const r = S.replyTo && S.replyTo.img === d.id ? S.replyTo.id : null; S.replyTo = null; act(d, "POST", `/api/images/${d.id}/comments`, r ? { body: v, parent: r } : { body: v }, edit); };
   comment.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
   const isOwner = !!(o && o.me);
   /* + 버튼 메뉴 (Figma 2967:79167): 북에 저장 · 킵에 담기 */
@@ -943,14 +943,25 @@ function drawDetail(d, edit = false) {
   drawMats(false);
   /* 댓글: 3개까지, '모두 보기'로 전체 */
   const clist = h("div", { class: "dp-clist" });
-  const cRow = (c) => h("div", { class: "dp-c" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 28, "dp-cav"),
-    h("div", { class: "dp-ct" }, h("div", { class: "dp-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body)),
+  /* 답글: '답글 쓰기'를 누르면 아래 입력칸이 그 댓글에 다는 답글이 됨 (답글은 원래 댓글 아래로 들여서) */
+  const rto = h("div", { class: "dp-rto", hidden: true });
+  const setReply = (c) => {
+    S.replyTo = c ? { img: d.id, id: c.parent || c.id, nick: c.nick } : null;
+    rto.hidden = !c; comment.placeholder = c ? `${c.nick}님에게 답글을 남겨 보세요` : (ME ? "댓글을 남겨 보세요" : "로그인하고 댓글을 남겨 보세요");
+    rto.replaceChildren(...(c ? [h("span", {}, `${c.nick}님에게 답글 다는 중`), h("button", { type: "button", onclick: () => setReply(null) }, "취소")] : []));
+    if (c) comment.focus();
+  };
+  const cRow = (c, isRep) => h("div", { class: "dp-c" + (isRep ? " rep" : "") }, avatarEl({ nick: c.nick, avatar: c.avatar }, isRep ? 24 : 28, "dp-cav"),
+    h("div", { class: "dp-ct" }, h("div", { class: "dp-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body),
+      h("button", { type: "button", class: "dp-reply", onclick: () => needLogin() && setReply(c) }, "답글 쓰기")),
     h("button", { class: "icon-btn dp-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
-      ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act(d, "DELETE", `/api/comments/${c.id}`, null, edit) }]
+      ? [{ ic: "trash", label: isRep ? "답글 삭제" : "댓글 삭제", danger: true, fn: () => act(d, "DELETE", `/api/comments/${c.id}`, null, edit) }]
       : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 20)));
-  const drawComments = (all) => clist.replaceChildren(...so.comments.slice(0, all ? so.comments.length : 3).map(cRow));
+  const tops = so.comments.filter((c) => !c.parent), reps = new Map();
+  so.comments.filter((c) => c.parent).forEach((c) => { if (!reps.has(c.parent)) reps.set(c.parent, []); reps.get(c.parent).push(c); });
+  const drawComments = (all) => clist.replaceChildren(...tops.slice(0, all ? tops.length : 3).flatMap((c) => [cRow(c, false), ...(reps.get(c.id) || []).map((r) => cRow(r, true))]));
   drawComments(false);
-  const allBtn = so.comments.length > 3 ? h("button", { class: "dp-all", type: "button", onclick: (e) => { drawComments(true); e.currentTarget.remove(); } }, `댓글 ${so.comments.length}개 모두 보기`) : null;
+  const allBtn = tops.length > 3 ? h("button", { class: "dp-all", type: "button", onclick: (e) => { drawComments(true); e.currentTarget.remove(); } }, `댓글 ${tops.length}개 모두 보기`) : null;
   comment.placeholder = "댓글을 남겨보세요";
   const postBtn = h("button", { class: "dp-post", type: "button", onclick: send }, "게시");
   comment.addEventListener("input", () => postBtn.classList.toggle("on", !!comment.value.trim()));
@@ -1010,7 +1021,7 @@ function drawDetail(d, edit = false) {
       mats.length ? h("div", { class: "dp-sec" }, head("사용 소재", mats.length > 3 ? h("button", { class: "dp-link", type: "button", onclick: (e) => { drawMats(true); e.currentTarget.remove(); } }, "더보기") : null), matList) : null,
       h("div", { class: "dp-sec dp-cmt" },
         h("div", { class: "dp-cw" }, head(`댓글 ${so.comments.length}`),
-          h("div", { class: "dp-cin" }, ME ? avatarEl(ME, 24, "dp-cav") : h("span", { class: "dp-cav avt" }), comment, postBtn)),
+          rto, h("div", { class: "dp-cin" }, ME ? avatarEl(ME, 24, "dp-cav") : h("span", { class: "dp-cav avt" }), comment, postBtn)),
         so.comments.length ? clist : null, allBtn),
       h("div", { class: "dp-sec dp-rel" }, head("연관 이미지"), h("div", { class: "dp-grid" }, relCols))),
       relMore));

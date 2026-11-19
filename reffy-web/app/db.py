@@ -62,7 +62,8 @@ likes = Table("likes", md, Column("user_id", Integer, primary_key=True), Column(
 comments = Table("comments", md,
                  Column("id", Integer, primary_key=True, autoincrement=True),
                  Column("image_id", Integer, nullable=False, index=True), Column("user_id", Integer, nullable=False),
-                 Column("body", String(500), nullable=False), Column("created_at", DateTime, default=datetime.now))
+                 Column("body", String(500), nullable=False), Column("created_at", DateTime, default=datetime.now),
+                 Column("parent_id", Integer))   # 답글이면 원래 댓글 번호
 follows = Table("follows", md, Column("follower_id", Integer, primary_key=True), Column("followee_id", Integer, primary_key=True),
                 Column("created_at", DateTime, default=datetime.now))
 keeps = Table("keeps", md, Column("user_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
@@ -142,6 +143,9 @@ def init():
         for name, ddl in (("email", "VARCHAR(120) DEFAULT ''"), ("title", "VARCHAR(100) DEFAULT ''"), ("photos", "TEXT")):
             if name not in qcols:
                 c.execute(text(f"ALTER TABLE inquiries ADD COLUMN {name} {ddl}"))
+        ccols = {x["name"] for x in inspect(engine).get_columns("comments")}
+        if "parent_id" not in ccols:   # 답글: 어느 댓글에 단 답글인지 (없으면 일반 댓글)
+            c.execute(text("ALTER TABLE comments ADD COLUMN parent_id INTEGER"))
         bcols = {x["name"] for x in inspect(engine).get_columns("books")}
         if "cover" not in bcols:
             c.execute(text("ALTER TABLE books ADD COLUMN cover VARCHAR(40)"))

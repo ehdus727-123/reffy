@@ -2764,3 +2764,24 @@ html:not(.m) .pm-cmore{width:24px;height:24px;padding:0;flex:none;display:grid;p
 html:not(.m) .pm-cmore svg{width:24px;height:24px}
 html:not(.m) .pm-cmeta{display:flex;gap:12px;padding:0 20px 0 42px;font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
 html:not(.m) .pm-crow{width:100%}html:not(.m) .pm-cmore{margin-left:auto}
+
+/* ---- 답글 ---- */
+.pm-reply,.dp-reply{border:0;background:none;padding:0;font:500 12px/16px Pretendard,sans-serif;color:#6f6d72;cursor:pointer}
+.pm-reply:hover,.dp-reply:hover{color:#18171a;text-decoration:underline}
+.pm-thread{display:flex;flex-direction:column;gap:14px}
+html:not(.m) .pm-c.rep{padding-left:42px}
+html:not(.m) .pm-c.rep .pm-crow{min-height:32px}
+html:not(.m) .pm-c.rep .avt{width:24px;height:24px}
+html:not(.m) .pm-c.rep .pm-cmeta{padding-left:36px}
+.pm-rto,.dp-rto{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:6px 12px;border-radius:8px;background:#f3eefe;font:500 12px/16px Pretendard,sans-serif;color:#7425f6}
+.pm-rto[hidden],.dp-rto[hidden]{display:none}
+.pm-rto button,.dp-rto button{border:0;background:none;padding:0;font:inherit;color:#5b595f;cursor:pointer}
+.pm-cbox+.pm-rto{margin:8px 0 0}
+.dp-c.rep{padding-left:38px}
+.dp-ct .dp-reply{display:block;margin-top:4px}
+
+/* 이미지 위 아이디: 검정 오버레이 (Figma Overlay 2789:151054 · rgba(24,23,26,.4)) */
+.id-mark{color:rgba(24,23,26,.4)}
+/* Figma 아이콘 컴포넌트(2126:501): 경로 그대로, 선 두께 보정 없음 */
+.ic.icm.fig{fill:currentColor;stroke:none}
+.ic.icm.fig .ico,.ic.icm.fig .icf{stroke:none;paint-order:normal}
