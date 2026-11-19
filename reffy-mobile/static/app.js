@@ -446,18 +446,31 @@ async function runPoseSearch() {
     const run = (list) => POSE.part === "all" ? R.searchAll(POSE.ed.model, POSE_KEYS, list, { cameraFree: POSE.free, limit: 120 }) : R.search(POSE.ed.model, POSE.part, list, { cameraFree: POSE.free, limit: 120 });
     const rr = mine.length ? run(mine) : [];
     const ext = run(POSE.ds).map((x) => x.photo).filter((p) => p.regular);
+    const reg = await api("/api/pose/ext-ids").catch(() => ({}));   // 이미 등록된 실사 사진: 하트 상태 이어 받기
+    const regIds = ext.map((p) => reg[p.id]).filter(Boolean);
+    const st = {};
+    if (regIds.length) { try { (await api("/api/images?limit=100&ids=" + regIds.slice(0, 100).join(","))).items.forEach((c) => (st[c.id] = c)); } catch { /* 없으면 생략 */ } }
+    ext.forEach((p) => { const id = reg[p.id]; p.rid = id || null; p.likes = id && st[id] ? st[id].likes : 0; p.liked = !!(id && st[id] && st[id].liked); });
     S.pose = { label: POSE_PARTS.find((p) => p[0] === POSE.part)[1], ids: rr.map((x) => x.photo.reffy), ext, extShown: false };
     fpClose(); reload();
     if (isM()) setFilterOpen(false);
   } catch (e) { toast(e.message); } finally { b.disabled = false; b.textContent = old; }
 }
-/* pose-search 실사 사진 카드 (Unsplash: 작가 표시 · 누르면 크게 보기) */
+/* pose-search 실사 사진 카드 (Unsplash): 하트 · 상세(킵 · 북에 저장)까지 REFFY 게시물처럼. 처음 누를 때 REFFY 이미지로 등록 */
+async function extId(it) {
+  if (it.rid) return it.rid;
+  const r = await api(`/api/pose/ext/${encodeURIComponent(it.pid)}`, { method: "POST" });
+  it.rid = r.id; return it.rid;
+}
 function extCard(it) {
   const img = h("img", { src: it.thumb, alt: `${it.author}의 사진 (Unsplash)`, loading: "lazy", width: it.w || null, height: it.h || null, referrerpolicy: "no-referrer" });
-  return h("button", { class: "card ext", type: "button", "data-id": it.id, "aria-label": `실사 포즈 사진 · ${it.author} (Unsplash)`,
-    onclick: () => openLightbox(it.full, `${it.author}의 사진`, { name: it.author, user: it.user, pid: it.pid }) },
-    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img),
-    h("span", { class: "meta" }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, "Unsplash")));
+  return h("button", { class: "card ext" + (it.rid && S.open === it.rid ? " sel" : ""), type: "button", "data-id": it.id, "aria-label": `실사 포즈 사진 · ${it.author} (Unsplash)`,
+    onclick: async () => {
+      if (!needLogin()) return;
+      try { const id = await extId(it); if (S.open === id && !$("#panel").hidden && !isM()) closeDetail(); else openDetail(id); } catch (e) { toast(e.message); }
+    } },
+    h("span", { class: "im", style: `--ch:${cardH(it)}` }, img, cardLike(it)),
+    h("span", { class: "meta" + (it.liked ? " liked" : "") }, h("span", { class: "av" }), h("span", { class: "tx" }, h("b", {}, it.author)), h("span", { class: "src" }, "Unsplash")));
 }
 
 /* ---------------------------------------------------------------- 검색창 */
@@ -550,7 +563,8 @@ function cardLike(it) {
     if (!needLogin()) return;
     const on = !it.liked;
     try {
-      await api(`/api/images/${it.id}/like`, { method: on ? "POST" : "DELETE" });
+      const iid = it.ext ? await extId(it) : it.id;
+      await api(`/api/images/${iid}/like`, { method: on ? "POST" : "DELETE" });
       it.liked = on; it.likes = Math.max(0, (it.likes || 0) + (on ? 1 : -1)); paint();
       const c = el.closest(".card"), m = c && c.querySelector(".meta");
       if (m) { m.classList.toggle("liked", on); const lk = m.querySelector(".lk"); if (lk) lk.textContent = String(it.likes); }
@@ -646,7 +660,7 @@ async function more(first) {
     masAdd(d.items);
     S.done = d.items.length === 0 || S.items.length >= d.total;
     if (S.pose) {   // REFFY 사진을 다 보여 준 뒤 pose-search 실사 사진(Unsplash)을 이어 붙임
-      const ext = S.pose.ext.map((ph) => ({ id: "u:" + ph.id, ext: true, pid: ph.id, thumb: ph.regular, full: ph.full, w: ph.width, h: ph.height, author: ph.authorName, user: ph.authorUsername }));
+      const ext = S.pose.ext.map((ph) => ({ id: "u:" + ph.id, ext: true, pid: ph.id, rid: ph.rid, likes: ph.likes, liked: ph.liked, thumb: ph.regular, full: ph.full, w: ph.width, h: ph.height, author: ph.authorName, user: ph.authorUsername }));
       d.total = S.total = d.total + ext.length;
       if (S.done && !S.pose.extShown) { S.pose.extShown = true; S.items.push(...ext); masAdd(ext); }
     }
@@ -930,7 +944,9 @@ function drawDetail(d, edit = false) {
     h("div", { class: "dp-info" },
       h("div", { class: "dp-head" },
         h("div", { class: "dp-user" }, o ? avatarEl(o, 36, "dp-av40") : h("span", { class: "dp-av40 avt" }, (d.author || "?").slice(0, 1)),
-          h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
+          d.ext ? h("div", { class: "dp-name" }, h("a", { href: `https://unsplash.com/@${d.ext.user}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, d.author),
+              h("span", {}, "Photo on ", h("a", { href: `https://unsplash.com/photos/${d.ext.pid}?utm_source=reffy&utm_medium=referral`, target: "_blank", rel: "noopener" }, "Unsplash")))
+            : h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
           o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null),
         h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),
       h("div", { class: "dp-acts" },

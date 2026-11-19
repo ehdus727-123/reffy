@@ -11,6 +11,7 @@ from typing import List, Optional
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from PIL import Image, ImageOps
 from pydantic import BaseModel
 from sqlalchemy import text
@@ -189,6 +190,8 @@ def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", o
     if kinds and len(kinds) < 2:
         hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE COALESCE(kind,'illust') != :k", k=next(iter(kinds)))}
     order = [int(x) for x in ids.split(",") if x.strip().isdigit()][:500]   # 3D 포즈 검색 결과: 이 순서대로만 보여 줌
+    if not order:   # 3D 포즈 실사(Unsplash)에서 가져온 사진은 일반 피드 · 검색에는 섞지 않음
+        hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE ext IS NOT NULL AND ext != ''")}
     if order:
         allow = set(search(q, tl, sort, 0, 100000)[0]) if (q.strip() or tl) else None
         ids_all = [i for i in order if i not in hide and (allow is None or i in allow)]
@@ -242,6 +245,9 @@ def detail(image_id: int, request: Request):
     d["full"] = f"/img/{image_id}?s=full&v={_ver(r[0])}"
     d["tags"] = _tags_of(image_id)
     d["colors"] = colormod.palette_of(colormod.loads((db.rows("SELECT colors FROM images WHERE id = :i", i=image_id) or [{}])[0].get("colors")))
+    e = posemod.ext_of(image_id)
+    if e:
+        d["ext"] = {"src": e.get("src"), "pid": e.get("pid"), "name": e.get("name"), "user": e.get("user")}
     return d
 
 
@@ -251,6 +257,11 @@ def image_file(image_id: int, request: Request, s: str = "thumb"):
     if not r or (r[0]["private"] and not ((v := social.me(request)) and v["id"] == r[0]["user_id"])):
         raise HTTPException(404)
     f = r[0]["file"]
+    if f.startswith("ext:"):   # 3D 포즈 실사(Unsplash): 파일을 두지 않고 원본 주소로 보냄 (Unsplash 이용 규칙: 핫링크)
+        e = posemod.ext_of(image_id)
+        if not e:
+            raise HTTPException(404)
+        return RedirectResponse(e["regular"] if s == "thumb" else e["full"], status_code=307)
     p = (config.UPLOADS / ("t_" + f.rsplit(".", 1)[0] + ".jpg")) if s == "thumb" else (config.UPLOADS / f)
     if not store.pull(p):
         p = config.UPLOADS / f
@@ -477,12 +488,15 @@ def delete_image(image_id: int, request: Request):
         raise HTTPException(404)
     if r[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 삭제할 수 있어요.")
+    if r[0]["file"].startswith("ext:") and not social.is_admin(request):
+        raise HTTPException(403, "실사 레퍼런스 사진은 삭제할 수 없어요.")
     with db.engine.begin() as c:
         for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications", "poses"):
             c.execute(text(f"DELETE FROM {t} WHERE " + ("image_id" if t != "image_tags" else "image_id") + " = :i"), {"i": image_id})
         c.execute(text("DELETE FROM images WHERE id = :i"), {"i": image_id})
-    for p in (config.UPLOADS / r[0]["file"], config.UPLOADS / f"t_{image_id}.jpg"):
-        store.delete(p)
+    if not r[0]["file"].startswith("ext:"):
+        for p in (config.UPLOADS / r[0]["file"], config.UPLOADS / f"t_{image_id}.jpg"):
+            store.delete(p)
     return {"ok": True}
 
 

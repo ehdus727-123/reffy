@@ -30,6 +30,7 @@ images = Table("images", md,
                Column("private", Integer, default=0),       # 1 이면 비공개 (올린 사람만 봄)
                Column("materials", Text),                   # 사용 소재 링크 ["https://...", ...]
                Column("tools", Text),                       # 사용한 툴 ["Procreate", ...] (main.TOOLS 중에서)
+               Column("ext", Text),                         # 외부 사진(3D 포즈 실사 · Unsplash) {"src","pid","name","user","full","regular"} — 파일은 원본 주소로 바로 보여 줌
                Column("created_at", DateTime, default=datetime.now))
 # 태그: AI 예측(ai_prob)과 사용자 수정(user_state)을 따로 보관. 최종 = AI(확률>=임계값) + 사용자 추가 - 사용자 삭제 (PRD 8.2)
 image_tags = Table("image_tags", md,
@@ -128,6 +129,8 @@ def init():
             c.execute(text("ALTER TABLE images ADD COLUMN materials TEXT"))
         if "tools" not in cols:
             c.execute(text("ALTER TABLE images ADD COLUMN tools TEXT"))
+        if "ext" not in cols:
+            c.execute(text("ALTER TABLE images ADD COLUMN ext TEXT"))
         kcols = {x["name"] for x in inspect(engine).get_columns("keeps")}
         if "pos" not in kcols:
             c.execute(text("ALTER TABLE keeps ADD COLUMN pos INTEGER"))

@@ -277,7 +277,8 @@ def social(image_id: int, request: Request):
             owner = {"uid": o[0]["uid"], "nick": o[0]["nick"], "avatar": _avatar_url(o[0]["uid"], o[0]["avatar"]), "me": o[0]["id"] == uid,
                      "following": bool(db.rows("SELECT 1 AS x FROM follows WHERE follower_id=:a AND followee_id=:b", a=uid, b=o[0]["id"]))}
     cm = db.rows("SELECT c.id, c.body, c.created_at, c.user_id, u.nick FROM comments c JOIN users u ON u.id = c.user_id WHERE c.image_id = :i ORDER BY c.id", i=image_id)
-    return {"owner": owner, "editable": (bool(u) and (img["user_id"] is None or img["user_id"] == uid)) or is_admin(request), "admin": is_admin(request),
+    is_ext = bool(db.rows("SELECT 1 AS x FROM images WHERE id = :i AND file LIKE 'ext:%'", i=image_id))   # 3D 포즈 실사(Unsplash)는 누구도 수정 · 삭제 못 함
+    return {"owner": owner, "editable": (not is_ext and bool(u) and (img["user_id"] is None or img["user_id"] == uid)) or is_admin(request), "admin": is_admin(request),
             "likes": db.rows("SELECT COUNT(*) AS n FROM likes WHERE image_id=:i", i=image_id)[0]["n"],
             "liked": bool(db.rows("SELECT 1 AS x FROM likes WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),
             "kept": bool(db.rows("SELECT 1 AS x FROM keeps WHERE user_id=:u AND image_id=:i", u=uid, i=image_id)),

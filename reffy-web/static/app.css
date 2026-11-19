@@ -2665,3 +2665,4 @@ html:not(.m) .lb-zoom{gap:10px}
 .pose-ed .skeleton .anchor[style*="top: 60px"]{top:8px!important;right:8px!important}
 /* 3D 포즈: 확대(+/−) 버튼도 숨김 — 확대·축소는 마우스 휠로 */
 .pose-ed .skeleton .camera-zoom-btn,.pose-ed .skeleton .anchor[style*="top: 60px"]{display:none!important}
+.dp-name span a{color:inherit;text-decoration:underline}

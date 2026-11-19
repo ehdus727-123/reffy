@@ -77,3 +77,59 @@ def pose_save(image_id: int, body: PoseIn, request: Request):
         else:
             c.execute(text("INSERT INTO poses (image_id, lm) VALUES (:i, :l)"), {"i": image_id, "l": val})
     return {"ok": True}
+
+
+# ------------------------------------------------------------------ 실사(Unsplash) 사진을 REFFY 게시물처럼 (하트 · 킵 · 북에 저장 · 상세)
+from . import config as _cfg
+_DS = None
+
+
+def _dataset() -> dict:
+    """pose-search 실사 데이터(static/pose/photos.json): pid -> [pid, w, h, full, regular, name, user, gender]"""
+    global _DS
+    if _DS is None:
+        try:
+            _DS = {r[0]: r for r in json.loads((_cfg.BASE / "static" / "pose" / "photos.json").read_text(encoding="utf-8"))}
+        except Exception:
+            _DS = {}
+    return _DS
+
+
+def ext_of(image_id: int) -> Optional[dict]:
+    r = db.rows("SELECT ext FROM images WHERE id = :i", i=image_id)
+    if not r or not r[0]["ext"]:
+        return None
+    try:
+        return json.loads(r[0]["ext"])
+    except Exception:
+        return None
+
+
+@router.post("/pose/ext/{pid}")
+def pose_ext(pid: str, request: Request):
+    """실사 사진 한 장을 REFFY 이미지로 등록(이미 있으면 그 번호). 사진 주소 · 작가는 서버의 데이터 파일에서만 가져옴."""
+    S.need(request)
+    ph = _dataset().get(pid)
+    if not ph:
+        raise HTTPException(404, "사진을 찾을 수 없어요.")
+    key = "ext:" + pid
+    have = db.rows("SELECT id FROM images WHERE file = :f", f=key)
+    if have:
+        return {"id": have[0]["id"]}
+    from sqlalchemy import text
+    ext = json.dumps({"src": "unsplash", "pid": pid, "name": ph[5], "user": ph[6], "full": ph[3], "regular": ph[4]}, ensure_ascii=False)
+    with db.engine.begin() as c:
+        r = c.execute(db.images.insert().values(title="", author=(ph[5] or "Unsplash")[:40], file=key, w=int(ph[1] or 0), h=int(ph[2] or 0),
+                                                 kind="photo", private=0, ext=ext))
+        iid = r.inserted_primary_key[0]
+        c.execute(text("INSERT INTO poses (image_id, lm) VALUES (:i, '')"), {"i": iid})   # 관절은 실사 데이터에 이미 있으므로 다시 뽑지 않음
+    return {"id": iid}
+
+
+@router.get("/pose/ext-ids")
+def pose_ext_ids():
+    """이미 등록된 실사 사진: pid -> REFFY 번호 (하트 수 · 킵 표시용)"""
+    out = {}
+    for r in db.rows("SELECT id, file FROM images WHERE file LIKE 'ext:%'"):
+        out[r["file"][4:]] = r["id"]
+    return out
