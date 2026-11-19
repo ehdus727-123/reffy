@@ -27,4 +27,5 @@ jobs:
           git config user.name "pose-lab bot"; git config user.email "actions@users.noreply.github.com"
           git add tools/pose-data/out
           git commit -m "pose-lab: 관절 추출 결과 [skip ci]" || echo nothing
-          git push
+          git pull --rebase origin pose-lab || true
+          git push origin HEAD:pose-lab
