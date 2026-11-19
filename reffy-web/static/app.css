@@ -2670,3 +2670,46 @@ html:not(.m) .lb-zoom{gap:10px}
 /* 3D 포즈 파츠 검색: 고른 부위만 잘라 보여 주는 카드 */
 .card .im.crop{position:relative;display:block;aspect-ratio:217 / var(--ch);overflow:hidden}
 html #grid .card .im.crop[style*="--ch"] img{position:absolute;max-width:none;max-height:none;object-fit:fill}
+
+/* ---- 메뉴 카드 (PC) ---- Figma Menu 2967:79167 · 2967:79984(아이콘 + 글자) / MenuCard 2992:134944(글자만: 차단 · 신고) */
+html:not(.m) .mcard{width:auto;padding:12px 8px;gap:2px;border:1px solid #e4e3e5;box-shadow:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.12))}
+html:not(.m) .mcard.withic:has(.danger){border-color:#c3c2c5}
+html:not(.m) .mcard.withic button{width:166px;padding:8px 12px;gap:10px;border-radius:8px;font:500 15px/20px Pretendard,sans-serif;letter-spacing:0}
+html:not(.m) .mcard.withic button.danger{color:#e5484d}
+html:not(.m) .mcard.txt{padding:8px;filter:none;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+html:not(.m) .mcard.txt button{width:182px;padding:10px 12px;gap:8px;border-radius:6px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .mcard.txt button.danger{color:#ce3030}
+html:not(.m) .mcard.txt button:hover,html:not(.m) .mcard.txt button:focus-visible{background:#f8f7f8}
+
+/* ---- 다른 사용자 페이지 케밥 (Figma 2992:134941): 왼쪽 칸 오른쪽 위, 테두리 없는 36 아이콘 ---- */
+html:not(.m) .pf-more{left:auto;right:16px;top:16px;z-index:2}
+html:not(.m) .pf-more .icon-btn{width:36px;height:36px;border:0;border-radius:50%;background:none;color:#18171a}
+html:not(.m) .pf-more .icon-btn:hover{background:rgba(24,23,26,.04)}
+html:not(.m) .pf-more .icon-btn svg{width:36px;height:36px}
+
+/* ---- 프로필 링크: 왼쪽 정렬 ---- */
+html:not(.m) .pf-links,html:not(.m) .pf-links ul,html:not(.m) .pf-links li{text-align:left}
+html:not(.m) .pf-links ul{align-items:flex-start;justify-content:start;justify-items:start;padding:11px 12px}
+html:not(.m) .pf-links li{justify-content:flex-start;max-width:100%}
+
+/* ---- 사용 소재 입력 (Figma Upload 2789:151148): 입력칸 48 안에 '추가' 64×32, 넣은 링크는 회색 칸 48 ---- */
+html:not(.m) .field.mat .row{position:relative;display:block}
+html:not(.m) .field.mat .row .inp{width:100%;height:48px;box-sizing:border-box;padding:0 84px 0 14px;border:1px solid #c3c2c5;border-radius:10px;background:#fff;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .field.mat .row .inp::placeholder{color:#6f6d72}
+html:not(.m) .mat-add{position:absolute;right:8px;top:8px;width:64px;height:32px;padding:6px 12px;border:0;border-radius:6px;background:#f1f0f2;color:#18171a;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;cursor:pointer;overflow:hidden}
+html:not(.m) .mat-add::after{content:"";position:absolute;inset:0;background:#18171a;opacity:0;transition:opacity .12s ease}
+html:not(.m) .mat-add:hover::after{opacity:.04}html:not(.m) .mat-add:active::after{opacity:.1}
+html:not(.m) .field.mat .mat-list{margin-top:7px;gap:8px}
+html:not(.m) .field.mat .mat-list li{height:48px;box-sizing:border-box;padding:0 14px;gap:8px;background:#f8f7f8;border:1px solid #f1f0f2;border-radius:10px;font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) .field.mat .mat-list li svg{width:20px;height:20px;color:#5b595f}
+html:not(.m) .field.mat .mat-list li>span{color:#5b595f;text-align:left}
+html:not(.m) .field.mat .mat-list li .icon-btn{width:20px;height:20px;padding:0;color:#5b595f}
+
+/* ---- 이미지 위 올린 사람 아이디 (16px 검정, 위치 무작위) ---- */
+.pm-img{position:relative}
+.id-mark{position:absolute;left:0;top:0;z-index:1;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000;white-space:nowrap;pointer-events:none;user-select:none;opacity:0}
+.id-mark.on{opacity:1}
+/* 업로드 창 사용 소재 '추가' (Figma 2789:150825): 회색 64×32, 테두리 없음, 검정 글자 */
+html:not(.m) .upd .btn.upd-madd{width:64px;min-width:64px;height:32px;padding:6px 12px;border:0;border-radius:6px;background:#f1f0f2;color:#18171a;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;overflow:hidden}
+html:not(.m) .upd .btn.upd-madd::after{content:"";position:absolute;inset:0;background:#18171a;opacity:0;transition:opacity .12s ease;pointer-events:none}
+html:not(.m) .upd .btn.upd-madd:hover{background:#f1f0f2}html:not(.m) .upd .btn.upd-madd:hover::after{opacity:.04}html:not(.m) .upd .btn.upd-madd:active::after{opacity:.1}

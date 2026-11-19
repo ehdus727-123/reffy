@@ -928,11 +928,14 @@ function drawDetail(d, edit = false) {
   const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
   comment.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
   const isOwner = !!(o && o.me);
-  const postMenu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
+  /* + 버튼 메뉴 (Figma 2967:79167): 북에 저장 · 킵에 담기 */
+  const saveMenu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
     { ic: "save", label: "북에 저장", fn: () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) }) },
-    { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) },
-    ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
-      : [{ ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]); };
+    { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) }], "저장", { side: "left" }); };
+  /* 케밥: 내 게시물은 수정 · 삭제(Figma 2967:79984), 다른 사람 게시물은 올린 사람 차단 · 신고(Figma MenuCard 2992:134944) */
+  const postMenu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, so.editable
+    ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
+    : [{ label: "차단하기", fn: () => blockUserAsk(o.uid, o.nick, async () => { closeDetail(); reload(); }) }, { label: "신고하기", danger: true, fn: () => reportSheet("user", o.uid) }]); };
   /* 사용 소재: 3개까지, '더보기'로 모두 */
   const mats = d.materials || [];
   const matList = h("div", { class: "dp-links" });
@@ -970,7 +973,7 @@ function drawDetail(d, edit = false) {
   relMore.onclick = loadRel;
   const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
   panel.replaceChildren(
-    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title), onload: (e) => dpTone(e.currentTarget) }),
+    h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title), onload: (e) => { dpTone(e.currentTarget); fitMark(e.currentTarget); } }), d.ext ? null : idMark(o && o.uid, d.id),
       h("div", { class: "dp-top" },
         h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, dpSvg("back", 36)),
         h("span", { class: "sp" }),
@@ -978,7 +981,7 @@ function drawDetail(d, edit = false) {
       h("div", { class: "dp-fab" },
         h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, dpSvg("pose", 28)),
         d.ext ? null : h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, dpSvg("palette", 28)),   // 실사(Unsplash)는 색 추출 없음
-        h("button", { type: "button", class: "dp-fb add" + (so.kept ? " on" : ""), "aria-pressed": String(!!so.kept), "aria-label": so.kept ? "킵 해제" : "킵에 담기", title: so.kept ? "킵 해제" : "킵에 담기", onclick: () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) }, so.kept ? dpSvg("check", 28) : dpSvg("plus", 28)))),
+        h("button", { type: "button", class: "dp-fb add" + (so.kept ? " on" : ""), "aria-pressed": String(!!so.kept), "aria-label": isM() ? (so.kept ? "킵 해제" : "킵에 담기") : "북 · 킵에 저장", title: isM() ? (so.kept ? "킵 해제" : "킵에 담기") : "북 · 킵에 저장", "aria-haspopup": "menu", onclick: (e) => (isM() ? act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit) : saveMenu(e)) }, so.kept ? dpSvg("check", 28) : dpSvg("plus", 28)))),
     h("div", { class: "dp-info" },
       h("div", { class: "dp-head" },
         h("div", { class: "dp-user" }, o ? avatarEl(o, 36, "dp-av40") : h("span", { class: "dp-av40 avt" }, (d.author || "?").slice(0, 1)),
@@ -995,7 +998,7 @@ function drawDetail(d, edit = false) {
           h("button", { class: "dp-st", type: "button", "aria-label": "댓글", onclick: () => comment.focus() }, dpSvg("comment", 20), String(so.comments.length))),
         h("span", { class: "sp" }),
         h("button", { class: "dp-ab", type: "button", "aria-label": "공유하기", title: "공유하기", onclick: () => sharePost(d) }, dpSvg("share", 24)),
-        h("button", { class: "dp-ab", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: postMenu }, dpSvg("more", 24))),
+        so.editable || o ? h("button", { class: "dp-ab", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: postMenu }, dpSvg("more", 24)) : null),
       h("div", { class: "dp-body" },
       (d.tools || []).length ? h("div", { class: "dp-sec" }, head("사용한 툴"), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
       h("div", { class: "dp-sec" },
@@ -1145,8 +1148,9 @@ function materialsField(list, redraw) {
   const inp = h("input", { class: "inp", type: "url", placeholder: "링크를 입력해주세요", "aria-label": "사용 소재 링크", maxlength: "300" });
   const add = () => { const v = inp.value.trim(); if (!v) return; if (list.length >= 10) return toast("사용 소재는 10개까지 넣을 수 있어요."); if (!list.includes(v)) list.push(v); redraw(); };
   inp.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); add(); } };
-  return h("div", { class: "field mat" }, h("label", {}, "사용 소재"), h("div", { class: "row" }, inp, h("button", { class: "btn l", type: "button", onclick: add }, "저장")),
-    list.length ? h("ul", { class: "mat-list" }, list.map((l, i) => h("li", {}, icon("link", 16), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { list.splice(i, 1); redraw(); } }, icon("close", 16))))) : null);
+  // PC(Figma Upload 2789:151148): 입력칸 안 오른쪽에 '추가' 버튼, 넣은 링크는 회색 칸(링크 아이콘 · 주소 · 지우기)
+  return h("div", { class: "field mat" }, h("label", {}, "사용 소재"), h("div", { class: "row" }, inp, h("button", { class: isM() ? "btn l" : "mat-add", type: "button", onclick: add }, isM() ? "저장" : "추가")),
+    list.length ? h("ul", { class: "mat-list" }, list.map((l, i) => h("li", {}, icon("link", isM() ? 16 : 20), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { list.splice(i, 1); redraw(); } }, icon("close", isM() ? 16 : 20))))) : null);
 }
 /* 사용 툴 (Figma 2601:52939): 업로드 · 수정 때 여러 개 고름 → 상세 패널 '사용한 툴'에 보임 */
 const TOOLS = ["Clip studio", "이비스 페인트 X", "Procreate", "사이툴", "Illustrator", "Photoshop", "MediBang", "기타"];

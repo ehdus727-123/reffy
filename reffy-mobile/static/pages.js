@@ -30,15 +30,46 @@ function popMenu(anchor, items) {
 }
 
 /* 아이콘 메뉴 카드 (Figma MenuCard): [{ic, label, fn, danger}] */
-function menuCard(anchor, items, title) {
+/* PC 메뉴 카드: 아이콘이 있으면 Figma Menu(2967:79984 수정 · 삭제 / 2967:79167 북 · 킵), 글자만 있으면 Figma MenuCard(2992:134944 차단 · 신고)
+   opt.side = "left" 이면 버튼 왼쪽에 세로 가운데로 (이미지 위 + 버튼) */
+function menuCard(anchor, items, title, opt = {}) {
   if (isM()) return sheetMenu(title || "더보기", items);
   document.querySelector(".mcard")?.remove();
-  const r = anchor.getBoundingClientRect();
-  const m = h("div", { class: "mcard", role: "menu", style: `left:${Math.max(8, Math.min(r.right - 200, window.innerWidth - 208))}px;top:${r.bottom + 6}px` },
+  const r = anchor.getBoundingClientRect(), txt = !items.some((it) => it.ic);
+  const m = h("div", { class: "mcard" + (txt ? " txt" : " withic"), role: "menu" },
     items.map((it) => h("button", { type: "button", role: "menuitem", class: it.danger ? "danger" : "", onclick: () => { m.remove(); it.fn(); } }, it.ic ? icon(it.ic, 20) : null, it.label)));
-  document.body.append(m);
+  m.style.visibility = "hidden"; document.body.append(m);
+  const w = m.offsetWidth, hh = m.offsetHeight;
+  const left = opt.side === "left" ? r.left - 16 - w : r.right - w, top = opt.side === "left" ? r.top + r.height / 2 - hh / 2 : r.bottom + 6;
+  m.style.left = Math.max(8, Math.min(left, window.innerWidth - w - 8)) + "px";
+  m.style.top = Math.max(8, Math.min(top, window.innerHeight - hh - 8)) + "px";
+  m.style.visibility = "";
   setTimeout(() => document.addEventListener("click", () => m.remove(), { once: true }), 0);
 }
+/* 다른 사용자 차단 (프로필 · 이미지 상세 · 게시물 팝업 공통). 차단하면 서로의 게시물과 프로필이 안 보임 */
+async function blockUserAsk(uid, nick, after) {
+  if (!needLogin()) return;
+  if (!(await confirmDialog(`${nick || uid}님을 차단할까요?`, "차단하면 서로의 게시물과 프로필을 볼 수 없어요. 설정 > 차단 유저에서 언제든 해제할 수 있어요.", { ok: "차단하기", danger: true }))) return;
+  try { await api(`/api/users/${uid}/block`, { method: "POST" }); toast("차단했어요"); if (after) await after(); } catch (e) { toast(e.message); }
+}
+/* 이미지에 올린 사람 아이디 표시 (워터마크): 16px 검정, 위치는 이미지마다 무작위(같은 이미지는 늘 같은 자리) */
+function idMark(uid, seed) {
+  if (!uid) return null;
+  let x = (Number(seed) || 1) * 2654435761 % 4294967296;
+  const rnd = () => { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; };
+  return h("span", { class: "id-mark", "aria-hidden": "true", "data-x": (0.06 + rnd() * 0.58).toFixed(3), "data-y": (0.06 + rnd() * 0.8).toFixed(3) }, "@" + uid);
+}
+/* 아이디 표시를 실제 그림이 그려진 영역 안에 놓음 (object-fit: contain 의 빈 여백 제외) */
+function fitMark(img) {
+  const mk = img && img.parentNode && img.parentNode.querySelector(".id-mark");
+  if (!mk || !img.naturalWidth) return;
+  const bw = img.offsetWidth, bh = img.offsetHeight, k = Math.min(bw / img.naturalWidth, bh / img.naturalHeight);
+  const w = img.naturalWidth * k, hh = img.naturalHeight * k, x0 = img.offsetLeft + (bw - w) / 2, y0 = img.offsetTop + (bh - hh) / 2;
+  mk.style.left = Math.min(x0 + w * mk.dataset.x, x0 + w - mk.offsetWidth - 4) + "px";
+  mk.style.top = Math.min(y0 + hh * mk.dataset.y, y0 + hh - mk.offsetHeight - 4) + "px";
+  mk.classList.add("on");
+}
+window.addEventListener("resize", () => document.querySelectorAll(".id-mark").forEach((mk) => fitMark(mk.parentNode.querySelector("img"))));
 
 /* Figma Common/Dialog 닫기 32 · 라디오 20 · 더하기 24 (고정 SVG 문자열) */
 const FIG_SVG = {
@@ -561,13 +592,9 @@ async function profilePage(uid) {
     const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : htmlSpan("lic", IC_LINK), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
     const shareBtn = h("button", { class: "btn pf-share", type: "button", "aria-label": "프로필 링크 복사", title: "프로필 링크 복사", onclick: async () => { const url = location.origin + location.pathname + "#/u/" + encodeURIComponent(u.uid); try { await navigator.clipboard.writeText(url); toast("프로필 링크를 복사했어요"); } catch { toast(url); } } }, dpSvg("share", 24));
     const stat = (n, l, fn) => (fn ? h("button", { class: "pf-stat", type: "button", onclick: fn }, h("b", {}, compact(n)), h("span", {}, l)) : h("span", { class: "pf-stat" }, h("b", {}, compact(n)), h("span", {}, l)));
-    const blockAsk = async () => {
-      if (!needLogin()) return;
-      if (!(await confirmDialog(`${u.nick}님을 차단할까요?`, "차단하면 서로의 게시물과 프로필을 볼 수 없어요. 설정 > 차단 유저에서 언제든 해제할 수 있어요.", { ok: "차단하기", danger: true }))) return;
-      try { await api(`/api/users/${u.uid}/block`, { method: "POST" }); toast("차단했어요"); await loadAll(); draw(); } catch (e) { toast(e.message); }
-    };
+    const blockAsk = () => blockUserAsk(u.uid, u.nick, async () => { await loadAll(); draw(); });
     const unblock = async () => { try { await api(`/api/users/${u.uid}/block`, { method: "DELETE" }); toast("차단을 해제했어요"); await loadAll(); draw(); } catch (e) { toast(e.message); } };
-    const moreBtn = u.me ? null : h("span", { class: "vdots pf-more" }, h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
+    const moreBtn = u.me ? null : h("span", { class: "vdots pf-more" }, h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
       u.blocked ? { label: "차단 해제", fn: unblock } : { label: "차단하기", fn: blockAsk }, { label: "신고하기", danger: true, fn: () => reportSheet("user", u.uid) }]); } }, icon("more", 24)));
     const upBtn = () => { const b = btn("새 게시물 업로드", "primary up", () => openUpload()); b.prepend(dIc("plus")); return b; };
     const acts = !isM() ? (u.me ? h("div", { class: "pf-acts" }, h("div", { class: "pf-row" }, btn("프로필 수정", "", () => (location.hash = "#/me/edit")), shareBtn), upBtn())
@@ -878,7 +905,7 @@ async function postModal(id, onChange, list, swap) {
   }
   const right = h("div", { class: "pm-r" });
   const box = h("div", { class: "pm", role: "dialog", "aria-modal": "true", "aria-label": d.title || "게시물" },
-    h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }))), right);
+    h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", onload: (e) => fitMark(e.currentTarget) }), idMark(d.so.owner && d.so.owner.uid, d.id))), right);
   m.append(box);
   const refresh = async () => { try { d.so = await api(`/api/images/${d.id}/social`); draw(); } catch (e) { toast(e.message); } };
   const act = async (method, url, body, msg) => {
@@ -892,11 +919,11 @@ async function postModal(id, onChange, list, swap) {
   let allMats = false, allCmts = false;
   function draw() {
     const so = d.so, o = so.owner || {};
-    const menu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
-      { ic: "save", label: "북에 추가", fn: () => needLogin() && saveToBook([d.id], { after: refresh }) },
-      { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, so.kept ? "킵에서 뺐어요" : "킵 스페이스에 담았어요") },
-      ...(so.editable ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d, async () => { draw(); if (onChange) onChange(); }) }, { ic: "trash", label: "삭제하기", danger: true, fn: removeIt }]
-        : [{ ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]); };
+    /* 케밥(Figma COM_0102 2967:79984): 내 게시물은 수정 · 삭제, 다른 사람 게시물은 올린 사람 차단 · 신고 (북 · 킵은 아래 버튼에) */
+    const menu = (e) => { e.stopPropagation(); menuCard(e.currentTarget, so.editable
+      ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d, async () => { draw(); if (onChange) onChange(); }) }, { ic: "trash", label: "삭제하기", danger: true, fn: removeIt }]
+      : o.uid ? [{ label: "차단하기", fn: () => blockUserAsk(o.uid, o.nick, async () => { m.remove(); if (onChange) await onChange(); }) }, { label: "신고하기", danger: true, fn: () => reportSheet("user", o.uid) }]
+      : [{ label: "신고하기", danger: true, fn: () => reportSheet("post", d.id) }]); };
     const tags = (d.tags || []).filter((t) => t.active);
     const mats = d.materials || [];
     const cin = h("input", { class: "pm-cin", maxlength: "500", placeholder: "댓글을 작성해보세요.", "aria-label": "댓글 입력" });
