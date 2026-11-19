@@ -903,9 +903,9 @@ async function postModal(id, onChange, list, swap) {
     if (idx < list.length - 1) m.append(h("button", { class: "pm-nav next", type: "button", "aria-label": "다음 게시물", onclick: () => goTo(1) }, figIc("chevR", 56)));
     document.addEventListener("keydown", navKey);
   }
-  const right = h("div", { class: "pm-r" });
+  const right = h("div", { class: "pm-r" }), fab = h("div", { class: "dp-fab pm-fab" });
   const box = h("div", { class: "pm", role: "dialog", "aria-modal": "true", "aria-label": d.title || "게시물" },
-    h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", onload: (e) => fitMark(e.currentTarget) }), idMark(d.so.owner && d.so.owner.uid, d.id))), right);
+    h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", onload: (e) => fitMark(e.currentTarget) }), idMark(d.so.owner && d.so.owner.uid, d.id)), fab), right);
   m.append(box);
   const refresh = async () => { try { d.so = await api(`/api/images/${d.id}/social`); draw(); } catch (e) { toast(e.message); } };
   const act = async (method, url, body, msg) => {
@@ -932,35 +932,43 @@ async function postModal(id, onChange, list, swap) {
     const cmts = so.comments || [];
     const top = right.scrollTop;
     const put = (...k) => right.replaceChildren(...k.filter((x) => x != null && x !== false));
+    /* Figma MyPage/PostModal 2789:154452: 사용자 · 닫기 / 제목 / 하트 · 댓글 · 공유 · 더보기 / 구분선 / 사용 툴 · 사용 소재 · 태그 · 댓글 */
     put(
       h("div", { class: "pm-head" },
         h("a", { class: "pm-user", href: o.uid ? "#/u/" + o.uid : null, onclick: () => m.remove() }, avatarEl({ nick: o.nick || d.author, avatar: o.avatar }, 36), h("span", {}, h("b", {}, o.nick || d.author || ""), o.uid ? h("small", {}, "@" + o.uid) : null)),
-        h("div", { class: "pm-icons" },
-          h("button", { class: "icon-btn", type: "button", "aria-label": "공유하기", onclick: () => (typeof sharePost === "function" ? sharePost(d) : null) }, icon("share", 24)),
-          h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: menu }, icon("more", 24)),
-          h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: () => m.remove() }, icon("close", 24)))),
+        figClose(() => m.remove())),
       h("h2", { class: "pm-title" }, d.title || "제목 없음"),
       h("div", { class: "pm-stats" },
-        h("button", { class: "pm-st" + (so.liked ? " on" : ""), type: "button", "data-like": "1", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`) }, icon(so.liked ? "heart:f" : "heart", 20), h("span", {}, String(so.likes || 0))),
-        h("span", { class: "pm-st" }, icon("comment", 20), h("span", {}, String(cmts.length))),
+        h("button", { class: "pm-st" + (so.liked ? " on" : ""), type: "button", "data-like": "1", "aria-pressed": String(!!so.liked), "aria-label": "하트", onclick: () => act(so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`) }, icon(so.liked ? "heart:f" : "heart", 24), h("span", {}, String(so.likes || 0))),
+        h("button", { class: "pm-st", type: "button", "aria-label": "댓글", onclick: () => cin.focus() }, icon("comment", 24), h("span", {}, String(cmts.length))),
         h("span", { class: "pm-sp" }),
-        h("button", { class: "pm-btn", type: "button", onclick: () => act(so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, so.kept ? "킵에서 뺐어요" : "킵 스페이스에 담았어요") }, so.kept ? "킵 해제" : "킵에 담기"),
-        h("button", { class: "pm-btn dark", type: "button", onclick: () => needLogin() && saveToBook([d.id], { after: refresh }) }, "북에 저장")),
+        h("button", { class: "icon-btn pm-ib", type: "button", "aria-label": "공유하기", onclick: () => (typeof sharePost === "function" ? sharePost(d) : null) }, icon("share", 24)),
+        h("button", { class: "icon-btn pm-ib", type: "button", "aria-label": "더보기", "aria-haspopup": "menu", onclick: menu }, icon("more", 24))),
       h("hr", { class: "pm-hr" }),
-      tags.length ? h("section", { class: "pm-sec" }, h("h3", {}, "태그"), h("div", { class: "pm-tags" }, kindTag ? kindTag(d) : null, tags.map((t) => h("span", { class: "pm-tag" }, "#" + t.label)))) : null,
-      (d.tools || []).length ? h("section", { class: "pm-sec" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용한 툴")), h("div", { class: "dp-tools" }, d.tools.map((t) => h("span", { class: "dp-tool" }, t)))) : null,
-      mats.length ? h("section", { class: "pm-sec" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용 소재"), mats.length > 3 ? h("button", { class: "pm-more", type: "button", onclick: () => { allMats = !allMats; draw(); } }, allMats ? "접기" : "더보기") : null),
+      (d.tools || []).length ? h("section", { class: "pm-sec pm-tools" }, h("h4", {}, "사용 툴"), h("div", { class: "pm-chips" }, d.tools.map((t) => h("span", { class: "pm-chip" }, t)))) : null,
+      mats.length ? h("section", { class: "pm-sec pm-mats" }, h("div", { class: "pm-sh" }, h("h3", {}, "사용 소재"), mats.length > 3 ? h("button", { class: "pm-more", type: "button", onclick: () => { allMats = !allMats; draw(); } }, allMats ? "접기" : "더보기") : null),
         h("div", { class: "pm-links" }, mats.slice(0, allMats ? mats.length : 3).map((l) => h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, icon("link", 15), h("span", {}, l))))) : null,
-      h("section", { class: "pm-sec" }, h("h3", {}, `댓글 ${cmts.length}`),
+      tags.length ? h("section", { class: "pm-sec pm-tagsec" }, h("h3", {}, "태그"), h("div", { class: "pm-tags" }, kindTag ? kindTag(d) : null, tags.map((t) => h("span", { class: "pm-tag" }, "#" + t.label)))) : null,
+      h("section", { class: "pm-sec pm-cmts" }, h("h3", {}, `댓글 ${cmts.length}`),
         h("div", { class: "pm-cbox" }, cin, h("button", { class: "pm-send", type: "button", "aria-label": "댓글 등록", onclick: send }, icon("send", 20))),
-        h("div", { class: "pm-clist" }, cmts.slice(0, allCmts ? cmts.length : 5).map((c) => h("div", { class: "pm-c" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 28),
-          h("div", {}, h("div", { class: "pm-cm" }, h("b", {}, c.nick), h("small", {}, ago(c.created))), h("p", {}, c.body)),
-          h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
-            ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act("DELETE", `/api/comments/${c.id}`) }]
-            : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 18))))),
+        cmts.length ? h("div", { class: "pm-clist" }, cmts.slice(0, allCmts ? cmts.length : 5).map((c) => h("div", { class: "pm-c" },
+          h("div", { class: "pm-crow" }, avatarEl({ nick: c.nick, avatar: c.avatar }, 30),
+            h("div", { class: "pm-ctx" }, h("b", {}, c.nick), h("p", {}, c.body)),
+            h("button", { class: "icon-btn pm-cmore", type: "button", "aria-label": "댓글 더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, c.mine
+              ? [{ ic: "trash", label: "댓글 삭제", danger: true, fn: () => act("DELETE", `/api/comments/${c.id}`) }]
+              : [{ ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]); } }, icon("more", 24))),
+          h("div", { class: "pm-cmeta" }, h("span", {}, ago(c.created)))))) : null,
         cmts.length > 5 && !allCmts ? h("button", { class: "pm-more", type: "button", onclick: () => { allCmts = true; draw(); } }, `댓글 ${cmts.length}개 모두 보기`) : null));
+    /* 이미지 위 플로팅 버튼 (Figma 2789:154677): 3D 포즈 · 팔레트 · + (북에 저장 · 킵에 담기) */
+    const home = (fn) => { m.remove(); if ((location.hash || "#/") !== "#/") { location.hash = "#/"; setTimeout(fn, 400); } else fn(); };
+    fab.replaceChildren(
+      h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => home(() => pullPose(d.id)) }, dpSvg("pose", 28)),
+      h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => home(() => pullPalette(d.id)) }, dpSvg("palette", 28)),
+      h("button", { type: "button", class: "dp-fb add" + (so.kept ? " on" : ""), "aria-haspopup": "menu", "aria-label": "북 · 킵에 저장", title: "북 · 킵에 저장", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [
+        { ic: "save", label: "북에 저장", fn: () => needLogin() && saveToBook([d.id], { after: refresh }) },
+        { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: () => act(so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, so.kept ? "킵에서 뺐어요" : "킵 스페이스에 담았어요") }], "저장", { side: "left" }); } }, so.kept ? dpSvg("check", 28) : dpSvg("plus", 28)));
     right.scrollTop = top;
   }
   draw(); document.body.append(m);
-  right.querySelector(".icon-btn")?.focus();
+  right.querySelector(".pm-user, .icon-btn")?.focus();
 }

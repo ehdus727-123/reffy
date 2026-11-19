@@ -820,10 +820,10 @@ function materialsSec(d) {
     h("ul", { class: "mat-list" }, d.materials.map((l) => h("li", {}, icon("link", 16), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, l.replace(/^https?:\/\//, ""))))));
 }
 /* 이미지 기반 관절 검색 (COM_0104): 3D 포즈 필터로 이동. 검색 자체는 준비 중 */
-async function pullPose() {
+async function pullPose(idArg) {
   if (!(await (isM() ? confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" })
     : confirmDialog("해당 이미지의 구도를 ‘3D 포즈’에\n덮어 씌우겠습니까?", "이미지에서 뽑은 관절 핀이 3D 모델 포즈로 바뀌어요.", { fig: true, no: "아니오", yes: "예" })))) return;
-  const id = S.open;
+  const id = idArg != null ? idArg : S.open;
   if (isM() && !$("#panel").hidden) closeDetail();
   setFilterOpen(true); showTab("pose");
   toast("이미지에서 자세를 읽는 중이에요…");

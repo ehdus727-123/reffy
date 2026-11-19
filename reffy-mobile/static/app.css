@@ -2713,3 +2713,54 @@ html:not(.m) .field.mat .mat-list li .icon-btn{width:20px;height:20px;padding:0;
 html:not(.m) .upd .btn.upd-madd{width:64px;min-width:64px;height:32px;padding:6px 12px;border:0;border-radius:6px;background:#f1f0f2;color:#18171a;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;overflow:hidden}
 html:not(.m) .upd .btn.upd-madd::after{content:"";position:absolute;inset:0;background:#18171a;opacity:0;transition:opacity .12s ease;pointer-events:none}
 html:not(.m) .upd .btn.upd-madd:hover{background:#f1f0f2}html:not(.m) .upd .btn.upd-madd:hover::after{opacity:.04}html:not(.m) .upd .btn.upd-madd:active::after{opacity:.1}
+
+/* ---- 게시물 팝업 (Figma MyPage/PostModal 2789:154452) ---- 915×680, 이미지 518 · 정보 397(안쪽 28) */
+html:not(.m) .pm{width:915px;height:680px;grid-template-columns:518px 397px;border-radius:16px}
+html:not(.m) .pm-l{position:relative;background:#f1f0f2}
+html:not(.m) .pm-fab{right:30px;bottom:30px;gap:12px}
+html:not(.m) .pm-fab .dp-fb{width:56px;height:56px}
+html:not(.m) .pm-r{padding:28px 28px 32px}
+html:not(.m) .pm-head{align-items:flex-start;gap:12px}
+html:not(.m) .pm-user{gap:10px}
+html:not(.m) .pm-user .avt{width:36px;height:36px;flex:none}
+html:not(.m) .pm-user b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .pm-user small{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+html:not(.m) .pm-head .fclose{width:32px;height:32px;padding:0;margin:0;color:#18171a;display:grid;place-items:center;flex:none}
+html:not(.m) .pm-title{margin:24px 0 0;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:#18171a}
+html:not(.m) .pm-stats{margin-top:24px;height:34px;gap:12px}
+html:not(.m) .pm-st{gap:4px;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a;border:0;background:none;padding:0;cursor:pointer}
+html:not(.m) .pm-st svg{width:24px;height:24px}
+html:not(.m) .pm-st.on svg{color:#7425f6}
+html:not(.m) .pm-ib{width:24px;height:24px;padding:0;display:grid;place-items:center;color:#18171a}
+html:not(.m) .pm-ib svg{width:24px;height:24px}
+html:not(.m) .pm-hr{margin:24px 0;border-top-color:#e4e3e5}
+html:not(.m) .pm-sec{margin-top:28px}
+html:not(.m) .pm-hr+.pm-sec{margin-top:0}
+html:not(.m) .pm-sec h3{margin:0;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .pm-tools h4{margin:0 0 4px;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000}
+html:not(.m) .pm-chips{display:flex;flex-wrap:wrap;gap:6px}
+html:not(.m) .pm-chip{display:inline-flex;align-items:center;height:30px;box-sizing:border-box;padding:0 10px;border:1px solid #c3c2c5;border-radius:999px;font:500 12px/16px Pretendard,sans-serif;color:#18171a}
+html:not(.m) .pm-sh{margin-bottom:8px}
+html:not(.m) .pm-more{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+html:not(.m) .pm-links{gap:5px;padding:0 1px}
+html:not(.m) .pm-links a{gap:6px;font:500 12px/16px Pretendard,sans-serif;letter-spacing:0;color:#5b595f}
+html:not(.m) .pm-links a:hover{color:#245cb3}
+html:not(.m) .pm-links a svg{width:15px;height:15px;flex:none}
+html:not(.m) .pm-tagsec h3,html:not(.m) .pm-cmts>h3{margin-bottom:10px}
+html:not(.m) .pm-tags{gap:6px}
+html:not(.m) .pm-tag{height:28px;padding:6px 10px;box-sizing:border-box;border-radius:4px;background:#f1f0f2;font:500 12px/16px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) .pm-cbox{height:42px;padding:0 11px 0 16px;gap:10px;border-radius:10px;background:#f1f0f2}
+html:not(.m) .pm-cin{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+html:not(.m) .pm-cin::placeholder{color:#5b595f}
+html:not(.m) .pm-send svg{width:20px;height:20px}
+html:not(.m) .pm-clist{margin-top:27px;gap:23px}
+html:not(.m) .pm-c{display:flex;flex-direction:column;gap:8px}
+html:not(.m) .pm-crow{display:flex;align-items:center;gap:12px;min-height:38px}
+html:not(.m) .pm-crow .avt{width:30px;height:30px;flex:none}
+html:not(.m) .pm-ctx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:#000}
+html:not(.m) .pm-ctx b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+html:not(.m) .pm-ctx p{margin:0;font:500 12px/16px Pretendard,sans-serif;word-break:break-word}
+html:not(.m) .pm-cmore{width:24px;height:24px;padding:0;flex:none;display:grid;place-items:center;color:#18171a}
+html:not(.m) .pm-cmore svg{width:24px;height:24px}
+html:not(.m) .pm-cmeta{display:flex;gap:12px;padding:0 20px 0 42px;font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+html:not(.m) .pm-crow{width:100%}html:not(.m) .pm-cmore{margin-left:auto}
