@@ -1,0 +1,30 @@
+# 3D 포즈 실사 관절 추출 (YOLOX + RTMW3D) — 시험용 브랜치에서만 실행
+name: pose-lab
+on:
+  push:
+    branches: [pose-lab]
+    paths: ["tools/pose-data/**", ".github/workflows/pose-lab.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install rtmlib==0.0.16 onnxruntime opencv-python-headless numpy requests
+      - name: extract
+        run: |
+          cd tools/pose-data
+          mkdir -p out
+          LIMIT=$(cat limit.txt 2>/dev/null || echo 40)
+          python run_rtmw3d.py --photos ../../reffy-web/static/pose/photos.json --out out/raw.json --start 0 --limit $LIMIT 2>&1 | tee out/log.txt
+      - name: save
+        run: |
+          git config user.name "pose-lab bot"; git config user.email "actions@users.noreply.github.com"
+          git add tools/pose-data/out
+          git commit -m "pose-lab: 관절 추출 결과 [skip ci]" || echo nothing
+          git push
