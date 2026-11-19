@@ -2659,3 +2659,7 @@ html:not(.m) .lb-zoom{gap:10px}
 .lb-credit{position:absolute;left:24px;bottom:24px;z-index:2;margin:0;padding:6px 10px;border-radius:8px;background:rgba(24,23,26,.55);color:#fff;font:400 13px/18px Pretendard,sans-serif}
 .lb-credit a{color:#fff;text-decoration:underline}
 .pose-chips .pill.on{background:#f6f0fe;border-color:#7425f6;color:#7425f6}
+/* 3D 포즈: 화살표(방향) 버튼 대신 빈 곳을 좌클릭 드래그해 시점 회전 → 방향 버튼은 숨김 */
+.pose-ed .skeleton .camera-orbit-btn{display:none}
+.pose-ed .skeleton .anchor:has(.camera-orbit-btn){display:none}
+.pose-ed .skeleton .anchor[style*="top: 60px"]{top:8px!important;right:8px!important}
