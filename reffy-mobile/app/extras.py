@@ -223,7 +223,7 @@ def leave(body: LeaveIn, request: Request, resp: Response):
     books = [b["id"] for b in db.rows("SELECT id FROM books WHERE user_id = :u", u=u["id"])]
     with db.engine.begin() as c:
         for im in imgs:
-            for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications"):
+            for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications", "poses"):
                 c.execute(text(f"DELETE FROM {t} WHERE image_id = :i"), {"i": im["id"]})
             c.execute(text("DELETE FROM images WHERE id = :i"), {"i": im["id"]})
         for b in books:

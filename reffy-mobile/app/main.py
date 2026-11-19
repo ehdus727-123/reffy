@@ -15,7 +15,7 @@ from PIL import Image, ImageOps
 from pydantic import BaseModel
 from sqlalchemy import text
 
-from . import colors as colormod, config, db, extras, social, store
+from . import colors as colormod, config, db, extras, pose as posemod, social, store
 from .classifier import C
 from .search import match_tags, search
 from .tagger import T
@@ -24,6 +24,7 @@ from .tagmap import BY_IKEY, FULL, VOCAB, migrate_tags, tag_image
 app = FastAPI(title="REFFY")
 app.include_router(social.router)
 app.include_router(extras.router)
+app.include_router(posemod.router)
 FORMATS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp", "GIF": "gif"}
 
 
@@ -176,7 +177,7 @@ def status():
 
 # ------------------------------------------------------------------ 피드·검색
 @app.get("/api/images")
-def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", offset: int = 0, limit: int = config.PAGE, color: str = "", kind: str = ""):
+def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", offset: int = 0, limit: int = config.PAGE, color: str = "", kind: str = "", ids: str = ""):
     tl = [t for t in tags.split(",") if t]
     cl = [("#" + c.lstrip("#")).lower() for c in color.split(",") if colormod.HEX.match(c.strip())][:5]
     sort = sort or ("relevance" if (q.strip() or cl) else "recent")
@@ -187,7 +188,14 @@ def list_images(request: Request, q: str = "", tags: str = "", sort: str = "", o
     kinds = {k for k in kind.split(",") if k in ("photo", "illust")}   # 종류 필터 (사진 · 일러스트, 둘 중 하나라도)
     if kinds and len(kinds) < 2:
         hide |= {r["id"] for r in db.rows("SELECT id FROM images WHERE COALESCE(kind,'illust') != :k", k=next(iter(kinds)))}
-    if cl or hide:
+    order = [int(x) for x in ids.split(",") if x.strip().isdigit()][:500]   # 3D 포즈 검색 결과: 이 순서대로만 보여 줌
+    if order:
+        allow = set(search(q, tl, sort, 0, 100000)[0]) if (q.strip() or tl) else None
+        ids_all = [i for i in order if i not in hide and (allow is None or i in allow)]
+        found = []
+        total = len(ids_all)
+        ids = ids_all[offset:offset + limit]
+    elif cl or hide:
         all_ids, _, found = search(q, tl, sort, 0, 100000)
         ids_all = [i for i in all_ids if i not in hide]
         if cl:   # 색을 지정하면 그 색이 들어 있는 이미지만, 가까운 순(또는 선택한 정렬)으로
@@ -470,7 +478,7 @@ def delete_image(image_id: int, request: Request):
     if r[0]["user_id"] not in (None, user["id"]) and not social.is_admin(request):
         raise HTTPException(403, "내가 올린 게시물만 삭제할 수 있어요.")
     with db.engine.begin() as c:
-        for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications"):
+        for t in ("image_tags", "likes", "comments", "keeps", "book_items", "views", "notifications", "poses"):
             c.execute(text(f"DELETE FROM {t} WHERE " + ("image_id" if t != "image_tags" else "image_id") + " = :i"), {"i": image_id})
         c.execute(text("DELETE FROM images WHERE id = :i"), {"i": image_id})
     for p in (config.UPLOADS / r[0]["file"], config.UPLOADS / f"t_{image_id}.jpg"):

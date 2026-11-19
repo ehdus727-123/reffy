@@ -95,6 +95,10 @@ inquiries = Table("inquiries", md,
                   Column("email", String(120), default=""), Column("title", String(100), default=""), Column("photos", Text),
                   Column("created_at", DateTime, default=datetime.now))
 
+poses = Table("poses", md,   # 3D 포즈 검색용 관절 (MediaPipe Pose 33점 × [정규화 x,y,z · 월드 x,y,z · visibility]). lm = "" 이면 사람 없음
+              Column("image_id", Integer, primary_key=True), Column("lm", Text, default=""),
+              Column("created_at", DateTime, default=datetime.now))
+
 ACTIVE = "((t.user_state = 'add') OR (t.user_state IS NULL AND t.ai_prob >= :thr))"
 
 
