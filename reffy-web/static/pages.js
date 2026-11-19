@@ -578,7 +578,7 @@ async function profilePage(uid) {
       : u.blocked ? h("div", { class: "pf-acts" }, btn("차단 해제", "", unblock))
       : h("div", { class: "pf-acts" }, btn(u.isFollowing ? "팔로잉" : "팔로우", u.isFollowing ? "" : "primary", async () => { if (!ME) return needLogin(); try { await toggleFollow(u.uid, u.isFollowing); await loadAll(); draw(); } catch (e) { toast(e.message); } }));
     const tabBtn = (k, l, sc = "") => { const on = tab === k && (k !== "posts" || scope === sc); return h("button", { class: "pf-tab" + (on ? " on" : ""), type: "button", role: "tab", "aria-selected": String(on), onclick: async () => { tab = k; if (k === "posts" && scope !== sc) { scope = sc; try { await loadAll(); } catch (e) { toast(e.message); } } draw(); } }, l); };
-    const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => (isM() ? goPost(it.id) : postModal(it.id, async () => { await loadAll(); draw(); })) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
+    const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => (isM() ? goPost(it.id) : postModal(it.id, async () => { await loadAll(); draw(); }, posts.map((x) => x.id))) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
     const grid = u.blocked ? notice("차단한 유저예요", `차단을 해제하면 ${u.nick}님의 게시물을 다시 볼 수 있어요.`) : tab === "posts"
       ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
         : notice(kind === "illust" ? "일러스트 게시물이 없어요" : kind === "photo" ? "사진 게시물이 없어요" : scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
@@ -862,11 +862,20 @@ function accountMenu(anchor) {
 
 /* ---------------------------------------------------------------- 게시물 모달 · PC (HOM_0501_05 / COM_0102 / COM_0102_04)
    마이페이지 등에서 게시물을 누르면 페이지를 떠나지 않고 가운데 모달로 보여 줌 */
-async function postModal(id, onChange) {
+async function postModal(id, onChange, list, swap) {
   let d;
   try { const [a, so] = await Promise.all([api("/api/images/" + id), api("/api/images/" + id + "/social")]); d = a; d.so = so; }
   catch (e) { return toast(e.message); }
-  const m = h("div", { class: "modal pm-wrap", onmousedown: (e) => e.target === m && m.remove() });
+  const m = h("div", { class: "modal pm-wrap" + (swap ? " swap" : ""), onmousedown: (e) => e.target === m && m.remove() });
+  /* 같은 사람의 이전 · 다음 게시물 (Figma 2789:151823): 첫 게시물은 오른쪽만, 마지막은 왼쪽만 */
+  const idx = list ? list.indexOf(id) : -1;
+  const goTo = async (k) => { const nid = list[idx + k]; if (nid == null || m.dataset.busy) return; m.dataset.busy = "1"; const old = m; await postModal(nid, onChange, list, true); old.remove(); };
+  const navKey = (e) => { if (!document.body.contains(m)) return document.removeEventListener("keydown", navKey); if ($(".modal.lightbox, .modal.center") || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || "")) return; if (e.key === "ArrowLeft" && idx > 0) goTo(-1); if (e.key === "ArrowRight" && idx >= 0 && idx < list.length - 1) goTo(1); };
+  if (idx >= 0 && list.length > 1) {
+    if (idx > 0) m.append(h("button", { class: "pm-nav prev", type: "button", "aria-label": "이전 게시물", onclick: () => goTo(-1) }, figIc("chevL", 56)));
+    if (idx < list.length - 1) m.append(h("button", { class: "pm-nav next", type: "button", "aria-label": "다음 게시물", onclick: () => goTo(1) }, figIc("chevR", 56)));
+    document.addEventListener("keydown", navKey);
+  }
   const right = h("div", { class: "pm-r" });
   const box = h("div", { class: "pm", role: "dialog", "aria-modal": "true", "aria-label": d.title || "게시물" },
     h("div", { class: "pm-l" }, h("button", { class: "pm-img", type: "button", "aria-label": "이미지 크게 보기", onclick: () => openLightbox(d.full, d.title) }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지" }))), right);

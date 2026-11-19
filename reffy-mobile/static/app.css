@@ -2597,3 +2597,21 @@ html:not(.m) .pf-tab:focus-visible::before{opacity:.12}
 html:not(.m) .pf-tab:active::before{opacity:.1}
 html:not(.m) .pf-tab:focus-visible{outline:0}
 html:not(.m) .pf-tab:not(.on):hover{color:#6f6d72}
+
+/* 떠 있는 원형 버튼 (Figma 2789:154737): 80 · 흰색 40% · 배경 흐림 10 · 아이콘 56 */
+html:not(.m) .lb-close,html:not(.m) .lb-z,html:not(.m) .pm-nav{width:80px;height:80px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#18171a;display:grid;place-items:center;box-shadow:none;cursor:pointer;transition:background-color .15s,opacity .15s}
+html:not(.m) .lb-close:hover,html:not(.m) .lb-z:hover:not(:disabled),html:not(.m) .pm-nav:hover{background:rgba(255,255,255,.6)}
+html:not(.m) .lb-close:active,html:not(.m) .lb-z:active:not(:disabled),html:not(.m) .pm-nav:active{background:rgba(255,255,255,.7)}
+html:not(.m) .lb-z:disabled{opacity:.45;cursor:default}
+html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic,html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic svg{display:block;width:56px;height:56px}
+/* 크게 보기: X는 오른쪽 위 · 확대/축소는 오른쪽 아래 */
+html:not(.m) .lb-close{left:auto;right:24px;top:24px}
+html:not(.m) .lb-zoom{right:24px;bottom:24px;gap:12px}
+/* 게시물 창 (Figma MyPage/PostModal 915×680 · 이미지 518) + 양옆 이전/다음 (창에서 80 떨어짐) */
+html:not(.m) .pm{width:915px;height:680px;max-height:calc(100vh - 48px);grid-template-columns:518px 1fr}
+html:not(.m) .pm-nav{position:fixed;top:50%;margin-top:-40px;z-index:2}
+html:not(.m) .pm-nav.prev{left:calc(50% - 457.5px - 160px)}
+html:not(.m) .pm-nav.next{left:calc(50% + 457.5px + 80px)}
+@media (max-width:1300px){html:not(.m) .pm-nav.prev{left:16px}html:not(.m) .pm-nav.next{left:auto;right:16px}}
+html:not(.m) .pm-wrap.swap .pm{animation:none}
+html:not(.m) .modal.pm-wrap.swap{animation:none}

@@ -861,19 +861,28 @@ function kindTag(d, edit, redraw) {
     S.pickedKind = new Set([k]); S.kinds = [k]; S.picked = new Set(); S.applied = []; S.q = ""; qEl.value = ""; drawGroups(); if (isM() && !$("#panel").hidden) closeDetail(); reload(); } }, "#" + label);
 }
 /* 이미지 크게 보기: 상세 이미지를 누르면 화면 가운데에 크게 · +/− 버튼, 휠, 더블클릭(두 번 탭)으로 확대 · 확대하면 끌어서 이동 · Esc/×/바깥 누르면 닫힘 */
+/* Figma Common · Icon (Outlined, 24 기준 경로) — 떠 있는 원형 버튼(80 · 흰색 40% + 배경 흐림 10, 아이콘 56)에 씀 */
+const FIG_IC = {
+  close: "M16.9697 5.96973C17.2626 5.67683 17.7374 5.67683 18.0303 5.96973C18.3232 6.26262 18.3232 6.73738 18.0303 7.03027L13.0605 12L18.0303 16.9697C18.3232 17.2626 18.3232 17.7374 18.0303 18.0303C17.7374 18.3232 17.2626 18.3232 16.9697 18.0303L12 13.0605L7.03027 18.0303C6.73738 18.3232 6.26262 18.3232 5.96973 18.0303C5.67683 17.7374 5.67683 17.2626 5.96973 16.9697L10.9395 12L5.96973 7.03027C5.67683 6.73738 5.67683 6.26262 5.96973 5.96973C6.26262 5.67683 6.73738 5.67683 7.03027 5.96973L12 10.9395L16.9697 5.96973Z",
+  plus: "M11.25 19V12.75H5C4.58579 12.75 4.25 12.4142 4.25 12C4.25 11.5858 4.58579 11.25 5 11.25H11.25V5C11.25 4.58579 11.5858 4.25 12 4.25C12.4142 4.25 12.75 4.58579 12.75 5V11.25H19C19.4142 11.25 19.75 11.5858 19.75 12C19.75 12.4142 19.4142 12.75 19 12.75H12.75V19C12.75 19.4142 12.4142 19.75 12 19.75C11.5858 19.75 11.25 19.4142 11.25 19Z",
+  minus: "M19 11.25C19.4142 11.25 19.75 11.5858 19.75 12C19.75 12.4142 19.4142 12.75 19 12.75H5C4.58579 12.75 4.25 12.4142 4.25 12C4.25 11.5858 4.58579 11.25 5 11.25H19Z",
+  chevL: "M13.9697 5.4697C14.2626 5.1768 14.7374 5.1768 15.0303 5.4697C15.3232 5.7626 15.3232 6.2374 15.0303 6.5303L9.5606 12L15.0303 17.4697C15.3232 17.7626 15.3232 18.2374 15.0303 18.5303C14.7374 18.8232 14.2626 18.8232 13.9697 18.5303L7.9697 12.5303C7.6768 12.2374 7.6768 11.7626 7.9697 11.4697L13.9697 5.4697Z",
+  chevR: "M8.9697 5.4697C9.2626 5.1768 9.7373 5.1768 10.0302 5.4697L16.0302 11.4697C16.3231 11.7626 16.3231 12.2374 16.0302 12.5303L10.0302 18.5303C9.7373 18.8232 9.2626 18.8232 8.9697 18.5303C8.6768 18.2374 8.6768 17.7626 8.9697 17.4697L14.4394 12L8.9697 6.5303C8.6768 6.2374 8.6768 5.7626 8.9697 5.4697Z",
+};
+const figIc = (k, size = 24) => { const sp = h("span", { class: "fic" }); sp.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${FIG_IC[k]}" fill="currentColor"/></svg>`; return sp; };
 function openLightbox(src, title) {
   let z = 1, x = 0, y = 0, drag = null;
   const img = h("img", { src, alt: title || "레퍼런스 이미지", draggable: "false" });
   const stage = h("div", { class: "lb-stage" }, img);
   const apply = () => { img.style.transform = `translate(${x}px, ${y}px) scale(${z})`; stage.classList.toggle("zoomed", z > 1); minus.disabled = z <= 1; plus.disabled = z >= 4; };
   const zoomTo = (nz) => { z = Math.max(1, Math.min(4, Math.round(nz * 100) / 100)); if (z === 1) { x = 0; y = 0; } apply(); };
-  const plus = h("button", { class: "lb-z", type: "button", "aria-label": "확대", onclick: () => zoomTo(z + 0.5) }, icon("plus", 28));
-  const minus = h("button", { class: "lb-z", type: "button", "aria-label": "축소", onclick: () => zoomTo(z - 0.5) }, h("span", { class: "lb-minus" }));
+  const plus = h("button", { class: "lb-z", type: "button", "aria-label": "확대", onclick: () => zoomTo(z + 0.5) }, isM() ? icon("plus", 28) : figIc("plus", 56));
+  const minus = h("button", { class: "lb-z", type: "button", "aria-label": "축소", onclick: () => zoomTo(z - 0.5) }, isM() ? h("span", { class: "lb-minus" }) : figIc("minus", 56));
   const close = () => { m.remove(); document.removeEventListener("keydown", key); };
   const key = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } else if (e.key === "+" || e.key === "=") zoomTo(z + 0.5); else if (e.key === "-") zoomTo(z - 0.5); };
   const m = h("div", { class: "modal lightbox", role: "dialog", "aria-modal": "true", "aria-label": "이미지 크게 보기",
     onclick: (e) => { if (e.target === m || e.target === stage) close(); } },
-    h("button", { class: "lb-close", type: "button", "aria-label": "닫기", onclick: close }, icon("close", 28)),
+    h("button", { class: "lb-close", type: "button", "aria-label": "닫기", onclick: close }, isM() ? icon("close", 28) : figIc("close", 56)),
     stage, h("div", { class: "lb-zoom" }, plus, minus));
   img.addEventListener("dblclick", (e) => { e.stopPropagation(); zoomTo(z > 1 ? 1 : 2); });
   stage.addEventListener("wheel", (e) => { e.preventDefault(); zoomTo(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)); }, { passive: false });
