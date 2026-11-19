@@ -82,7 +82,7 @@
     "유형"
    ],
    "mode": "단일",
-   "tags": "nonhuman",
+   "tags": "monster_girl",
    "from": [
     "nonhuman_nonhuman"
    ],
@@ -355,7 +355,7 @@
     "앞머리"
    ],
    "mode": "토글",
-   "tags": "fullbangs see-through bangs choppy hiden side",
+   "tags": "blunt_bangs see-through_bangs choppy_bangs hair_over_eyes hair_over_one_eye swept_bangs",
    "from": [
     "hairstyle_fullbangs",
     "hairstyle_see-through bangs",
@@ -1097,7 +1097,7 @@
     "아우터"
    ],
    "mode": "다중",
-   "tags": "down_jacket puffer_jacket",
+   "tags": "down_jacket",
    "from": [
     "outfit_padding"
    ],
@@ -1133,7 +1133,7 @@
     "하의"
    ],
    "mode": "다중",
-   "tags": "long_pants shorts_pants",
+   "tags": "pants shorts",
    "from": [
     "outfit_long_pants",
     "outfit_shorts_pants"

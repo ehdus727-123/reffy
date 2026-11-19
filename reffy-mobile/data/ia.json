@@ -658,7 +658,7 @@
     "머릿결"
    ],
    "mode": "",
-   "tags": "straight hair",
+   "tags": "straight_hair",
    "count": null,
    "note": "웨이브 없이 곧게 떨어짐",
    "ord": 42,
@@ -777,7 +777,7 @@
     "묶음"
    ],
    "mode": "",
-   "tags": "half-up",
+   "tags": "half_updo",
    "count": null,
    "note": "윗머리만 묶고 나머지는 풀어 내림",
    "ord": 49,
@@ -794,7 +794,7 @@
     "앞머리"
    ],
    "mode": "",
-   "tags": "fullbangs",
+   "tags": "blunt_bangs",
    "count": null,
    "note": "이마를 일자로 덮는 앞머리",
    "ord": 50,
@@ -811,7 +811,7 @@
     "앞머리"
    ],
    "mode": "",
-   "tags": "see-through bangs",
+   "tags": "see-through_bangs",
    "count": null,
    "note": "숱이 적어 이마가 비쳐 보이는 앞머리",
    "ord": 51,
@@ -828,7 +828,7 @@
     "앞머리"
    ],
    "mode": "",
-   "tags": "choppy bangs",
+   "tags": "choppy_bangs",
    "count": null,
    "note": "눈썹 위로 짧게 자른 앞머리",
    "ord": 52,
@@ -845,7 +845,7 @@
     "앞머리"
    ],
    "mode": "",
-   "tags": "hiden bangs",
+   "tags": "hair_over_eyes hair_over_one_eye",
    "count": null,
    "note": "앞머리가 한쪽 이상의 눈을 가림",
    "ord": 53,
@@ -862,7 +862,7 @@
     "앞머리"
    ],
    "mode": "",
-   "tags": "side bangs",
+   "tags": "swept_bangs",
    "count": null,
    "note": "한쪽으로 넘기거나 옆으로 흐르는 앞머리",
    "ord": 54,
@@ -1240,7 +1240,7 @@
     "비인간 특징"
    ],
    "mode": "다중",
-   "tags": "nonhuman",
+   "tags": "monster_girl",
    "count": null,
    "note": "몸 전체가 사람이 아님 (로봇, 수인, 괴물 등)",
    "ord": 78,
@@ -1400,7 +1400,7 @@
     "아우터"
    ],
    "mode": "다중",
-   "tags": "down_jacket puffer_jacket",
+   "tags": "down_jacket",
    "count": null,
    "note": "충전재로 부풀어 오른 두꺼운 겉옷",
    "ord": 88,
@@ -1464,7 +1464,7 @@
     "하의"
    ],
    "mode": "다중",
-   "tags": "long_pants",
+   "tags": "pants",
    "count": 435239,
    "note": "발목까지 오는 바지",
    "ord": 92,
@@ -1496,7 +1496,7 @@
     "하의"
    ],
    "mode": "다중",
-   "tags": "shorts_pants",
+   "tags": "shorts",
    "count": null,
    "note": "무릎 위 길이의 바지",
    "ord": 94,
@@ -2056,7 +2056,7 @@
     "목"
    ],
    "mode": "다중",
-   "tags": "muffler",
+   "tags": "scarf",
    "count": null,
    "note": "목도리·스카프",
    "ord": 129,
@@ -2860,7 +2860,7 @@
     "고개 기울기"
    ],
    "mode": "다중",
-   "tags": "head_up",
+   "tags": "looking_up head_back",
    "count": null,
    "note": "턱을 들어 고개를 위로 젖힘",
    "ord": 181,
