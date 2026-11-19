@@ -22,7 +22,12 @@ jobs:
           mkdir -p out
           LIMIT=$(cat limit.txt 2>/dev/null || echo 40)
           MODE=$(cat mode.txt 2>/dev/null || echo extract)
-          if [ "$MODE" = "compare" ]; then python compare_draw.py 2>&1 | tee out/log_compare.txt; else
+          if [ "$MODE" = "coco" ]; then
+            curl -sSL -o ann.zip http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+            unzip -q -o ann.zip "annotations/person_keypoints_*" -d .
+            python run_coco.py --ann annotations/person_keypoints_train2017.json --ann annotations/person_keypoints_val2017.json --max $(cat limit.txt) --out out/coco 2>&1 | tee out/log_coco.txt
+            rm -rf annotations ann.zip
+          elif [ "$MODE" = "compare" ]; then python compare_draw.py 2>&1 | tee out/log_compare.txt; else
           python run_rtmw3d.py --photos ../../reffy-web/static/pose/photos.json --out out/raw.json --start 0 --limit $LIMIT 2>&1 | tee out/log.txt; fi
       - name: save
         run: |
