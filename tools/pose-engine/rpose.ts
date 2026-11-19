@@ -19,6 +19,7 @@ import MatchKneeCameraUnrelated from './Search/impl/MatchKneeCameraUnrelated';
 import MatchShoulder from './Search/impl/MatchShoulder';
 import MatchShoulderCameraUnrelated from './Search/impl/MatchShoulderCameraUnrelated';
 import {filterAndSort, PoseMatcher} from './Search/impl/search';
+import MatchWhole from './MatchWhole';
 
 type LM = { point: [number, number, number], visibility: number };
 const NUM = 33;
@@ -127,19 +128,16 @@ export function search(model: SkeletonModel, key: string, photos: Photo[], opt: 
     return filterAndSort(photos, model, m).slice(0, opt.limit || 100);
 }
 
-/* 여러 관절 그룹을 합쳐 점수 (그룹마다 순위 점수를 더함) — 전체 자세 비교에 씀 */
-export function searchAll(model: SkeletonModel, keys: string[], photos: Photo[], opt: { cameraFree?: boolean, limit?: number } = {}) {
-    const total = new Map<Photo, { score: number, n: number, flip: boolean }>();
-    for (const k of keys) {
-        const r = search(model, k, photos, {cameraFree: opt.cameraFree, limit: photos.length});
-        r.forEach((x, i) => {
-            const t = total.get(x.photo) || {score: 0, n: 0, flip: x.flip};
-            t.score += 1 - i / Math.max(1, r.length); t.n++; total.set(x.photo, t);
-        });
-    }
-    return [...total.entries()].filter(([, t]) => t.n >= Math.ceil(keys.length / 2))
-        .map(([photo, t]) => ({photo, score: t.score / keys.length, flip: t.flip}))
-        .sort((a, b) => b.score - a.score).slice(0, opt.limit || 100);
+/* 전체 자세: 팔·다리 8개 뼈 방향을 한꺼번에 비교 (MatchWhole) */
+const WHOLE = new MatchWhole(false), WHOLE_FREE = new MatchWhole(true);
+const WHOLE_L = new MatchWhole(false, 1.5), WHOLE_FREE_L = new MatchWhole(true, 1.5);
+export function searchAll(model: SkeletonModel, _keys: string[], photos: Photo[], opt: { cameraFree?: boolean, limit?: number } = {}) {
+    const lim = opt.limit || 100;
+    const strict = filterAndSort(photos, model, opt.cameraFree ? WHOLE_FREE : WHOLE);
+    if (strict.length >= 24) return strict.slice(0, lim);
+    const seen = new Set(strict.map(x => x.photo));   // 꼭 맞는 사진이 적으면 조금 덜 비슷한 사진을 뒤에 이어 붙임
+    const loose = filterAndSort(photos, model, opt.cameraFree ? WHOLE_FREE_L : WHOLE_L).filter(x => !seen.has(x.photo));
+    return strict.concat(loose).slice(0, lim);
 }
 
 /* 이미지에서 관절 추출 (MediaPipe Pose, 브라우저 안에서 실행) */

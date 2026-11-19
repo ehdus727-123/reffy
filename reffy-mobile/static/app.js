@@ -371,7 +371,7 @@ function loadPoseEngine() {
   return (POSE.eng = new Promise((ok, bad) => {
     if (window.RPose) return ok(window.RPose);
     document.head.append(h("link", { rel: "stylesheet", href: "pose/pose-engine.css?v=2" }));
-    const sc = h("script", { src: "pose/pose-engine.js?v=2" });
+    const sc = h("script", { src: "pose/pose-engine.js?v=3" });
     sc.onload = () => (window.RPose ? ok(window.RPose) : bad(new Error("3D 포즈 엔진을 불러오지 못했어요")));
     sc.onerror = () => { POSE.eng = null; bad(new Error("3D 포즈 엔진을 불러오지 못했어요")); };
     document.head.append(sc);
