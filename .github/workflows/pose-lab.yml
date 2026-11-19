@@ -21,7 +21,9 @@ jobs:
           cd tools/pose-data
           mkdir -p out
           LIMIT=$(cat limit.txt 2>/dev/null || echo 40)
-          python run_rtmw3d.py --photos ../../reffy-web/static/pose/photos.json --out out/raw.json --start 0 --limit $LIMIT 2>&1 | tee out/log.txt
+          MODE=$(cat mode.txt 2>/dev/null || echo extract)
+          if [ "$MODE" = "compare" ]; then python compare_draw.py 2>&1 | tee out/log_compare.txt; else
+          python run_rtmw3d.py --photos ../../reffy-web/static/pose/photos.json --out out/raw.json --start 0 --limit $LIMIT 2>&1 | tee out/log.txt; fi
       - name: save
         run: |
           git config user.name "pose-lab bot"; git config user.email "actions@users.noreply.github.com"
