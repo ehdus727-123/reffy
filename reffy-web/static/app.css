@@ -2615,3 +2615,4 @@ html:not(.m) .pm-nav.next{left:calc(50% + 457.5px + 80px)}
 @media (max-width:1300px){html:not(.m) .pm-nav.prev{left:16px}html:not(.m) .pm-nav.next{left:auto;right:16px}}
 html:not(.m) .pm-wrap.swap .pm{animation:none}
 html:not(.m) .modal.pm-wrap.swap{animation:none}
+html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic.f80:has(svg[width="80"]),html:not(.m) :is(.lb-close,.lb-z,.pm-nav) .fic svg[width="80"]{width:80px;height:80px}
