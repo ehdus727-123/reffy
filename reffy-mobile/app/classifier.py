@@ -46,7 +46,13 @@ class TeamClassifier:
                 x[j] = p
         x = x.reshape(1, -1)
         out = {}
-        for kw, (clf, _auc, _n) in self.models.items():
+        for kw, m in self.models.items():
+            if isinstance(m, dict):   # 형식 2: 가중치 · 키워드별 기준값 (tools/train_team.py, scikit-learn 버전과 무관)
+                p = float(1.0 / (1.0 + np.exp(-(float(x[0] @ m["w"]) + m["b"]))))
+                if p >= m["thr"]:
+                    out[kw] = p
+                continue
+            clf = m[0]
             p = float(clf.predict_proba(x)[0, 1])
             if p >= config.TEAM_PROB:
                 out[kw] = p
