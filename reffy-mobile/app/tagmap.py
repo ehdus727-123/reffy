@@ -32,6 +32,9 @@ BY_IKEY = {v["ikey"]: v for v in VOCAB}
 BY_KEYWORD = {v["keyword"]: v for v in VOCAB}
 # 기준표 항목 -> 사이트 태그 (같으면 그대로, 묶인 것은 대표 태그로)
 FROM = {old: it["key"] for it in EXPOSED["items"] for old in it.get("from", [])}
+# 키워드 -> (WD 태그, 기준값): 기본 0.35 보다 낮춰야 잡히는 것들 (tools/tune_pose.py 결과)
+TUNED = {"더치 앵글": ("dutch_angle", 0.15), "하이앵글": ("from_above", 0.10), "로우앵글": ("from_below", 0.05),
+         "측면": ("profile", 0.20), "달리기": ("running", 0.25)}
 PERSON = {"count_1", "count_2", "count_3", "count_4", "count_5over"}
 
 
@@ -49,6 +52,12 @@ def tag_image(im) -> dict:
         for k in kws:
             v = FULL_BY_KEYWORD[k]
             raw[v["ikey"]] = (wd.get(why[k], 0.9), "wd")
+        # 앵글·방향은 WD 가 확률을 낮게 내는 편이라, 팀 라벨 1,618장으로 고른 태그별 기준값을 따로 씀 (교차검증 정밀도 0.55 이상만)
+        for k, (t, th) in TUNED.items():
+            p = wd.get(t, 0)
+            v = FULL_BY_KEYWORD.get(k)
+            if v is not None and p >= th and p > raw.get(v["ikey"], (0, ""))[0]:
+                raw[v["ikey"]] = (max(p, config.WD_THRESHOLD), "wd")
         for k, p in C.predict(wd).items():
             v = FULL_BY_KEYWORD.get(k)
             if v is not None:
