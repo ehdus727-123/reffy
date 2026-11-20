@@ -823,6 +823,32 @@ function materialsSec(d) {
     h("ul", { class: "mat-list" }, d.materials.map((l) => h("li", {}, icon("link", 16), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, l.replace(/^https?:\/\//, ""))))));
 }
 /* 이미지 기반 관절 검색 (COM_0104): 3D 포즈 필터로 이동. 검색 자체는 준비 중 */
+/* 일러스트 포즈 인식 (pose/rtm.js · RTMPose) 불러오기 */
+function loadRtm() {
+  if (window.RTM) return Promise.resolve(window.RTM);
+  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=1" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
+}
+/* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z], visibility }
+   깊이는 알 수 없어서 z = 0 (그림 평면 그대로). 골반 가운데를 원점, 어깨~골반 길이를 0.5m 로 맞춤 */
+function kpsToWorld(k) {
+  const mid = (a, b) => [(k[a][0] + k[b][0]) / 2, (k[a][1] + k[b][1]) / 2];
+  const hip = mid(11, 12), sh = mid(5, 6), torso = Math.hypot(sh[0] - hip[0], sh[1] - hip[1]) || 1, s = 0.5 / torso;
+  const P = (x, y) => [(x - hip[0]) * s, -(y - hip[1]) * s, 0];
+  const at = (i) => ({ point: P(k[i][0], k[i][1]), visibility: k[i][2] > 0.3 ? 0.9 : 0.1 });
+  const ext = (a, b, t, v) => ({ point: P(k[b][0] + (k[b][0] - k[a][0]) * t, k[b][1] + (k[b][1] - k[a][1]) * t), visibility: Math.min(k[a][2], k[b][2]) > 0.3 ? v : 0.1 });   // a->b 방향으로 조금 더 (손·발 끝)
+  const COCO = { 0: 0, 2: 1, 5: 2, 7: 3, 8: 4, 11: 5, 12: 6, 13: 7, 14: 8, 15: 9, 16: 10, 23: 11, 24: 12, 25: 13, 26: 14, 27: 15, 28: 16 };
+  const NEAR = { 1: 1, 3: 1, 4: 2, 6: 2, 9: 0, 10: 0 };   // 눈 안·바깥쪽 = 눈, 입 = 코
+  const out = [];
+  for (let i = 0; i < 33; i++) {
+    if (i in COCO) out.push(at(COCO[i]));
+    else if (i in NEAR) { const o = at(NEAR[i]); if (i === 9 || i === 10) o.point = [o.point[0], o.point[1] - 0.04, 0]; out.push(o); }
+    else if (i === 17 || i === 19 || i === 21) out.push(ext(7, 9, 0.25, 0.8));    // 왼손 (새끼·검지·엄지)
+    else if (i === 18 || i === 20 || i === 22) out.push(ext(8, 10, 0.25, 0.8));   // 오른손
+    else if (i === 29) out.push(ext(13, 15, 0.08, 0.8)); else if (i === 30) out.push(ext(14, 16, 0.08, 0.8));   // 발뒤꿈치
+    else if (i === 31) out.push(ext(13, 15, 0.2, 0.8)); else out.push(ext(14, 16, 0.2, 0.8));                   // 발끝
+  }
+  return out;
+}
 async function pullPose(idArg) {
   if (!(await (isM() ? confirmDialog("해당 이미지의 구도를 ‘3D Pose’에 덮어씌울까요?", "3D Pose 필터에 이 이미지의 구도가 적용돼요.", { ok: "덮어씌우기", cancel: "취소" })
     : confirmDialog("해당 이미지의 구도를 ‘3D 포즈’에\n덮어 씌우겠습니까?", "이미지에서 뽑은 관절 핀이 3D 모델 포즈로 바뀌어요.", { fig: true, no: "아니오", yes: "예" })))) return;
@@ -833,8 +859,12 @@ async function pullPose(idArg) {
   try {
     const R = await loadPoseEngine();
     const img = new Image(); img.crossOrigin = "anonymous"; img.src = `/img/${id}`; await img.decode();
-    const r = await R.detect(img);
-    if (!r || r.world.filter((x) => x.visibility > 0.4).length < 8) return toast("이 이미지에서 사람 자세를 찾지 못했어요. 마네킹을 직접 움직여 보세요.");
+    let kind = "illust"; try { kind = (await api(`/api/images/${id}`)).kind || "illust"; } catch { /* 모르면 일러스트로 */ }
+    // 일러스트: RTMPose(일러스트·SD 캐릭터도 꽤 잡음) 먼저, 사진: MediaPipe 먼저. 못 찾으면 다른 쪽으로 한 번 더
+    const viaRtm = async () => { const k = await loadRtm().then((M) => M.detect(img)).catch(() => null); return k ? { world: kpsToWorld(k.kps) } : null; };
+    const viaMp = async () => { const r = await R.detect(img).catch(() => null); return r && r.world.filter((x) => x.visibility > 0.4).length >= 8 ? r : null; };
+    const r = kind === "photo" ? ((await viaMp()) || (await viaRtm())) : ((await viaRtm()) || (await viaMp()));
+    if (!r) return toast("이 이미지에서 사람 자세를 찾지 못했어요. 마네킹을 직접 움직여 보세요.");
     if (POSE.ed) POSE.ed.setLandmarks(r.world); else POSE.pending = r.world;
     toast("이미지 구도를 마네킹에 옮겼어요. ‘포즈 적용하기’로 비슷한 사진을 찾아보세요.");
   } catch (e) { toast(e.message || "자세를 읽지 못했어요"); }

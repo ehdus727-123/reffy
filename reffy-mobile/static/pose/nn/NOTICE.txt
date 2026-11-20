@@ -1,0 +1,4 @@
+일러스트 포즈 인식 모델 (브라우저에서 onnxruntime-web 으로 실행)
+- rtmpose-m-body7-fp16.onnx : RTMPose-m (simcc, body7, 256x192) — OpenMMLab MMPose, Apache-2.0. 원본 ONNX 를 fp16 으로 줄임.
+- rtmdet-nano-person.onnx   : RTMDet-nano 사람 검출 (320x320) — OpenMMLab MMPose/MMDetection, Apache-2.0.
+출처: https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose
