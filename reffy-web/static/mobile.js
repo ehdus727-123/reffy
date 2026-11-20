@@ -178,8 +178,13 @@ async function drawerPageM(sub, id) {
       let kind = ""; const body = h("div", {});
       const load = async () => {
         const d = await api("/api/me/reacted" + (kind ? "?kind=" + kind : ""));
+        const remove = async (it) => {
+          if (!(await confirmDialog("반응한 게시물에서 삭제할까요?", "내 하트와 이 게시물에 작성한 댓글이 삭제돼요.", { ok: "삭제하기", cancel: "취소", danger: true }))) return;
+          try { await api("/api/me/reacted/" + it.id, { method: "DELETE" }); toast("반응한 게시물에서 삭제했어요"); await load(); } catch (e) { toast(e.message); }
+        };
+        const cards = d.items.map((it) => { const c = pcard(it, { click: () => goPost(it.id) }); const kebab = h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [{ label: "삭제하기", danger: true, fn: () => remove(it) }]); } }, moreIc()); c.append(kebab); return c; });
         body.replaceChildren(h("div", { class: "kbar" }, [["", "전체"], ["like", "하트"], ["comment", "댓글"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; load().catch((e) => toast(e.message)); } }, l))),
-          d.items.length ? pgrid(d.items, {}, "c2") : notice("아직 반응한 게시물이 없어요", "하트나 댓글을 남기면 여기에 모여요."));
+          d.items.length ? h("div", { class: "grid c2" }, cards) : notice("아직 반응한 게시물이 없어요", "하트나 댓글을 남기면 여기에 모여요."));
       };
       root.replaceChildren(mbar("반응한 게시물", { back: () => (location.hash = "#/drawer/act") }), h("div", { class: "pad" }, body));
       return await load();

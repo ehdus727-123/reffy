@@ -246,6 +246,23 @@ def leave(body: LeaveIn, request: Request, resp: Response):
 
 
 # ------------------------------------------------------------------ 서랍: 반응한 게시물(하트 · 댓글)
+@router.delete("/me/reacted/{image_id}")
+def remove_reaction(image_id: int, request: Request):
+    """서랍에서 현재 사용자의 이 게시물 반응(하트와 작성 댓글)을 제거한다."""
+    u = S.need(request)
+    with db.engine.begin() as c:
+        comment_ids = [r["id"] for r in c.execute(text(
+            "SELECT id FROM comments WHERE image_id=:i AND user_id=:u"
+        ), {"i": image_id, "u": u["id"]}).mappings().all()]
+        if comment_ids:
+            ph = ",".join(f":c{n}" for n in range(len(comment_ids)))
+            params = {f"c{n}": cid for n, cid in enumerate(comment_ids)}
+            c.execute(text(f"DELETE FROM comments WHERE parent_id IN ({ph})"), params)
+            c.execute(text(f"DELETE FROM comments WHERE id IN ({ph})"), params)
+        c.execute(text("DELETE FROM likes WHERE user_id=:u AND image_id=:i"), {"u": u["id"], "i": image_id})
+    return {"ok": True}
+
+
 @router.get("/me/reacted")
 def my_reacted(request: Request, kind: str = ""):
     u = S.need(request)

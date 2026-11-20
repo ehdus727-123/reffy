@@ -358,9 +358,17 @@ async function drawerPage(sub, id) {
       const load = async () => {
         chips.replaceChildren(...[["", "전체"], ["like", "하트"], ["comment", "댓글"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(drawerKind === k), class: "dchip" + (drawerKind === k ? " on" : ""), onclick: () => { if (drawerKind !== k) { drawerKind = k; load(); } } }, l)));
         const d = await api("/api/me/reacted" + (drawerKind ? "?kind=" + drawerKind : ""));
-        // 카드: 피드와 같은 WF/Card (프로필 · 닉네임 · 하트 수), 누르면 게시물 화면으로
-        const dcard = (it) => { const c = card(it); c.onclick = () => goPost(it.id); return c; };
-        body.replaceChildren(d.items.length ? (isM() ? h("div", { class: "grid c5 dgrid" }, d.items.map(dcard)) : rrGrid(d.items, (it) => ({ click: () => goPost(it.id) }), { gap: 12 })) : notice(drawerKind === "comment" ? "아직 댓글을 단 게시물이 없어요" : drawerKind === "like" ? "아직 하트를 누른 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+        // 데스크톱은 Figma 게시물 모달, 모바일은 기존 게시물 상세 화면을 연다.
+        const ids = d.items.map((it) => it.id);
+        const openItem = (it) => isM() ? goPost(it.id) : postModal(it.id, load, ids);
+        const removeReaction = async (it) => {
+          if (!(await confirmDialog("반응한 게시물에서 삭제할까요?", "내 하트와 이 게시물에 작성한 댓글이 삭제돼요.", { ok: "삭제하기", cancel: "취소", danger: true }))) return;
+          try { await api("/api/me/reacted/" + it.id, { method: "DELETE" }); toast("반응한 게시물에서 삭제했어요"); await load(); }
+          catch (e) { toast(e.message); }
+        };
+        const more = (anchor, it) => menuCard(anchor, [{ label: "삭제하기", danger: true, fn: () => removeReaction(it) }]);
+        const dcard = (it) => { const c = card(it); c.onclick = () => openItem(it); const kebab = h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); more(e.currentTarget, it); } }, moreIc()); c.append(kebab); return c; };
+        body.replaceChildren(d.items.length ? (isM() ? h("div", { class: "grid c5 dgrid" }, d.items.map(dcard)) : rrGrid(d.items, (it) => ({ click: () => openItem(it), more }), { gap: 12 })) : notice(drawerKind === "comment" ? "아직 댓글을 단 게시물이 없어요" : drawerKind === "like" ? "아직 하트를 누른 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
       };
       await load();
       main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "반응한 게시물"), h("p", { class: "sub" }, "하트를 누르거나 댓글을 단 게시글이에요")), chips), body);
