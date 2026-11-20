@@ -997,7 +997,7 @@ function drawDetail(d, edit = false) {
       h("div", { class: "dp-top" },
         h("button", { class: "dp-ib back", type: "button", "aria-label": "이전에 본 이미지", title: "이전에 본 이미지", disabled: !S.hist.length, onclick: goBack }, dpSvg("back", 36)),
         h("span", { class: "sp" }),
-        isM() ? h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, dpSvg("close", 36)) : null),
+        h("button", { class: "dp-ib", type: "button", "aria-label": "창 닫기", title: "닫기", onclick: closeDetail }, dpSvg("close", 36))),
       h("div", { class: "dp-fab" },
         h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도를 3D 포즈로", onclick: () => pullPose() }, dpSvg("pose", 28)),
         d.ext ? null : h("button", { type: "button", class: "dp-fb", "aria-label": "이 이미지의 색상으로 팔레트 만들기", title: "이 이미지의 색상을 팔레트로", onclick: () => pullPalette(d.id) }, dpSvg("palette", 28)),   // 실사(Unsplash)는 색 추출 없음
@@ -1012,7 +1012,7 @@ function drawDetail(d, edit = false) {
             : h("div", { class: "dp-name" }, o ? h("a", { href: "#/u/" + o.uid }, o.nick || d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
           h("div", { class: "dp-uacts" },
             o && !isOwner ? h("button", { class: "dp-follow" + (o.following ? " ing" : ""), type: "button", onclick: () => act(d, o.following ? "DELETE" : "POST", `/api/users/${o.uid}/follow`, null, edit) }, o.following ? "팔로잉" : "팔로우") : null,
-            isM() ? null : figClose(closeDetail))),
+            )),
         d.ext ? null : h("h2", { class: "dp-title" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null)),   // 실사(Unsplash)는 제목 없이
       h("div", { class: "dp-acts" },
         h("div", { class: "dp-react" },
