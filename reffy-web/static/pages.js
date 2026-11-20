@@ -349,25 +349,8 @@ async function drawerPage(sub, id) {
   try {
     if (sub === "recent") {
       const d = await api("/api/me/viewed");
-      const loadRecent = async () => {
-        const data = await api("/api/me/viewed");
-        const ids = data.items.map((it) => it.id);
-        const openItem = (it) => isM() ? goPost(it.id) : postModal(it.id, loadRecent, ids);
-        const removeRecent = async (it) => {
-          if (!(await confirmDialog("최근 본 게시물에서 삭제할까요?", "이 게시물이 최근 본 목록에서 사라져요.", { ok: "삭제하기", cancel: "취소", danger: true }))) return;
-          try { await api("/api/me/viewed/" + it.id, { method: "DELETE" }); toast("최근 본 게시물에서 삭제했어요"); await loadRecent(); }
-          catch (e) { toast(e.message); }
-        };
-        const more = (anchor, it) => menuCard(anchor, [{ label: "삭제하기", danger: true, fn: () => removeRecent(it) }]);
-        const content = data.items.length
-          ? (isM() ? h("div", { class: "grid c5 dgrid" }, data.items.map((it) => { const c = card(it); c.onclick = () => openItem(it); const k = h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); more(e.currentTarget, it); } }, moreIc()); c.append(k); return c; })
-            : rrGrid(data.items, (it) => ({ click: () => openItem(it), more }), { gap: 12 }))
-          : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/")));
-        const section = main.querySelector(".recent-items");
-        if (section) section.replaceChildren(content);
-      };
-      main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "최근 본 게시물"), h("p", { class: "sub" }, "최근 일주일 동안 본 게시물이 보여요"))), h("div", { class: "recent-items" }));
-      await loadRecent();
+      main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "최근 본 게시물"), h("p", { class: "sub" }, "최근 일주일 동안 본 게시물이 보여요"))),
+        d.items.length ? (isM() ? pgrid : (items, o) => rrGrid(items, o, { gap: 12 }))(d.items, {}, "c5") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
     } else if (sub === "liked") {
       // DRW_0302 반응한 게시물: 전체 · 하트 · 댓글 칩으로 거르기
       const body = h("div", { class: "dbody" });
