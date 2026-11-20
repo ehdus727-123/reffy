@@ -47,11 +47,14 @@ COLS = ["ID", "Ext", "Year", "Month", "Copyrights", "Characters", "General",
 def read_mariadb(limit: int | None = None):
     """MariaDB posts 에서 정상 이미지만 읽어 dict 목록으로."""
     import pymysql
-    con = pymysql.connect(
-        host=os.getenv("DB_HOST", "127.0.0.1"), port=int(os.getenv("DB_PORT", "3306")),
-        user=os.getenv("DB_USER", "root"), password=os.getenv("DB_PASSWORD", ""),
-        database=os.getenv("DB_NAME", "safebooru"), charset="utf8mb4",
-        cursorclass=pymysql.cursors.SSDictCursor)
+    # 접속 정보: daily_load.bat 이 쓰는 sb.cnf 를 그대로 (비밀번호를 .env 에 또 적지 않아도 됨)
+    cnf = os.getenv("DB_CNF", r"C:\safebooru_load\sb.cnf")
+    kw = dict(database=os.getenv("DB_NAME", "safebooru"), charset="utf8mb4", cursorclass=pymysql.cursors.SSDictCursor)
+    if cnf and Path(cnf).exists() and not os.getenv("DB_PASSWORD"):
+        con = pymysql.connect(read_default_file=cnf, read_default_group="client", **kw)
+    else:
+        con = pymysql.connect(host=os.getenv("DB_HOST", "127.0.0.1"), port=int(os.getenv("DB_PORT", "3306")),
+                              user=os.getenv("DB_USER", "root"), password=os.getenv("DB_PASSWORD", ""), **kw)
     sql = (f"SELECT {', '.join('`%s`' % c for c in COLS)} FROM posts "
            "WHERE ErrMessage IS NULL AND (MediaType IS NULL OR MediaType='image') ORDER BY ID")
     if limit:

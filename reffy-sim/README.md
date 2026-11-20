@@ -15,10 +15,9 @@ MariaDB `safebooru.posts`를 **읽기만** 하고, 크롤러와 `daily_load.bat`
 ```powershell
 cd C:\Users\TG\Desktop\reffy\reffy-sim
 ..\.venv\Scripts\python.exe -m pip install -r requirements.txt
-copy .env.example .env
-notepad .env
 ```
-메모장에서 `DB_PASSWORD=` 뒤에 MariaDB 비밀번호를 적고 저장하세요. (`.env`는 GitHub에 올라가지 않아요.)
+MariaDB 접속 정보는 `daily_load.bat`이 쓰는 `C:\safebooru_load\sb.cnf`를 그대로 읽어요. 따로 적을 필요 없어요.
+(다른 곳의 DB를 쓰려면 `.env`에 `DB_CNF=` 경로를 적거나, `DB_HOST` · `DB_USER` · `DB_PASSWORD`를 적으면 돼요. `.env`는 GitHub에 올라가지 않아요.)
 로컬 이미지로 보고 싶으면 `IMAGE_PATH`에 크롤러 이미지 경로를 적어요. 비워 두면 safebooru 원본 주소로 보여 줘요.
 
 ## 쓰는 법
