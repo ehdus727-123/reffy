@@ -12,6 +12,7 @@ venv/
 !**/data/exposed.json
 !**/data/team_classifier.joblib
 !**/data/team_classifier_report.csv
+!**/data/tag_df.json
 
 # AI 모델 (수백 MB, 처음 실행 때 자동으로 내려받음)
 **/models/

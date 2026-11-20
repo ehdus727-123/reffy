@@ -1,5 +1,8 @@
 """모바일 와이어프레임에서 추가된 기능: 차단, 신고, 문의, 알림 설정, 비밀번호 변경, 탈퇴, 반응한 게시물, 연관 이미지."""
 from __future__ import annotations
+import json
+import math
+import time
 from typing import List, Optional, Set
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -256,18 +259,67 @@ def my_reacted(request: Request, kind: str = ""):
     return {"items": items, "total": len(items), "counts": {"all": len(set(like) | set(com)), "like": len(like), "comment": len(com)}}
 
 
-# ------------------------------------------------------------------ 게시물 상세: 연관 이미지 (같은 태그가 많은 순)
+# ------------------------------------------------------------------ 게시물 상세: 연관 이미지 (태그 TF-IDF 코사인 유사도 순)
+# 흔한 태그(1명 · 여성 · 단색 배경 …)보다 드문 태그(트윈테일 · 셀 채색 …)가 겹칠수록 더 닮은 그림으로 봄.
+#   IDF(태그가 얼마나 드문지) = log((N + 1) / (df + 1)) + 1
+#   N · df = 팀 라벨링 1,618장의 키워드 빈도(data/tag_df.json, 처음 기준) + 지금 사이트에 올라온 이미지의 키워드 빈도
+#   유사도 = 겹치는 태그의 IDF² 합 / (두 이미지 태그 벡터 길이의 곱)   ← 태그를 많이 단 이미지가 유리해지지 않게 나눔
+_DF_PRIOR = None
+_TAGS_CACHE = {"t": 0.0, "img": {}, "df": {}, "n": 0}
+
+
+def _df_prior():
+    global _DF_PRIOR
+    if _DF_PRIOR is None:
+        try:
+            _DF_PRIOR = json.loads((config.BASE / "data" / "tag_df.json").read_text(encoding="utf-8"))
+        except Exception:
+            _DF_PRIOR = {"n": 0, "df": {}}
+    return _DF_PRIOR
+
+
+def _tag_index():
+    """이미지별 활성 태그 묶음과 사이트 안 태그 빈도 (60초 동안 재사용)."""
+    c = _TAGS_CACHE
+    if time.time() - c["t"] < 60:
+        return c
+    img = {}
+    for r in db.rows(f"SELECT t.image_id, t.ikey FROM image_tags t WHERE {db.ACTIVE}", thr=config.TAG_THRESHOLD):
+        img.setdefault(r["image_id"], set()).add(r["ikey"])
+    df = {}
+    for ks in img.values():
+        for k in ks:
+            df[k] = df.get(k, 0) + 1
+    c.update(t=time.time(), img=img, df=df, n=len(img))
+    return c
+
+
+def related_scores(image_id: int):
+    """[(image_id, 코사인 유사도)] 높은 순."""
+    c, pr = _tag_index(), _df_prior()
+    mine = c["img"].get(image_id)
+    if not mine:
+        return []
+    n = c["n"] + pr.get("n", 0)
+    idf = lambda k: math.log((n + 1) / (c["df"].get(k, 0) + pr["df"].get(k, 0) + 1)) + 1
+    w = {k: idf(k) for k in set().union(*c["img"].values())}
+    norm = lambda ks: math.sqrt(sum(w[k] ** 2 for k in ks)) or 1.0
+    na = norm(mine)
+    out = []
+    for j, ks in c["img"].items():
+        if j == image_id:
+            continue
+        common = mine & ks
+        if common:
+            out.append((j, sum(w[k] ** 2 for k in common) / (na * norm(ks))))
+    out.sort(key=lambda x: (-x[1], -x[0]))
+    return out
+
+
 @router.get("/images/{image_id}/related")
 def related(image_id: int, request: Request, limit: int = 10, offset: int = 0):
-    """연관 이미지: 태그가 많이 겹치는 순 → 그다음은 최신 이미지로 이어서 (더보기 · 계속 스크롤)."""
-    tags = [r["ikey"] for r in db.rows(f"SELECT t.ikey FROM image_tags t WHERE t.image_id = :i AND {db.ACTIVE}", i=image_id, thr=config.TAG_THRESHOLD)]
-    ids: List[int] = []
-    if tags:
-        ph = ",".join(f":k{n}" for n in range(len(tags)))
-        ids = [r["image_id"] for r in db.rows(
-            f"SELECT t.image_id, COUNT(*) AS n FROM image_tags t WHERE t.image_id != :i AND t.ikey IN ({ph}) AND {db.ACTIVE} "
-            f"GROUP BY t.image_id ORDER BY n DESC, t.image_id DESC LIMIT 1000",
-            i=image_id, thr=config.TAG_THRESHOLD, **{f"k{n}": k for n, k in enumerate(tags)})]
+    """연관 이미지: 태그 TF-IDF 코사인 유사도 높은 순 → 그다음은 최신 이미지로 이어서 (더보기 · 계속 스크롤)."""
+    ids: List[int] = [j for j, _ in related_scores(image_id)[:1000]]
     seen = set(ids) | {image_id}
     ids += [r["id"] for r in db.rows("SELECT id FROM images ORDER BY id DESC LIMIT 2000") if r["id"] not in seen]
     hide = hidden_ids(request)
