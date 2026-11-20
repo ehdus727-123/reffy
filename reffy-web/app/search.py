@@ -1,6 +1,7 @@
 """검색어 -> 태그 매핑과 이미지 검색. 검색 방식: 태그 일치(한국어 키워드·시트 설명·Safebooru 태그) + 이미지의 WD 원본 태그/제목 문자열."""
 from __future__ import annotations
 import json
+import math
 import re
 
 from . import config, db
@@ -67,6 +68,15 @@ def match_tags(token: str) -> dict:
     return out
 
 
+def _visual_weight(ikey: str) -> float:
+    """구도에 직접 영향을 주는 태그를 관련도 점수에서 우대합니다."""
+    if ikey.startswith(("pose_", "angle_", "bg_", "weather_")):
+        return 1.75
+    if ikey.startswith(("shot_", "face_", "emo_")):
+        return 1.5
+    return 1.0
+
+
 def parse_query(q: str):
     tokens = [t for t in re.split(r"[\s,]+", q.strip()) if t]
     return tokens, [match_tags(t) for t in tokens]
@@ -94,17 +104,27 @@ def search(q: str, tags: list, sort: str, offset: int, limit: int):
         wd_rows = {r["id"]: r for r in db.rows("SELECT id, title, wd_json FROM images")}
         allk = {k for m in maps for k in m}
         act = {}
+        doc_freq = {}
         if allk:
             ph = ",".join(f":k{i}" for i in range(len(allk)))
             for r in db.rows(f"SELECT t.image_id, t.ikey, t.ai_prob, t.user_state FROM image_tags t WHERE t.ikey IN ({ph}) AND {db.ACTIVE}", thr=thr, **{f"k{i}": k for i, k in enumerate(allk)}):
-                act.setdefault(r["image_id"], {})[r["ikey"]] = 1.0 if r["user_state"] == "add" else float(r["ai_prob"] or 0.5)
+                image_tags = act.setdefault(r["image_id"], {})
+                if r["ikey"] not in image_tags:
+                    doc_freq[r["ikey"]] = doc_freq.get(r["ikey"], 0) + 1
+                image_tags[r["ikey"]] = 1.0 if r["user_state"] == "add" else float(r["ai_prob"] or 0.5)
+        # 이미지 한 장을 태그 문서 하나로 보고, 희소한 태그일수록 IDF를 높입니다.
+        n_docs = len(wd_rows)
+        idf = {ik: math.log((n_docs + 1) / (doc_freq.get(ik, 0) + 1)) + 1 for ik in allk}
         score = {}
         for iid, row in wd_rows.items():
             have = act.get(iid, {})
             wd = json.loads(row["wd_json"] or "{}")
             hit, total = 0, 0.0
             for tok, m in zip(tokens, maps):
-                best = max(((w * (0.5 + 0.5 * have[ik])) for ik, w in m.items() if ik in have), default=0)
+                best = max((
+                    w * (0.5 + 0.5 * have[ik]) * idf.get(ik, 1.0) * _visual_weight(ik)
+                    for ik, w in m.items() if ik in have
+                ), default=0)
                 if not best:   # 태그로 못 찾으면 제목·WD 영어 태그 문자열로
                     nt = norm(tok)
                     if len(nt) >= 2 and (nt in norm(row["title"] or "") or any(nt == norm(x) for x in wd)):
@@ -125,7 +145,7 @@ def search(q: str, tags: list, sort: str, offset: int, limit: int):
         return [r["id"] for r in page], total, found
     lst = list(ids)
     if sort == "relevance" and score:
-        lst.sort(key=lambda i: (-score.get(i, (0, 0))[0], -score.get(i, (0, 0))[1], -i))
+        lst.sort(key=lambda i: (-score.get(i, (0, 0))[1], -score.get(i, (0, 0))[0], -i))
     elif sort == "popular":
         # 인기 순 = 좋아요 많은 순 → 같으면 조회수 → 같으면 최신
         views = {r["id"]: r["views"] or 0 for r in db.rows("SELECT id, views FROM images")}
