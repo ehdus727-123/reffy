@@ -172,7 +172,7 @@ async function drawerPageM(sub, id) {
     if (sub === "recent") {
       const d = await api("/api/me/viewed");
       return root.replaceChildren(mbar("최근 본 게시물", { back: () => (location.hash = "#/drawer/act") }),
-        h("div", { class: "pad" }, d.items.length ? pgrid(d.items, {}, "c2") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.")));
+        h("div", { class: "pad" }, d.items.length ? pgrid(d.items, { noMore: true }, "c2") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.")));
     }
     if (sub === "liked") {
       let kind = ""; const body = h("div", {});

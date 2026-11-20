@@ -350,7 +350,7 @@ async function drawerPage(sub, id) {
     if (sub === "recent") {
       const d = await api("/api/me/viewed");
       main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "최근 본 게시물"), h("p", { class: "sub" }, "최근 일주일 동안 본 게시물이 보여요"))),
-        d.items.length ? (isM() ? pgrid : (items, o) => rrGrid(items, o, { gap: 12 }))(d.items, {}, "c5") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+        d.items.length ? (isM() ? pgrid : (items, o) => rrGrid(items, o, { gap: 12 }))(d.items, { noMore: true }, "c5") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
     } else if (sub === "liked") {
       // DRW_0302 반응한 게시물: 전체 · 하트 · 댓글 칩으로 거르기
       const body = h("div", { class: "dbody" });
