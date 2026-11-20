@@ -419,6 +419,15 @@ def remove_keeps(body: IdsIn, request: Request):
 
 
 # ------------------------------------------------------------------ 서랍: 최근 본 / 반응한 게시물
+@router.delete("/me/viewed/{image_id}")
+def remove_viewed(image_id: int, request: Request):
+    """서랍의 최근 본 목록에서 현재 사용자의 조회 기록을 제거한다."""
+    u = need(request)
+    with db.engine.begin() as c:
+        c.execute(text("DELETE FROM views WHERE user_id=:u AND image_id=:i"), {"u": u["id"], "i": image_id})
+    return {"ok": True}
+
+
 @router.get("/me/viewed")
 def my_viewed(request: Request):
     u = need(request)
