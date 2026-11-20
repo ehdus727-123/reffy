@@ -133,7 +133,7 @@ const notice = (t, p, b) => h("div", { class: "notice" }, h("h2", {}, t), h("p",
 async function saveToBook(ids, o = {}) {
   let books;
   try { books = (await api("/api/books")).items; } catch (e) { toast(e.message); return; }
-  let chosen = books[0]?.id ?? null, rm = false;
+  let chosen = books[0]?.id ?? null, rm = !!o.move;   // o.move: 킵 스페이스 → 북으로 이동 (담고 킵에서 뺌)
   const list = h("div", {});
   const name = h("input", { type: "text", maxlength: "40", placeholder: isM() ? "예) 앉은 포즈 모음" : "예: 역동적인 구도", "aria-label": "새 북 이름" });
   const drawList = () => list.replaceChildren(...(books.length ? books.map((b) => h("button", { class: "brow-pick" + (chosen === b.id ? " on" : ""), type: "button", role: "radio", "aria-checked": String(chosen === b.id), onclick: () => { chosen = b.id; drawList(); } },
@@ -145,12 +145,12 @@ async function saveToBook(ids, o = {}) {
     try { const b = await api("/api/books", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: v }) }); books.unshift(b); chosen = b.id; name.value = ""; drawList(); } catch (e) { toast(e.message); }
   };
   const cb = h("input", { class: "cbx", type: "checkbox", onchange: (e) => (rm = e.target.checked) });
-  const m = modal(isM() ? "북에 저장" : "저장하기", h("div", {}, isM() ? h("div", { class: "newbook" }, h("b", {}, "+ 새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "새 북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make, { style: "height:44px" })))
+  const m = modal(o.move ? "북으로 이동" : isM() ? "북에 저장" : "저장하기", h("div", {}, isM() ? h("div", { class: "newbook" }, h("b", {}, "+ 새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "새 북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make, { style: "height:44px" })))
       : h("div", { class: "newbook" }, h("b", {}, figSvg("plus"), "새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make))),
     h("span", { class: "lbl" }, "내 북"), list),
-    h("div", { class: "foot" }, h("label", {}, cb, "저장 후 킵 스페이스에서 비우기"), btn("취소", "", () => m.remove()), btn("저장하기", "primary", async () => {
+    h("div", { class: "foot" }, o.move ? h("span", { class: "sp" }) : h("label", {}, cb, "저장 후 킵 스페이스에서 비우기"), btn("취소", "", () => m.remove()), btn(o.move ? "이동하기" : "저장하기", "primary", async () => {
       if (chosen == null) return toast("저장할 북을 골라 주세요.");
-      try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); m.remove(); toast(`“${b.name}”에 저장했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
+      try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); m.remove(); toast(o.move ? `“${b.name}”(으)로 옮겼어요` : `“${b.name}”에 저장했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
     })));
   if (!isM()) { const d = m.querySelector(".dlg"); d.classList.add("savebk"); d.querySelector("header .icon-btn").replaceWith(figClose(() => m.remove())); }
   setTimeout(() => name.focus(), 0);
@@ -210,16 +210,16 @@ async function keepPage() {
   const root = h("div", { class: "pad" }); page(root);
   async function load() { try { data = await api("/api/me/keeps" + (kind ? "?kind=" + kind : "")); } catch (e) { toast(e.message); return; } draw(); }
   function bar() {
-    const b = h("div", { class: "selbar", hidden: !sel });
+    const b = h("div", { class: "selbar bkbar kpbar", hidden: !sel });
     const n = picked.size;
     const delBtn = btn("삭제", "", async () => {
       if (!n) return toast("삭제할 이미지를 골라 주세요.");
       if (!(await confirmDialog(`선택한 레퍼런스 ${n}개를 삭제할까요?`, "삭제한 레퍼런스는 되돌릴 수 없어요.", { ok: "네", cancel: "아니오" }))) return;
       try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: [...picked] }) }); picked.clear(); sel = false; toast("킵 스페이스에서 삭제했어요"); load(); } catch (e) { toast(e.message); }
     });
-    const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
-    saveBtn.disabled = !n; if (!n) saveBtn.title = "저장할 이미지를 먼저 골라 주세요";   // 고른 이미지가 없으면 북에 저장 불가
-    b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, saveBtn);
+    const mvBtn = btn("이동", "", () => n ? saveToBook([...picked], { move: true, after: () => { picked.clear(); sel = false; load(); } }) : toast("옮길 이미지를 골라 주세요."));   // Figma ActionBar 3064:55416: 삭제 · 이동(→ 북으로 이동)
+    delBtn.disabled = mvBtn.disabled = !n;
+    b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, mvBtn);
     return b;
   }
   function draw() {
@@ -752,7 +752,7 @@ const SET_DOCS = {
     ["제4조 (이용 제한)", "금지 행위가 확인되면 게시물 숨김, 이용 정지, 탈퇴 처리 등의 조치를 할 수 있습니다."],
     ["제5조 (탈퇴)", "회원은 언제든지 내 설정 > 탈퇴하기에서 탈퇴할 수 있으며, 탈퇴 즉시 계정과 게시물이 삭제됩니다."]]],
 };
-const SET_MENU = [["notif", "알림 설정"], ["account", "계정 관리"], ["blocks", "차단 유저"], ["inquiry", "문의하기"], ["privacy", "개인정보 처리 방침"], ["terms", "서비스 약관"]];
+const SET_MENU = [["notif", "알림 설정"], ["account", "계정 관리"], ["blocks", "차단 유저"], ["inquiry", "문의하기"], ["copyright", "저작권/AI 이용 원칙"], ["privacy", "개인정보 처리 방침"], ["terms", "서비스 약관"], ["leave", "탈퇴하기"]];
 const ymd = (s) => { const d = new Date(s); return isNaN(d) ? "" : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; };
 const hm12 = (v) => { const [H, M] = v.split(":").map(Number); return `${H < 12 ? "오전" : "오후"} ${H % 12 || 12}:${String(M).padStart(2, "0")}`; };
 
@@ -760,14 +760,13 @@ async function settingsPC(sub) {
   sub = sub || "notif";
   if (sub === "security") sub = "account";
   const main = h("div", { class: "st-main" });
-  const snb = h("nav", { class: "st-snb", "aria-label": "내 설정" }, h("div", { class: "pc-head" }, h("button", { class: "pc-back", type: "button", "aria-label": "홈으로", title: "홈으로", onclick: () => (location.hash = "#/") }, icon("back", 24)), h("h1", {}, "내 설정")),
-    SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, l)),
-    h("i", { class: "st-div" }), h("a", { href: "#/settings/leave", class: "st-leave" + (sub === "leave" ? " on" : ""), "aria-current": sub === "leave" ? "page" : null }, "탈퇴하기"));
+  const snb = h("nav", { class: "st-snb", "aria-label": "설정" }, h("h1", { class: "st-title" }, "설정"),   // Figma HOM_0201 3040:80390: 제목 '설정' · Common/Category item(오른쪽 chevronRight 24)
+    h("div", { class: "st-menu" }, SET_MENU.map(([k, l]) => h("a", { href: "#/settings/" + k, class: sub === k ? "on" : "", "aria-current": sub === k ? "page" : null }, h("span", {}, l), icon("chevronRight", 24)))));
   const root = h("div", { class: "st" }, snb, main);
   const stay = !$("#page").hidden && $("#page > .st");   // 이미 설정 화면이면 내용이 준비된 뒤에 바꿔 끼움
   if (!stay) page(root);
   const head = (t, d) => h("div", { class: "st-head" }, h("h2", {}, t), d ? h("p", {}, d) : null);
-  const show = (...kids) => { main.replaceChildren(h("div", { class: "st-c" }, ...kids.flat(3).filter((k) => k != null && k !== false))); if (!root.isConnected && location.hash.startsWith("#/settings")) page(root); };
+  const show = (...kids) => { main.replaceChildren(h("div", { class: "st-c" + (sub === "copyright" ? " wide" : "") }, ...kids.flat(3).filter((k) => k != null && k !== false))); if (!root.isConnected && location.hash.startsWith("#/settings")) page(root); };
   const toggle = (on, fn, label) => { const i = h("input", { type: "checkbox", class: "st-tg-in", role: "switch", checked: on, "aria-label": label, onchange: (e) => fn(e.target.checked) }); return h("label", { class: "st-tg" }, i, h("i", {})); };
   const row = (t, d, right) => h("div", { class: "st-row" }, h("div", { class: "st-tx" }, h("b", {}, t), d ? h("small", {}, d) : null), right);
   const group = (t, ...rows) => h("section", { class: "st-grp" }, h("h3", {}, t), ...rows);
@@ -778,15 +777,15 @@ async function settingsPC(sub) {
       const set = (k) => (v) => { n[k] = v; save(); };
       const [f0, t0] = (dnd || "23:00-08:00").split("-");
       const times = []; for (let m = 0; m < 1440; m += 30) times.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
-      const sel = (v, label) => h("span", { class: "st-time" }, h("select", { "aria-label": label, onchange: () => { if (dnd) { dnd = `${from.value}-${to.value}`; save(); } } }, times.map((t) => h("option", { value: t, selected: t === v }, hm12(t)))), icon("chevronDown", 18));
+      const sel = (v, label) => h("span", { class: "st-time" }, h("select", { "aria-label": label, onchange: () => { if (dnd) { dnd = `${from.value}-${to.value}`; save(); } } }, times.map((t) => h("option", { value: t, selected: t === v }, hm12(t)))), icon("chevronDown", 20));
       const fromW = sel(f0, "방해 금지 시작 시간"), toW = sel(t0, "방해 금지 끝 시간"); const from = fromW.querySelector("select"), to = toW.querySelector("select");
-      const range = h("div", { class: "st-range", hidden: !dnd }, fromW, h("span", {}, "~"), toW);
+      const range = h("div", { class: "st-range" + (dnd ? "" : " off") }, fromW, h("span", {}, "~"), toW);   // Figma: 시간 버튼은 늘 보이고, 꺼져 있으면 흐리게
       return show(head("알림 설정", "받고 싶은 알림을 선택하세요."),
         group("활동 알림", row("팔로워", "누군가 나를 팔로우하면 알려드려요.", toggle(n.follow, set("follow"), "팔로워 알림")),
           row("댓글", "내 게시물에 댓글이 달리면 알려드려요.", toggle(n.comment, set("comment"), "댓글 알림")),
           row("대댓글", "내 댓글에 답글이 달리면 알려드려요.", toggle(n.reply !== false, set("reply"), "대댓글 알림")),
           row("하트", "내 게시물에 하트가 눌리면 알려드려요.", toggle(n.like, set("like"), "하트 알림"))),
-        group("알림 수신 시간", row("방해 금지 시간", "설정한 시간에는 알림을 보내지 않아요.", toggle(!!dnd, (v) => { dnd = v ? `${from.value}-${to.value}` : ""; range.hidden = !v; save(); }, "방해 금지 시간")), range));
+        group("알림 수신 시간", row("방해 금지 시간", "설정한 시간에는 알림을 보내지 않아요.", toggle(!!dnd, (v) => { dnd = v ? `${from.value}-${to.value}` : ""; range.classList.toggle("off", !v); save(); }, "방해 금지 시간")), range));
     }
     if (sub === "account") {
       const a = await api("/api/me/account");
@@ -808,7 +807,7 @@ async function settingsPC(sub) {
         d.items.length ? group(`차단한 유저 ${d.items.length}`, d.items.map((x) => h("div", { class: "st-row st-user" }, avatarEl(x, 40),
           h("a", { class: "st-tx", href: "#/u/" + x.uid }, h("b", {}, x.uid), h("small", {}, [x.nick, x.at ? ymd(x.at) + " 차단" : ""].filter(Boolean).join(" · "))),
           h("button", { class: "st-sbtn", type: "button", onclick: () => un(x) }, "차단 해제"))))
-          : h("div", { class: "st-empty" }, h("b", {}, "차단한 유저가 없어요"), h("p", {}, "프로필의 더보기 메뉴에서 차단할 수 있어요.")));
+          : h("div", { class: "kp-empty st-bempty" }, kpEx(), h("h2", {}, "차단한 유저가 없어요")));   // Figma 3040:81746
     }
     if (sub === "inquiry") {
       let kind = ""; const photos = [];
@@ -839,6 +838,25 @@ async function settingsPC(sub) {
           h("div", { class: "st-f" }, h("label", { class: "st-lb", for: "iqBody" }, "내용"), body),
           h("div", { class: "st-f" }, h("span", { class: "st-lb" }, "사진 첨부", h("small", {}, "선택 · 최대 3장")), ph),
           h("div", { class: "st-foot" }, h("button", { class: "st-btn", type: "submit" }, "문의 보내기"))));
+    }
+    if (sub === "copyright") {   // Figma 3040:82018 · 3048:82116 저작권 정책
+      const cl = (t, ...body) => h("section", { class: "cp-cl" }, h("h3", {}, t), ...body);
+      const li = (b, d, red) => h("li", {}, b ? h("b", {}, b) : null, h("span", { class: red ? "cp-red" : null }, d));
+      return show(h("div", { class: "st-head" }, h("h2", {}, "저작권 정책"), h("p", {}, "REFFY는 창작자가 안심하고 작품을 공유하고 참고할 수 있도록, 회원들의 창작물을 CCL(Creative Commons License)을 통해 보호하고 있습니다. CCL은 창작자가 자신의 창작물을 다른 사람이 어디까지 이용할 수 있는지 직접 정할 수 있는 라이선스입니다.")),
+        h("article", { class: "st-doc cp-doc" },
+          cl("1. 창작물의 권리", h("p", {}, "REFFY에 게시되는 모든 일러스트는 회원 본인이 직접 창작한 그림이어야 하며, 작품의 저작권은 업로드한 회원에게 있습니다. REFFY는 서비스 제공(작품 노출, 검색, 태그 분류)에 필요한 범위 안에서만 작품을 이용합니다.")),
+          cl("2. 라이선스 설정", h("div", { class: "cp-body" }, h("p", {}, "회원은 작품을 업로드할 때 아래 조건을 조합하여 이용 범위를 직접 설정할 수 있습니다."),
+            h("table", { class: "cp-tbl" }, h("thead", {}, h("tr", {}, h("th", {}, "조건"), h("th", {}, "의미"))),
+              h("tbody", {}, [["저작자표시 (BY)", "이용 시 원작자를 반드시 표시해야 합니다"], ["비영리 (NC)", "영리 목적으로 이용할 수 없습니다"], ["변경금지 (ND)", "작품을 변형하거나 2차적 저작물을 만들 수 없습니다"], ["동일조건변경허락 (SA)", "2차적 저작물을 만들 경우 원작과 같은 라이선스를 적용해야 합니다"]].map(([a, b]) => h("tr", {}, h("td", {}, a), h("td", {}, b))))),
+            h("p", {}, "라이선스의 자세한 내용은 CC Korea의 안내를 따릅니다. (출처: ", h("a", { href: "https://ccl.cckorea.org/reuse/method/", target: "_blank", rel: "noopener noreferrer" }, "https://ccl.cckorea.org/reuse/method/"), ")"))),
+          cl("3. 레퍼런스 이용 원칙", h("div", { class: "cp-body" }, h("p", {}, "REFFY의 작품은 참고를 위해 공유됩니다. 구도, 색감, 표현 방식을 참고하는 것은 자유롭지만, 아래 행위는 작품에 설정된 라이선스가 허용하지 않는 한 금지됩니다."),
+            h("ul", { class: "cp-ul" }, li(null, "다른 회원의 작품을 그대로 따라 그리거나(트레이싱) 일부를 복제하여 본인 작품으로 게시하는 행위"), li(null, "원작자 표시 없이 작품을 다른 곳에 옮기거나 재배포하는 행위"), li(null, "작품을 영리 목적으로 무단 사용하는 행위")))),
+          cl("4. AI 이용 원칙", h("div", { class: "cp-body" }, h("p", {}, "REFFY는 회원이 원하는 레퍼런스를 정확하게 찾을 수 있도록 AI 자동 태깅 기능을 제공합니다.", h("br"), "회원의 창작물을 보호하기 위해 AI를 다음 원칙에 따라 이용합니다."),
+            h("ul", { class: "cp-ul cp-ul2" }, li("태그 분류 목적으로만 분석합니다.", "회원이 업로드한 작품은 키워드 태그를 자동으로 부여하기 위해서만 분석되며, 분석 결과는 검색 기능에만 사용됩니다."),
+              li("생성형 AI 학습에 사용하지 않습니다.", "회원의 작품은 그림을 생성하는 AI의 학습 데이터로 사용되지 않으며, 제3자에게 AI 학습용으로 제공되지 않습니다.", true),
+              li("회원이 태그를 직접 수정할 수 있습니다.", "AI가 부여한 태그가 작품과 맞지 않을 경우, 회원은 언제든지 태그를 수정하거나 삭제할 수 있습니다."),
+              li("외부의 무단 수집을 금지합니다.", "REFFY에 게시된 작품을 AI 학습 등을 목적으로 자동 수집(크롤링, 스크래핑)하는 행위를 금지합니다.")))),
+          cl("5. 권리 침해 신고", h("p", {}, "본인의 작품이 무단으로 사용된 것을 발견한 경우, 작품 상세 화면의 신고 기능을 통해 알려 주시기 바랍니다.", h("br"), "REFFY는 확인 후 해당 게시물을 비공개 처리하는 등 필요한 조치를 취합니다."))));
     }
     if (sub === "privacy" || sub === "terms") {
       const [t, items] = SET_DOCS[sub];
