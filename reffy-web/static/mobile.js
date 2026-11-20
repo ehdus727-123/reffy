@@ -170,9 +170,18 @@ async function drawerPageM(sub, id) {
   try {
     if (sub === "book") return await bookDetailM(root, id);
     if (sub === "recent") {
-      const d = await api("/api/me/viewed");
-      return root.replaceChildren(mbar("최근 본 게시물", { back: () => (location.hash = "#/drawer/act") }),
-        h("div", { class: "pad" }, d.items.length ? pgrid(d.items, {}, "c2") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.")));
+      const body = h("div", { class: "pad" });
+      const load = async () => {
+        const d = await api("/api/me/viewed");
+        const remove = async (it) => {
+          if (!(await confirmDialog("최근 본 게시물에서 삭제할까요?", "이 게시물이 최근 본 목록에서 사라져요.", { ok: "삭제하기", cancel: "취소", danger: true }))) return;
+          try { await api("/api/me/viewed/" + it.id, { method: "DELETE" }); toast("최근 본 게시물에서 삭제했어요"); await load(); } catch (e) { toast(e.message); }
+        };
+        const cards = d.items.map((it) => { const c = pcard(it, { click: () => goPost(it.id) }); const kebab = h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); menuCard(e.currentTarget, [{ label: "삭제하기", danger: true, fn: () => remove(it) }]); } }, moreIc()); c.append(kebab); return c; });
+        body.replaceChildren(d.items.length ? h("div", { class: "grid c2" }, cards) : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요."));
+      };
+      root.replaceChildren(mbar("최근 본 게시물", { back: () => (location.hash = "#/drawer/act") }), body);
+      return await load();
     }
     if (sub === "liked") {
       let kind = ""; const body = h("div", {});
