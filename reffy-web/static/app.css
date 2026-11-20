@@ -2819,3 +2819,7 @@ html:not(.m) #panel .dp-cin .cin{font:400 14px/20px Pretendard,sans-serif;letter
 html:not(.m) #panel .dp-cin .cin::placeholder{color:#5b595f}
 html:not(.m) #panel .pm-send{border:0;background:none;padding:0;display:grid;place-items:center;color:#18171a;cursor:pointer}
 html:not(.m) #panel .dp-clist,html:not(.m) #panel .dp-cmt>div:has(>.pm-c){display:flex;flex-direction:column;gap:23px;margin-top:19px}
+
+
+/* Keep feed controls floating under the desktop GNB while the image grid scrolls. */
+html:not(.m) .bar{position:sticky;top:88px;z-index:19;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);box-shadow:0 8px 16px rgba(24,23,26,.06)}
