@@ -36,7 +36,8 @@ function toast(msg, link) { const t = $("#toast"); t.replaceChildren(msg, link ?
   }; }
 
 /* 모바일(767px 이하) 여부. 모바일 전용 화면 조각은 mobile.js · mobile.css 에 있습니다. */
-const NO_LOGIN = window.REFFY_NO_LOGIN !== false;          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
+const NO_LOGIN = window.REFFY_NO_LOGIN !== false;
+const LOGGED_OUT = () => { try { return sessionStorage.getItem("reffy.out") === "1"; } catch { return false; } };   // 시연 모드에서 로그아웃하면 새 게스트를 바로 만들지 않음          // 시연 모드: 로그인·회원가입 화면 없이 게스트 계정으로 바로 입장
 const LAYOUT = window.REFFY_LAYOUT || "auto";   // 서버 .env 의 LAYOUT: auto / pc / mobile
 const MQ = window.matchMedia("(max-width:767px)");
 const isM = () => LAYOUT === "mobile" || (LAYOUT !== "pc" && MQ.matches);
@@ -50,7 +51,7 @@ const S = { q: "", picked: new Set(), applied: [], sort: "", items: [], total: 0
 let ME = null, UNREAD = 0;
 async function loadMe() {
   const r = await api("/api/auth/me"); ME = r.user; UNREAD = r.unread;
-  if (!ME && NO_LOGIN) { try { ME = (await api("/api/auth/guest", { method: "POST" })).user; } catch { /* 꺼져 있으면 그대로 */ } }
+  if (!ME && NO_LOGIN && !LOGGED_OUT()) { try { ME = (await api("/api/auth/guest", { method: "POST" })).user; } catch { /* 꺼져 있으면 그대로 */ } }
   drawMe();
 }
 function drawMe() {
@@ -58,7 +59,7 @@ function drawMe() {
   $("#me").title = ME ? `${ME.nick} · 메뉴` : "로그인";
   $("#bell").classList.toggle("has", UNREAD > 0);
 }
-function needLogin() { if (ME) return true; if (NO_LOGIN) { loadMe().catch(() => {}); toast("잠시 후 다시 눌러 주세요"); return false; } sessionStorage.setItem("reffy.next", location.hash || "#/"); location.hash = "#/login"; return false; }
+function needLogin() { if (ME) return true; if (NO_LOGIN && !LOGGED_OUT()) { loadMe().catch(() => {}); toast("잠시 후 다시 눌러 주세요"); return false; } sessionStorage.setItem("reffy.next", location.hash || "#/"); location.hash = "#/login"; return false; }
 const goPost = (id) => { location.hash = "#/post/" + id; };
 
 /* ---------------------------------------------------------------- 필터 패널 */
@@ -536,7 +537,7 @@ function applyTag(ikey, label) {
 $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); runQuery(qEl.value); });
 const SORTS = [["recent", "최근 순"], ["popular", "인기 순"], ["saved", "저장 많은 순"]];   // Figma 정렬 메뉴 (HOM_0300)
 const SORT_LABEL = { relevance: "관련도 순" };   // 검색어가 있을 때 서버가 고르는 기본 순서 (메뉴에는 없음)
-const MCHECK = () => { const t = document.createElement("template"); t.innerHTML = '<svg class="mck" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7.95768 13.042L15.0202 5.97949C15.1868 5.81283 15.3813 5.72949 15.6035 5.72949C15.8257 5.72949 16.0202 5.81283 16.1869 5.97949C16.3535 6.14616 16.4368 6.34755 16.4368 6.58366C16.4368 6.80588 16.3535 7.00033 16.1869 7.16699L8.54102 14.8337C8.37435 15.0003 8.1799 15.0837 7.95768 15.0837C7.73546 15.0837 7.54102 15.0003 7.37435 14.8337L3.79102 11.2503C3.62435 11.0837 3.54102 10.8892 3.54102 10.667C3.5549 10.4309 3.64518 10.2295 3.81185 10.0628C3.97852 9.89616 4.17296 9.81283 4.39518 9.81283C4.63129 9.81283 4.83268 9.89616 4.99935 10.0628L7.95768 13.042Z" fill="#7425F6"/></svg>'; return t.content.firstChild; };
+const MCHECK = () => { const s = icon("check", 20); s.classList.add("mck"); return s; };   // Figma 아이콘 컴포넌트(2126:501)
 let curSort = "recent";
 function drawSort() {
   $("#sortLabel").textContent = (SORTS.find((x) => x[0] === curSort) || [0, SORT_LABEL[curSort] || "최근 순"])[1];
@@ -609,7 +610,7 @@ function cardLike(it) {
 }
 const moreIc = () => icon("more", 24);
 /* 카드 하트: Figma Common/Card 의 채운 하트 16 (기본 #C3C2C5, 내가 누른 글은 보라) */
-function cardHeart() { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 16 16"); s.setAttribute("width", "16"); s.setAttribute("height", "16"); s.setAttribute("class", "ic chf"); s.setAttribute("aria-hidden", "true"); s.innerHTML = '<path d="M8.90611 13.4059C8.40611 13.8747 7.62486 13.8747 7.09361 13.4059L7.03111 13.3434C3.53111 10.1872 1.24985 8.09341 1.3436 5.53091C1.37485 4.37466 1.9686 3.31216 2.9061 2.65591C4.6561 1.46841 6.81236 2.03091 7.99986 3.40591C9.18736 2.03091 11.3436 1.46841 13.0936 2.65591C14.0311 3.31216 14.6249 4.37466 14.6561 5.53091C14.7499 8.09341 12.4686 10.1872 8.96861 13.3747L8.90611 13.4059Z" fill="currentColor"/>'; return s; }
+function cardHeart() { const s = icon("heart:f", 16); s.classList.add("chf"); return s; }   // Figma 아이콘 컴포넌트(2126:501) · heart Filled
 /* 피드 배치: 받은 순서대로 왼쪽 → 오른쪽으로 한 줄씩 (CSS 다단은 위→아래로 채워 순서가 어긋남) */
 const MAS = { cols: [], hs: [], n: 0, seq: 0, el: new Map() };
 function masCount() { const g = $("#grid"); g.classList.remove("mas"); const n = parseInt(getComputedStyle(g).columnCount, 10) || 2; g.classList.add("mas"); return n; }
@@ -808,7 +809,9 @@ function closeDetail() {
   document.querySelectorAll(".card.sel").forEach((c) => c.classList.remove("sel"));
   if (location.hash.startsWith("#/post/")) location.hash = isM() && route.prev && !route.prev.startsWith("#/post/") ? route.prev : "#/";
 }
-async function refreshSocial(d, edit = false) { try { d.so = await api(`/api/images/${d.id}/social`); drawDetail(d, edit); } catch (e) { toast(e.message); } }
+async function refreshSocial(d, edit = false) { try { d.so = await api(`/api/images/${d.id}/social`); drawDetail(d, edit); syncCardLikes(d.id, d.so); } catch (e) { toast(e.message); } }
+/* 바깥 카드의 하트 숫자만 맞춤 (카드 하트는 누르는 요소가 아님) */
+function syncCardLikes(id, so) { if (!so || so.likes == null) return; document.querySelectorAll(`.card[data-id="${CSS.escape(String(id))}"] .meta .lk`).forEach((lk) => { lk.textContent = String(so.likes); }); }
 async function act(d, method, url, body, edit) {
   if (!needLogin()) return;
   try { await api(url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined }); await refreshSocial(d, edit); if (method === "POST" && url.endsWith("/keep")) toast("킵 스페이스에 담았어요. 나중에 골라서 북에 정리하세요.", ["킵 스페이스 보기", "#/keep"]); } catch (e) { toast(e.message); }
@@ -892,6 +895,7 @@ const DP_SVG = {
   more: ["0 0 24 24", '<path d="M10.75 18.2598V18.25C10.75 17.5596 11.3096 17 12 17C12.6904 17 13.25 17.5596 13.25 18.25V18.2598C13.25 18.9501 12.6904 19.5098 12 19.5098C11.3096 19.5098 10.75 18.9501 10.75 18.2598ZM10.75 12.0098V12C10.75 11.3096 11.3096 10.75 12 10.75C12.6904 10.75 13.25 11.3096 13.25 12V12.0098C13.25 12.7001 12.6904 13.2598 12 13.2598C11.3096 13.2598 10.75 12.7001 10.75 12.0098ZM10.75 5.75977V5.75C10.75 5.05964 11.3096 4.5 12 4.5C12.6904 4.5 13.25 5.05964 13.25 5.75V5.75977C13.25 6.45012 12.6904 7.00977 12 7.00977C11.3096 7.00977 10.75 6.45012 10.75 5.75977Z" fill="currentColor"/>'],
 };
 function dpSvg(k, size) {
+  if (["link", "heart", "heart:f", "comment", "share", "more", "check"].includes(k) && typeof IC_FIG !== "undefined" && IC_FIG[k]) { const s = icon(k, size); s.classList.add("dps"); return s; }   // Figma 아이콘 컴포넌트(2126:501)로 통일
   const [vb, body] = DP_SVG[k], s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   s.setAttribute("viewBox", vb); s.setAttribute("width", size); s.setAttribute("height", size); s.setAttribute("class", "dps"); s.setAttribute("aria-hidden", "true");
   s.innerHTML = body;   // 위 상수(고정 문자열)만 넣음 — 사용자 입력 아님
@@ -977,7 +981,7 @@ function drawDetail(d, edit = false) {
   /* 연관 이미지: 2열, '더보기'를 누를 때마다 이어서 */
   const relCols = [h("div", { class: "dp-col" }), h("div", { class: "dp-col" })];
   const relMore = h("button", { class: "dp-more", type: "button", hidden: true }, "더보기");
-  let relOff = 0, relBusy = false;
+  let relOff = 0, relBusy = false, relN = 0;   // 더보기는 최대 3번
   const relCard = (it) => h("button", { class: "dp-card", type: "button", "aria-label": (it.title || "레퍼런스") + " · " + it.author, onclick: () => (S.open === it.id && !$("#panel").hidden && !isM() ? closeDetail() : openDetail(it.id)) },
     h("span", { class: "dp-im" }, h("img", { src: it.thumb, alt: "", loading: "lazy", width: it.w || null, height: it.h || null })),
     h("span", { class: "dp-ft" }, cardAv(it, "dp-av"), h("span", { class: "dp-nk" }, it.author), h("span", { class: "dp-lk" + (it.liked ? " on" : "") }, dpSvg("heart:f", 12), String(it.likes ?? 0))));
@@ -987,10 +991,10 @@ function drawDetail(d, edit = false) {
     try {
       const r = await api(`/api/images/${d.id}/related?limit=10&offset=${relOff}`); sks.forEach((c) => c.remove()); if (S.open !== d.id) return;
       r.items.forEach((it) => { const c = relCols[0].offsetHeight <= relCols[1].offsetHeight ? relCols[0] : relCols[1]; c.append(relCard(it)); });
-      relOff += r.items.length; relMore.hidden = !r.more;
+      relOff += r.items.length; relMore.hidden = !r.more || relN >= 3;
     } catch { relMore.hidden = true; } finally { sks.forEach((c) => c.remove()); relBusy = false; relMore.disabled = false; }
   };
-  relMore.onclick = loadRel;
+  relMore.onclick = () => { if (relN >= 3) return; relN++; loadRel(); };
   const head = (t, extra) => h("div", { class: "dp-h" }, h("h3", {}, t), extra || null);
   panel.replaceChildren(
     h("div", { class: "dp-img" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", title: "눌러서 크게 보기", onclick: () => openLightbox(d.full, d.title), onload: (e) => { dpTone(e.currentTarget); fitMark(e.currentTarget); } }), d.ext ? null : idMark(o && o.uid, d.id),

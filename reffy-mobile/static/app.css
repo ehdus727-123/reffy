@@ -2819,3 +2819,49 @@ html:not(.m) #panel .dp-cin .cin{font:400 14px/20px Pretendard,sans-serif;letter
 html:not(.m) #panel .dp-cin .cin::placeholder{color:#5b595f}
 html:not(.m) #panel .pm-send{border:0;background:none;padding:0;display:grid;place-items:center;color:#18171a;cursor:pointer}
 html:not(.m) #panel .dp-clist,html:not(.m) #panel .dp-cmt>div:has(>.pm-c){display:flex;flex-direction:column;gap:23px;margin-top:19px}
+
+
+/* Keep feed controls floating under the desktop GNB while the image grid scrolls. */
+html:not(.m) .bar{position:sticky;top:88px;z-index:19;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);box-shadow:0 8px 16px rgba(24,23,26,.06)}
+
+/* 채운 아이콘을 직접 요청한 경우 (icon("heart:f")) — 상태 전환 없이 채움 */
+.ic.fig.figf{fill:currentColor;stroke:none}.ic.fig.figf path{stroke:none}
+/* 상세 패널 하트: 누르면 보라 (브랜드) */
+.dp-st.on{color:#7425f6}
+html:not(.m) #panel .dp-st.on svg{color:#7425f6}
+html:not(.m) #panel .dp-st.on{color:#18171a}
+/* 바깥 카드 아래 회색 하트: 상태 표시 없이 숫자만 (인터랙션 요소 제거) */
+.card .meta .like{pointer-events:none}
+.card .meta.liked .like,html:not(.m) .card .meta.liked .like{color:#c3c2c5}
+html.m .card .meta.liked .like{color:var(--t3)}
+.card .meta.liked .like svg path{fill:currentColor}
+html:not(.m) .card .meta.liked .lk{color:#8e8c91}
+.meta.liked .like .icm .ico{display:inline}.meta.liked .like .icm .icf{display:none}
+
+/* ---- 상단 바: 플로팅 (Figma 3033:53562) — 피드 칸 끝까지 이어지는 흰 띠 · 안쪽 24 · 그림자 대신 아래 선 ---- */
+html:not(.m) .bar{margin:-22px -24px 16px;padding:12px 24px;background:#fff;backdrop-filter:none;box-shadow:none;border-bottom:1px solid #f1f0f2;align-items:flex-end}
+@media (min-width:1200px){
+  html:not(.m) .layout.f-open .bar{margin-left:-20px;padding-left:20px}
+  html:not(.m) .layout.has-panel .bar{margin-right:-20px;padding-right:20px}
+}
+html:not(.m) .bar .resetbtn .ric,html:not(.m) .sortbtn .dic{width:20px;height:20px;display:block}
+html:not(.m) .sortbtn{height:44px;padding:0 8px 0 12px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html:not(.m) .fbtn .tic{width:20px;height:20px;color:#fff}
+html:not(.m) .top .gnb-ic{color:#18171a}
+
+/* 빈 북 (Figma 3064:54787): 원 104 + 느낌표 53 · 제목 24/32 · 설명 14/20 · 외곽선 버튼 '홈으로 이동' */
+.kp-ex .ic{width:53px;height:53px;color:#6f6d72}
+.bk-empty{padding:120px 0 80px}
+html:not(.m) .kp-empty.bk-empty{min-height:0;padding:120px 0 80px}
+.bk-empty h2{margin:0 0 8px}
+html:not(.m) .kp-empty.bk-empty h2{margin:0 0 8px}
+.bk-empty p{margin:0 0 24px;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#5b595f}
+
+/* 북 카드: 표지를 더 길게 */
+html:not(.m) .dmain .bk .cover{height:200px}
+
+/* 신고 모달 '신고하기' 버튼: 디자인 시스템 error 색 */
+.btn.primary.rp-go,html:not(.m) .btn.primary.rp-go{background:var(--status-error,#c43a49);border-color:var(--status-error,#c43a49);color:#fff}
+.btn.primary.rp-go:hover{filter:brightness(.95)}
+html:not(.m) #filterBtn .tic{display:block}
+html:not(.m) .sortbtn .dic2 .ic{display:block;width:20px;height:20px}

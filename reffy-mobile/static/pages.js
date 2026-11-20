@@ -73,8 +73,8 @@ window.addEventListener("resize", () => document.querySelectorAll(".id-mark").fo
 
 /* Figma Common/Dialog 닫기 32 · 라디오 20 · 더하기 24 (고정 SVG 문자열) */
 const FIG_SVG = {
-  close: '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M22.6275 7.9594C23.0181 7.56887 23.6511 7.56887 24.0416 7.9594C24.4321 8.34992 24.4321 8.98294 24.0416 9.37346L17.4153 15.9998L24.0416 22.6261C24.4321 23.0166 24.4321 23.6496 24.0416 24.0401C23.6511 24.4307 23.0181 24.4307 22.6275 24.0401L16.0012 17.4138L9.37492 24.0401C8.9844 24.4307 8.35139 24.4307 7.96086 24.0401C7.57034 23.6496 7.57034 23.0166 7.96086 22.6261L14.5872 15.9998L7.96086 9.37346C7.57034 8.98294 7.57034 8.34992 7.96086 7.9594C8.35139 7.56887 8.9844 7.56887 9.37492 7.9594L16.0012 14.5857L22.6275 7.9594Z" fill="currentColor"/></svg>',
-  plus: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: iconHTML("close", 32),
+  plus: iconHTML("plus", 24),
   radioOn: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.88889" stroke="#7425F6" stroke-width="2.22222"/><circle cx="9.99913" cy="10.0001" r="4.44444" fill="#7425F6"/></svg>',
   radioOff: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.88889" stroke="#6F6D72" stroke-width="2.22222"/></svg>',
 };
@@ -182,11 +182,11 @@ function bookDialog(book, done) {
 }
 
 /* ---------------------------------------------------------------- 킵 스페이스 */
-const KC_TRASH = '<svg class="kc-tr" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M32.0846 10C32.775 10 33.3346 10.5597 33.3346 11.25C33.3346 11.9404 32.775 12.5 32.0846 12.5H7.91797C7.22761 12.5 6.66797 11.9404 6.66797 11.25C6.66797 10.5597 7.22761 10 7.91797 10H32.0846Z" fill="currentColor"/><path d="M23.3346 11.25V8.75004C23.3346 8.63953 23.2907 8.53359 23.2126 8.45544C23.1344 8.3773 23.0285 8.33337 22.918 8.33337H17.0846C16.9741 8.33337 16.8682 8.3773 16.79 8.45544C16.7119 8.53359 16.668 8.63953 16.668 8.75004V11.25C16.668 11.9404 16.1083 12.5 15.418 12.5C14.7276 12.5 14.168 11.9404 14.168 11.25V8.75004C14.168 7.97649 14.4755 7.23485 15.0225 6.68787C15.5694 6.14089 16.3111 5.83337 17.0846 5.83337H22.918C23.6915 5.83337 24.4332 6.14089 24.9801 6.68787C25.5271 7.23485 25.8346 7.97649 25.8346 8.75004V11.25C25.8346 11.9404 25.275 12.5 24.5846 12.5C23.8943 12.5 23.3346 11.9404 23.3346 11.25Z" fill="currentColor"/><path d="M29.5846 10C29.932 10 30.2645 10.1443 30.501 10.3988C30.7373 10.6532 30.8567 10.9949 30.8314 11.3412L29.4154 30.6755L29.4137 30.6771C29.3269 31.832 28.8071 32.9115 27.957 33.698C27.1077 34.4835 25.9921 34.9176 24.8353 34.9154L15.1673 34.917C14.0105 34.9192 12.8949 34.4835 12.0456 33.698C11.1955 32.9115 10.6757 31.832 10.5889 30.6771L10.5872 30.6755L9.17122 11.3412C9.14591 10.9949 9.26532 10.6532 9.50163 10.3988C9.73812 10.1443 10.0706 10 10.418 10H29.5846ZM13.0807 30.4899L13.1051 30.6853C13.1822 31.1352 13.4055 31.5494 13.7432 31.862C14.1296 32.2194 14.6377 32.4184 15.1641 32.417H24.8385C25.3649 32.4184 25.873 32.2194 26.2594 31.862C26.6454 31.5046 26.8824 31.0145 26.9219 30.4899L28.2402 12.5H11.7624L13.0807 30.4899Z" fill="currentColor"/><path d="M15.8346 27.5V17.5C15.8346 16.8097 16.3943 16.25 17.0846 16.25C17.775 16.25 18.3346 16.8097 18.3346 17.5V27.5C18.3346 28.1904 17.775 28.75 17.0846 28.75C16.3943 28.75 15.8346 28.1904 15.8346 27.5ZM21.668 27.5V17.5C21.668 16.8097 22.2276 16.25 22.918 16.25C23.6083 16.25 24.168 16.8097 24.168 17.5V27.5C24.168 28.1904 23.6083 28.75 22.918 28.75C22.2276 28.75 21.668 28.1904 21.668 27.5Z" fill="currentColor"/></svg>';   // Figma icon/trash 40 (고정 문자열)
+const KC_TRASH = iconHTML("trash", 40).replace('class="', 'class="kc-tr ');   // Figma 아이콘 컴포넌트(2126:501) · trash 40
 /* 빈 화면 아이콘 (Figma 2733:129392): 원 104 #F1F0F2 + 느낌표 53 */
 function kpEx() {
   const e = h("span", { class: "kp-ex" });
-  e.innerHTML = '<svg width="53" height="53" viewBox="0 0 53 53" fill="none" aria-hidden="true"><path d="M24.8444 33.125V8.83331C24.8444 7.91859 25.5859 7.17706 26.5007 7.17706C27.4154 7.17706 28.1569 7.91859 28.1569 8.83331V33.125C28.1569 34.0397 27.4154 34.7812 26.5007 34.7812C25.5859 34.7812 24.8444 34.0397 24.8444 33.125Z" fill="#6F6D72"/><path d="M29.2611 43.0625C29.2611 44.587 28.0252 45.8229 26.5007 45.8229C24.9761 45.8229 23.7402 44.587 23.7402 43.0625C23.7402 41.5379 24.9761 40.3021 26.5007 40.3021C28.0252 40.3021 29.2611 41.5379 29.2611 43.0625Z" fill="#6F6D72"/></svg>';
+  e.append(icon("exclamation", 53));   // Figma 아이콘 컴포넌트(2126:501) · exclamation
   return e;
 }
 /* 홈 피드와 같은 배치: n번째 카드는 (n % 열 수)번째 열 — 왼쪽 → 오른쪽으로 한 줄씩. 열 수는 폭에 맞춰(카드 약 217 · 간격 18) */
@@ -358,9 +358,17 @@ async function drawerPage(sub, id) {
       const load = async () => {
         chips.replaceChildren(...[["", "전체"], ["like", "하트"], ["comment", "댓글"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(drawerKind === k), class: "dchip" + (drawerKind === k ? " on" : ""), onclick: () => { if (drawerKind !== k) { drawerKind = k; load(); } } }, l)));
         const d = await api("/api/me/reacted" + (drawerKind ? "?kind=" + drawerKind : ""));
-        // 카드: 피드와 같은 WF/Card (프로필 · 닉네임 · 하트 수), 누르면 게시물 화면으로
-        const dcard = (it) => { const c = card(it); c.onclick = () => goPost(it.id); return c; };
-        body.replaceChildren(d.items.length ? (isM() ? h("div", { class: "grid c5 dgrid" }, d.items.map(dcard)) : rrGrid(d.items, (it) => ({ click: () => goPost(it.id) }), { gap: 12 })) : notice(drawerKind === "comment" ? "아직 댓글을 단 게시물이 없어요" : drawerKind === "like" ? "아직 하트를 누른 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
+        // 데스크톱은 Figma 게시물 모달, 모바일은 기존 게시물 상세 화면을 연다.
+        const ids = d.items.map((it) => it.id);
+        const openItem = (it) => isM() ? goPost(it.id) : postModal(it.id, load, ids);
+        const removeReaction = async (it) => {
+          if (!(await confirmDialog("반응한 게시물에서 삭제할까요?", "내 하트와 이 게시물에 작성한 댓글이 삭제돼요.", { ok: "삭제하기", cancel: "취소", danger: true }))) return;
+          try { await api("/api/me/reacted/" + it.id, { method: "DELETE" }); toast("반응한 게시물에서 삭제했어요"); await load(); }
+          catch (e) { toast(e.message); }
+        };
+        const more = (anchor, it) => menuCard(anchor, [{ label: "삭제하기", danger: true, fn: () => removeReaction(it) }]);
+        const dcard = (it) => { const c = card(it); c.onclick = () => openItem(it); const kebab = h("button", { class: "more-btn", type: "button", "aria-label": "더보기", onclick: (e) => { e.stopPropagation(); more(e.currentTarget, it); } }, moreIc()); c.append(kebab); return c; };
+        body.replaceChildren(d.items.length ? (isM() ? h("div", { class: "grid c5 dgrid" }, d.items.map(dcard)) : rrGrid(d.items, (it) => ({ click: () => openItem(it), more }), { gap: 12 })) : notice(drawerKind === "comment" ? "아직 댓글을 단 게시물이 없어요" : drawerKind === "like" ? "아직 하트를 누른 게시물이 없어요" : "아직 반응한 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.", btn("홈으로", "primary", () => (location.hash = "#/"))));
       };
       await load();
       main.append(h("div", { class: "dhead2" }, h("div", {}, h("h1", {}, "반응한 게시물"), h("p", { class: "sub" }, "하트를 누르거나 댓글을 단 게시글이에요")), chips), body);
@@ -370,8 +378,8 @@ async function drawerPage(sub, id) {
 }
 /* 내 북 화면 아이콘 (Figma DRW_0000 2733:130109): 정렬 화살표 20 · 더하기 20 · 더보기 24 */
 const D_SVG = {
-  drop: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6.66693 8.5415H13.3336L10.0003 12.0832L6.66693 8.5415Z" fill="#5B595F"/><path d="M13.3336 7.9165C13.5828 7.9165 13.8084 8.06455 13.9073 8.29329C14.0062 8.52217 13.9594 8.78799 13.7885 8.96956L10.4552 12.5112C10.3371 12.6367 10.1726 12.7082 10.0003 12.7082C9.82793 12.7082 9.66346 12.6367 9.54535 12.5112L6.21202 8.96956C6.04116 8.78799 5.99431 8.52217 6.0932 8.29329C6.19216 8.06455 6.41768 7.9165 6.66693 7.9165H13.3336ZM10.0003 11.1717L11.8875 9.1665H8.11306L10.0003 11.1717Z" fill="#5B595F"/></svg>',
-  plus: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M9.37533 15.8332V10.6248H4.16699C3.82181 10.6248 3.54199 10.345 3.54199 9.99984C3.54199 9.65466 3.82181 9.37484 4.16699 9.37484H9.37533V4.1665C9.37533 3.82133 9.65515 3.5415 10.0003 3.5415C10.3455 3.5415 10.6253 3.82133 10.6253 4.1665V9.37484H15.8337C16.1788 9.37484 16.4587 9.65466 16.4587 9.99984C16.4587 10.345 16.1788 10.6248 15.8337 10.6248H10.6253V15.8332C10.6253 16.1783 10.3455 16.4582 10.0003 16.4582C9.65515 16.4582 9.37533 16.1783 9.37533 15.8332Z" fill="currentColor"/></svg>',
+  drop: iconHTML("arrowDropDown:f", 20),
+  plus: iconHTML("plus", 20),
 };
 const dIc = (k) => { const sp = h("span", { class: "dic2" }); sp.innerHTML = D_SVG[k]; return sp; };
 async function bookList(main, sort = "recent") {
@@ -383,7 +391,7 @@ async function bookList(main, sort = "recent") {
       h("button", { class: "book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) }, h("span", { class: "cover" + (b.cover ? " one" : "") }, b.cover ? h("img", { src: b.cover, alt: "" }) : [0, 1, 2].map((i) => h("span", {}, b.covers[i] ? h("img", { src: `/img/${b.covers[i]}?s=thumb`, alt: "" }) : null)))),
       h("div", { class: "brow" }, h("button", { class: "bt", type: "button", style: "text-align:left", onclick: () => (location.hash = "#/drawer/book/" + b.id) }, h("b", {}, b.name), h("span", {}, `${b.count}개 · ${ago(b.updated)}`)),
         h("button", { class: "more-btn bk-more", type: "button", "aria-label": `${b.name} 더보기`, onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["편집", () => bookDialog(b, redo)], ["삭제", async () => { if (await confirmDialog(`‘${b.name}’ 북을 삭제하시겠어요?`, "삭제한 북은 복구할 수 없어요.", { fig: !isM(), no: "아니요", yes: "네" })) { try { await api("/api/books/" + b.id, { method: "DELETE" }); redo(); } catch (er) { toast(er.message); } } }]]); } }, moreIc())))))
-      : notice("아직 북이 없어요", "마음에 드는 레퍼런스를 주제별로 모아 보세요.", btn("+ 새 북 만들기", "primary", () => bookDialog(null, redo))));
+      : h("div", { class: "kp-empty bk-empty" }, kpEx(), h("h2", {}, "아직 북이 없어요"), h("p", {}, "마음에 드는 레퍼런스를 주제별로 모아 보세요."), btn("홈으로 이동", "", () => (location.hash = "#/"))));   // Figma 3064:54787
 }
 async function bookDetail(main, id) {
   const b = await api("/api/books/" + id); const redo = () => bookDetail(main, id);
@@ -467,12 +475,12 @@ $("#bell").onclick = (e) => {
   if (!box.hidden) drawNotif();
 };
 document.addEventListener("click", (e) => { if (!e.target.closest("#notif, #bell")) { $("#notif").hidden = true; $("#bell").setAttribute("aria-expanded", "false"); } });
-async function doLogout() { try { await api("/api/auth/logout", { method: "POST" }); } catch { /* 이미 만료 */ } ME = null; UNREAD = 0; drawMe(); location.hash = "#/"; toast("로그아웃했어요"); }
+async function doLogout() { try { await api("/api/auth/logout", { method: "POST" }); } catch { /* 이미 만료 */ } ME = null; UNREAD = 0; if (NO_LOGIN) { try { sessionStorage.setItem("reffy.out", "1"); } catch { /* 저장 불가 */ } } drawMe(); location.hash = NO_LOGIN ? "#/login" : "#/"; toast("로그아웃했어요"); }
 $("#me").onclick = (e) => {
   e.stopPropagation();
   if (!ME) return needLogin();
   if (!isM()) return accountMenu(e.currentTarget);
-  popMenu(e.currentTarget, [["마이페이지", () => (location.hash = "#/me")], ["설정", () => (location.hash = "#/settings")], ...(NO_LOGIN ? [] : [["로그아웃", doLogout]])]);
+  popMenu(e.currentTarget, [["마이페이지", () => (location.hash = "#/me")], ["설정", () => (location.hash = "#/settings")], ["로그아웃", doLogout]]);
 };
 
 /* ---------------------------------------------------------------- 로그인 · 회원가입 */
@@ -480,7 +488,7 @@ function authLayout(inner) {
   const col = (hs) => h("div", {}, hs.map((x) => h("i", { style: `height:${x}px` })));
   return h("div", { class: "authwrap" }, h("div", { class: "aside-art" }, h("b", {}, "REFFY"), h("div", { class: "art", "aria-hidden": "true" }, col([300, 260, 280]), col([220, 240, 320, 240]), col([360, 340, 250]))), h("div", { class: "formcol" }, h("div", { class: "fbox" }, inner)));
 }
-const goNext = () => { const n = sessionStorage.getItem("reffy.next") || "#/"; sessionStorage.removeItem("reffy.next"); location.hash = n.startsWith("#/login") || n.startsWith("#/signup") ? "#/" : n; };
+const goNext = () => { try { sessionStorage.removeItem("reffy.out"); } catch { /* 저장 불가 */ } const n = sessionStorage.getItem("reffy.next") || "#/"; sessionStorage.removeItem("reffy.next"); location.hash = n.startsWith("#/login") || n.startsWith("#/signup") ? "#/" : n; };
 const snsRow = () => h("div", { class: "snsrow" }, [["G", "#fff", "#4285f4", "Google"], ["K", "#fee500", "#3c1e1e", "카카오"], ["N", "#03c75a", "#fff", "네이버"], ["X", "#000", "#fff", "X"]].map(([t, bg, fg, n]) =>
   h("button", { type: "button", disabled: true, title: `${n} 로그인은 준비 중이에요`, "aria-label": `${n} 로그인 (준비 중)`, style: `background:${bg};color:${fg}` }, t)));
 function loginPage() {
@@ -589,7 +597,7 @@ async function profilePage(uid) {
     books = u.me && isM() ? (await api(`/api/users/${uid}/books`)).items : [];
   }
   function draw() {
-    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : htmlSpan("lic", IC_LINK), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
+    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : h("span", { class: "lic" }, icon("link", 16)), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
     const shareBtn = h("button", { class: "btn pf-share", type: "button", "aria-label": "프로필 링크 복사", title: "프로필 링크 복사", onclick: async () => { const url = location.origin + location.pathname + "#/u/" + encodeURIComponent(u.uid); try { await navigator.clipboard.writeText(url); toast("프로필 링크를 복사했어요"); } catch { toast(url); } } }, dpSvg("share", 24));
     const stat = (n, l, fn) => (fn ? h("button", { class: "pf-stat", type: "button", onclick: fn }, h("b", {}, compact(n)), h("span", {}, l)) : h("span", { class: "pf-stat" }, h("b", {}, compact(n)), h("span", {}, l)));
     const blockAsk = () => blockUserAsk(u.uid, u.nick, async () => { await loadAll(); draw(); });
@@ -706,7 +714,7 @@ function route() {
   if (a !== "post") document.documentElement.classList.remove("m-detail");
   document.querySelectorAll("#nav a").forEach((l) => { const on = l.dataset.r === (a === "post" ? "" : a); l.classList.toggle("on", on); on ? l.setAttribute("aria-current", "page") : l.removeAttribute("aria-current"); });
   $("#notif").hidden = true;
-  if ((ME || NO_LOGIN) && (a === "login" || a === "signup")) { location.hash = "#/"; return; }
+  if ((ME || (NO_LOGIN && !LOGGED_OUT())) && (a === "login" || a === "signup")) { location.hash = "#/"; return; }
   if (a === "login") loginPage();
   else if (a === "signup") signupPage();
   else if (a === "keep") keepPage();
@@ -864,7 +872,7 @@ async function settingsPC(sub) {
 /* ---------------------------------------------------------------- 프로필 메뉴 (HOM_0503: 마이페이지 · 설정 · 언어 · 로그아웃) */
 /* 계정 메뉴 아이콘 (Figma MenuCard 2574:148801 — icon/user · settings · language, 20) */
 const ACCT_IC = { user: '<path d="M12.0844 6.24984C12.0844 5.69739 11.8646 5.16754 11.474 4.77686C11.0834 4.38624 10.5535 4.16659 10.0011 4.1665L9.79517 4.17708C9.31824 4.22444 8.86993 4.435 8.52808 4.77686C8.13748 5.16754 7.91772 5.69739 7.91772 6.24984C7.91777 6.80232 8.13741 7.33216 8.52808 7.72282C8.91877 8.11349 9.44855 8.33317 10.0011 8.33317C10.5536 8.33317 11.0833 8.11349 11.474 7.72282C11.8647 7.33216 12.0843 6.80232 12.0844 6.24984ZM13.3344 6.24984C13.3343 7.1338 12.9829 7.98155 12.3578 8.60661C11.7327 9.23167 10.8851 9.58317 10.0011 9.58317C9.11705 9.58317 8.2694 9.23167 7.64429 8.60661C7.01923 7.98155 6.66779 7.1338 6.66772 6.24984C6.66772 5.36598 7.0186 4.51815 7.64347 3.89307C8.26842 3.26798 9.11634 2.91672 10.0002 2.9165H10.0019L10.1671 2.92057C10.9908 2.96162 11.7727 3.30703 12.3586 3.89307C12.9835 4.51816 13.3344 5.36598 13.3344 6.24984Z"/><path d="M15.4173 16.0415C15.4173 13.8771 13.2121 12.0832 10.0007 12.0832C6.78925 12.0832 4.58398 13.8771 4.58398 16.0415C4.58398 16.0968 4.60595 16.1497 4.64502 16.1888C4.68409 16.2279 4.73706 16.2498 4.79232 16.2498H15.209C15.2642 16.2498 15.3172 16.2279 15.3563 16.1888C15.3954 16.1497 15.4173 16.0968 15.4173 16.0415ZM16.6673 16.0415C16.6673 16.4283 16.5136 16.7991 16.2401 17.0726C15.9666 17.3461 15.5958 17.4998 15.209 17.4998H4.79232C4.40554 17.4998 4.03472 17.3461 3.76123 17.0726C3.48774 16.7991 3.33398 16.4283 3.33398 16.0415C3.33398 12.8725 6.46205 10.8332 10.0007 10.8332C13.5392 10.8332 16.6673 12.8725 16.6673 16.0415Z"/>', settings: '<path d="M11.3083 2.625C11.6192 2.625 11.8826 2.85357 11.9268 3.1613L12.1172 4.49837L12.3914 4.61068L13.4648 3.80094C13.7136 3.61321 14.0631 3.63759 14.2835 3.85791L16.1423 5.71663C16.3623 5.93697 16.3866 6.2858 16.1992 6.53451L15.3879 7.60872L15.4993 7.88135L16.8381 8.07259C17.146 8.11658 17.3752 8.38086 17.3752 8.69189V11.3083C17.3752 11.6193 17.146 11.8828 16.8381 11.9268L15.5002 12.1172L15.3879 12.3906L16.1992 13.4648C16.3869 13.7136 16.3625 14.0631 16.1423 14.2835L14.2835 16.1423C14.0631 16.3625 13.7136 16.3869 13.4648 16.1992L12.3906 15.3879L12.1172 15.5002L11.9268 16.8381C11.8828 17.146 11.6193 17.3752 11.3083 17.3752H8.69189C8.38086 17.3752 8.11658 17.146 8.07259 16.8381L7.88135 15.4993L7.60872 15.3879L6.53451 16.1992C6.2858 16.3866 5.93697 16.3623 5.71663 16.1423L3.85791 14.2835C3.63759 14.0631 3.61321 13.7136 3.80094 13.4648L4.61068 12.3914L4.49837 12.1172L3.1613 11.9268C2.85357 11.8826 2.625 11.6192 2.625 11.3083V8.69189C2.625 8.38095 2.85352 8.11669 3.1613 8.07259L4.49919 7.88135L4.61068 7.60791L3.80094 6.53451C3.61345 6.28576 3.63774 5.93699 3.85791 5.71663L5.71663 3.85791L5.80452 3.78467C6.02235 3.63491 6.31677 3.63682 6.53451 3.80094L7.60791 4.61068L7.88135 4.49919L8.07259 3.1613L8.09945 3.0498C8.18373 2.79993 8.41986 2.625 8.69189 2.625H11.3083ZM9.06868 5.02979C9.03738 5.24893 8.89253 5.43547 8.68783 5.51969L7.75439 5.90299C7.55013 5.98689 7.31624 5.95707 7.13997 5.82406L6.21549 5.12581L5.12581 6.21549L5.82406 7.13997C5.95707 7.31624 5.98689 7.55013 5.90299 7.75439L5.51969 8.68783C5.43547 8.89253 5.24893 9.03738 5.02979 9.06868L3.875 9.23307V10.7663L5.02979 10.9315L5.11035 10.9486C5.29406 11.0001 5.44601 11.1331 5.51969 11.3123L5.90299 12.2458C5.98689 12.45 5.95707 12.6839 5.82406 12.8602L5.12581 13.7839L6.21549 14.8735L7.13997 14.1761L7.20915 14.1313C7.37467 14.0377 7.57571 14.0238 7.75439 14.0972L8.68783 14.4805L8.76107 14.5163C8.92657 14.6112 9.04116 14.7777 9.06868 14.9696L9.23389 16.1252H10.7663L10.9315 14.9696L10.9486 14.889C11.0002 14.7056 11.1333 14.5541 11.3123 14.4805L12.2458 14.0972L12.3239 14.0711C12.5078 14.0225 12.706 14.0597 12.8602 14.1761L13.7839 14.8735L14.8735 13.7839L14.1761 12.8602C14.0431 12.6839 14.0133 12.45 14.0972 12.2458L14.4805 11.3123L14.5163 11.2383C14.6113 11.073 14.7779 10.959 14.9696 10.9315L16.1252 10.7663V9.23307L14.9696 9.06868C14.7506 9.03727 14.5647 8.89238 14.4805 8.68783L14.0972 7.75439C14.0133 7.55013 14.0431 7.31624 14.1761 7.13997L14.8735 6.21549L13.7839 5.12581L12.8602 5.82406C12.6839 5.95707 12.45 5.98689 12.2458 5.90299L11.3123 5.51969C11.1076 5.4355 10.9628 5.24898 10.9315 5.02979L10.7663 3.875H9.23389L9.06868 5.02979Z"/><path d="M11.6671 9.99998C11.6671 9.55803 11.4912 9.13414 11.1788 8.82159C10.8663 8.50911 10.4423 8.33339 10.0004 8.33331L9.83518 8.34145C9.45381 8.37943 9.09538 8.54822 8.822 8.82159C8.50954 9.13414 8.33372 9.55803 8.33372 9.99998C8.33376 10.442 8.50948 10.8658 8.822 11.1784C9.13456 11.4909 9.55839 11.6666 10.0004 11.6666C10.4424 11.6666 10.8662 11.4909 11.1788 11.1784C11.4913 10.8658 11.667 10.442 11.6671 9.99998ZM12.9171 9.99998C12.917 10.7734 12.6095 11.5152 12.0626 12.0622C11.5156 12.6091 10.7739 12.9166 10.0004 12.9166C9.22688 12.9166 8.48519 12.6091 7.93821 12.0622C7.3913 11.5152 7.08379 10.7734 7.08372 9.99998C7.08372 9.22663 7.39067 8.48475 7.9374 7.93781C8.48421 7.39085 9.22617 7.08353 9.99957 7.08331H10.0012L10.1452 7.08657C10.8662 7.12239 11.5506 7.4249 12.0634 7.93781C12.6101 8.48475 12.9171 9.22663 12.9171 9.99998Z"/>', language: '<path d="M16.875 10C16.875 8.17683 16.1507 6.42844 14.8617 5.13916C13.5724 3.84982 11.8233 3.1251 10 3.125L9.65902 3.13314C7.95969 3.21745 6.34708 3.93033 5.13835 5.13916C3.84928 6.42844 3.125 8.17683 3.125 10C3.12505 11.8233 3.84908 13.5724 5.13835 14.8617C6.42765 16.1509 8.17667 16.875 10 16.875C11.8233 16.875 13.5723 16.1509 14.8617 14.8617C16.1509 13.5724 16.8749 11.8233 16.875 10ZM18.125 10C18.1249 12.1548 17.2691 14.2218 15.7454 15.7454C14.2217 17.2691 12.1548 18.125 10 18.125C7.84515 18.125 5.77828 17.2691 4.25456 15.7454C2.73088 14.2218 1.87506 12.1548 1.875 10C1.875 7.84532 2.73107 5.77907 4.25456 4.25537C5.77811 2.73169 7.84447 1.87522 9.99919 1.875H10.0008L10.4036 1.88477C12.4117 1.98457 14.3171 2.82691 15.7454 4.25537C17.2689 5.77907 18.125 7.84531 18.125 10Z"/><path d="M12.3747 10C12.3747 7.43071 11.5818 5.25 9.99926 3.42448C8.4169 5.24993 7.62458 7.43086 7.62458 10C7.62458 12.5689 8.41716 14.7493 9.99926 16.5747C11.5815 14.7493 12.3747 12.5691 12.3747 10ZM13.6247 10C13.6247 13.1154 12.5648 15.7741 10.446 17.937C10.3285 18.057 10.168 18.125 10 18.125C9.83212 18.1249 9.67078 18.0569 9.55329 17.937C7.43452 15.7741 6.37458 13.1154 6.37458 10C6.37458 6.88457 7.43452 4.22594 9.55329 2.06299L9.64851 1.98242C9.75117 1.91279 9.87326 1.87507 9.99919 1.875C10.1672 1.875 10.3285 1.94298 10.446 2.06299C12.5648 4.22593 13.6247 6.88461 13.6247 10Z"/><path d="M16.9994 11.875C17.3446 11.875 17.6244 12.1548 17.6244 12.5C17.6244 12.8452 17.3446 13.125 16.9994 13.125H2.99958C2.65441 13.125 2.37458 12.8452 2.37458 12.5C2.37458 12.1548 2.65441 11.875 2.99958 11.875H16.9994ZM16.9994 6.875C17.3446 6.875 17.6244 7.15482 17.6244 7.5C17.6244 7.84518 17.3446 8.125 16.9994 8.125H2.99958C2.65441 8.125 2.37458 7.84518 2.37458 7.5C2.37458 7.15482 2.65441 6.875 2.99958 6.875H16.9994Z"/>' };
-function acctIc(k) { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 20 20"); s.setAttribute("width", "20"); s.setAttribute("height", "20"); s.setAttribute("fill", "currentColor"); s.setAttribute("class", "acct-ic"); s.setAttribute("aria-hidden", "true"); s.innerHTML = ACCT_IC[k]; return s; }
+function acctIc(k) { if (k !== "language" && IC_FIG[k]) { const i = icon(k, 20); i.classList.add("acct-ic"); return i; }   /* Figma 아이콘 컴포넌트(2126:501) */ const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("viewBox", "0 0 20 20"); s.setAttribute("width", "20"); s.setAttribute("height", "20"); s.setAttribute("fill", "currentColor"); s.setAttribute("class", "acct-ic"); s.setAttribute("aria-hidden", "true"); s.innerHTML = ACCT_IC[k]; return s; }
 function accountMenu(anchor) {
   const old = document.querySelector(".acct"); if (old) { old.remove(); return; }
   const r = anchor.getBoundingClientRect();
@@ -878,7 +886,7 @@ function accountMenu(anchor) {
     h("button", { type: "button", role: "menuitem", class: "acct-it", onclick: go(() => (location.hash = "#/me")) }, acctIc("user"), h("span", {}, "마이페이지")),
     h("button", { type: "button", role: "menuitem", class: "acct-it", onclick: go(() => (location.hash = "#/settings")) }, acctIc("settings"), h("span", {}, "설정")),
     h("div", { class: "acct-lang" }, acctIc("language"), h("span", {}, "언어"), seg),
-    ...(NO_LOGIN ? [] : [h("i", { class: "acct-div" }), h("button", { type: "button", role: "menuitem", class: "acct-out", onclick: go(async () => { if (await confirmDialog("로그아웃할까요?", "다시 로그인하면 이어서 이용할 수 있어요.", { ok: "로그아웃" })) doLogout(); }) }, "로그아웃")]));
+    h("i", { class: "acct-div" }), h("button", { type: "button", role: "menuitem", class: "acct-out", onclick: go(async () => { if (await confirmDialog("로그아웃할까요?", NO_LOGIN && String(ME.uid).startsWith("guest") ? "게스트 계정은 로그아웃하면 다시 들어올 수 없어요." : "다시 로그인하면 이어서 이용할 수 있어요.", { ok: "로그아웃" })) doLogout(); }) }, "로그아웃"));
   document.body.append(m);
   window.addEventListener("hashchange", () => m.remove(), { once: true });
   const close = (e) => { if (!m.contains(e.target)) { m.remove(); document.removeEventListener("click", close); } };

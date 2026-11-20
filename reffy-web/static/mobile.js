@@ -71,7 +71,7 @@ function reportSheet(type, id) {
   const draw = () => list.replaceChildren(...REPORT_REASONS.map((r) => h("button", { class: "srow rdrow", type: "button", role: "radio", "aria-checked": String(reason === r), onclick: () => { reason = r; detail.hidden = r !== "기타"; draw(); } }, h("i", { class: "rd" }), h("span", {}, r))));
   draw();
   const s = sheet("신고하기", [h("p", { class: "sheet-p" }, "신고 사유를 선택해 주세요"), list, detail],
-    h("div", { class: "sheet-f" }, h("button", { class: "btn primary block", type: "button", onclick: async () => {
+    h("div", { class: "sheet-f" }, h("button", { class: "btn primary block rp-go", type: "button", onclick: async () => {
       if (!reason) return toast("신고 사유를 선택해 주세요.");
       try { await api("/api/reports", jsonOpt("POST", { target_type: type, target_id: String(id), reason, detail: detail.value })); s.close(); toast("신고가 접수됐어요"); } catch (e) { toast(e.message); }
     } }, "신고하기")));

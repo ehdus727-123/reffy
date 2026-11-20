@@ -6,8 +6,8 @@
 <title>REFFY · 레퍼런스 검색</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="icon" type="image/svg+xml" href="assets/reffy-symbol.svg">
-<link rel="stylesheet" href="app.css?v=20261120o">
-<link rel="stylesheet" href="mobile.css?v=20261120o" media="(max-width:767px)">
+<link rel="stylesheet" href="app.css?v=20261120q">
+<link rel="stylesheet" href="mobile.css?v=20261120q" media="(max-width:767px)">
 </head>
 <body>
 <header class="top">
@@ -19,13 +19,13 @@
   </div>
   <button class="icon-btn m-only" id="mBack" type="button" aria-label="뒤로" hidden><i data-ic="back" data-s="24"></i></button>
   <form class="search" id="searchForm" role="search" autocomplete="off">
-    <svg class="gnb-ic" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M13.7507 9.16732C13.7507 7.95194 13.268 6.78627 12.4087 5.92676C11.5492 5.06719 10.3829 4.58408 9.16732 4.58398L8.93945 4.58968C7.80674 4.64602 6.73164 5.12097 5.92594 5.92676C5.06665 6.78627 4.58398 7.95194 4.58398 9.16732C4.58403 10.3829 5.06722 11.5492 5.92676 12.4087C6.78626 13.268 7.95194 13.7507 9.16732 13.7507C10.3827 13.7507 11.5484 13.268 12.4079 12.4087C13.2674 11.5492 13.7506 10.3829 13.7507 9.16732ZM15.0007 9.16732C15.0006 10.7144 14.3856 12.1986 13.2917 13.2925C12.1977 14.3862 10.7142 15.0007 9.16732 15.0007C7.62041 15.0007 6.13689 14.3862 5.04297 13.2925C3.94901 12.1986 3.33405 10.7144 3.33398 9.16732C3.33398 7.62042 3.94844 6.1369 5.04215 5.04297C6.13594 3.94905 7.61957 3.3342 9.1665 3.33398H9.16813L9.45703 3.34131C10.8988 3.41295 12.267 4.01735 13.2925 5.04297C14.3862 6.1369 15.0007 7.62042 15.0007 9.16732Z" fill="#5B595F"/><path d="M12.5583 12.5588C12.8024 12.3147 13.198 12.3147 13.4421 12.5588L16.9008 16.0174C17.1445 16.2615 17.1447 16.6572 16.9008 16.9012C16.6568 17.1452 16.2611 17.145 16.017 16.9012L12.5583 13.4426C12.3143 13.1985 12.3143 12.8028 12.5583 12.5588Z" fill="#5B595F"/></svg>
+    <i data-ic="search" data-s="20" class="gnb-ic"></i>
     <input id="q" type="search" placeholder="검색어를 입력하세요" aria-label="검색어">
     <button class="qclear" id="qClear" type="button" aria-label="검색어 지우기" hidden><i data-ic="close" data-s="20"></i></button>
     <div class="suggest" id="suggest" hidden></div>
   </form>
   <div class="actions"><div class="notif" id="notif" hidden></div>
-    <button class="icon-btn" id="bell" type="button" aria-label="알림" aria-haspopup="true" aria-expanded="false"><svg class="gnb-ic" width="24" height="24" viewBox="0 4 24 24" fill="none" aria-hidden="true"><path d="M17 21.75V14.25C17 12.9239 16.4728 11.6525 15.5352 10.7148C14.5975 9.77716 13.3261 9.25 12 9.25C10.6739 9.25 9.40253 9.77716 8.46484 10.7148C7.52716 11.6525 7 12.9239 7 14.25V21.75C7 22.1642 6.66421 22.5 6.25 22.5C5.83579 22.5 5.5 22.1642 5.5 21.75V14.25C5.5 12.5261 6.18433 10.8723 7.40332 9.65332C8.62231 8.43433 10.2761 7.75 12 7.75C13.7239 7.75 15.3777 8.43433 16.5967 9.65332C17.8157 10.8723 18.5 12.5261 18.5 14.25V21.75C18.5 22.1642 18.1642 22.5 17.75 22.5C17.3358 22.5 17 22.1642 17 21.75Z" fill="currentColor"/><path d="M19.25 21C19.6642 21 20 21.3358 20 21.75C20 22.1642 19.6642 22.5 19.25 22.5H4.75C4.33579 22.5 4 22.1642 4 21.75C4 21.3358 4.33579 21 4.75 21H19.25Z" fill="currentColor"/><path d="M10.5 7.5C10.5 7.10217 10.6581 6.72076 10.9395 6.43945C11.2208 6.15815 11.6022 6 12 6C12.3978 6 12.7792 6.15815 13.0605 6.43945C13.3419 6.72076 13.5 7.10217 13.5 7.5V8.25C13.5 8.66421 13.1642 9 12.75 9H11.25C10.8358 9 10.5 8.66421 10.5 8.25V7.5Z" fill="currentColor"/><path d="M13.5 23C13.6989 23 13.8896 23.0791 14.0303 23.2197C14.1709 23.3604 14.25 23.5511 14.25 23.75C14.25 24.3467 14.0128 24.9189 13.5908 25.3408C13.1689 25.7628 12.5967 26 12 26C11.4033 26 10.8311 25.7628 10.4092 25.3408C9.98722 24.9189 9.75 24.3467 9.75 23.75C9.75 23.5511 9.82907 23.3604 9.96973 23.2197C10.1104 23.0791 10.3011 23 10.5 23H13.5Z" fill="currentColor"/></svg></button>
+    <button class="icon-btn" id="bell" type="button" aria-label="알림" aria-haspopup="true" aria-expanded="false"><i data-ic="bell" data-s="24" class="gnb-ic"></i></button>
     <button class="avatar" id="me" type="button" aria-label="닉네임 설정" title="닉네임 설정"></button>
   </div>
 </header>
@@ -47,14 +47,14 @@
   </aside>
   <main class="main">
     <div class="bar">
-      <button class="resetbtn" id="resetAll" type="button" aria-label="필터 초기화" title="초기화"><span class="rtx">초기화</span><svg class="ric" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M9.45231 5.23989C10.7476 5.11317 12.0467 5.43977 13.1283 6.16355C14.2097 6.8873 15.0072 7.96327 15.3841 9.2088C15.761 10.4545 15.6943 11.7926 15.1953 12.9946C14.6964 14.1964 13.7961 15.188 12.6481 15.8006C11.4999 16.4132 10.1743 16.6089 8.89811 16.354C7.6219 16.099 6.47337 15.4092 5.6486 14.4025C4.824 13.3958 4.37387 12.1344 4.375 10.8331C4.37531 10.488 4.65564 10.2087 5.00082 10.209C5.3458 10.2094 5.62518 10.489 5.625 10.834C5.62411 11.8461 5.97399 12.8277 6.6154 13.6107C7.25689 14.3937 8.15045 14.9301 9.14307 15.1284C10.1357 15.3267 11.1667 15.1743 12.0597 14.6979C12.9526 14.2214 13.6525 13.45 14.0405 12.5153C14.4286 11.5804 14.481 10.5398 14.1878 9.57094C13.8947 8.60213 13.2745 7.7649 12.4333 7.20197C11.5921 6.63908 10.5817 6.38572 9.57438 6.48419C8.56702 6.58274 7.62455 7.02709 6.90837 7.74233L6.90593 7.74477L5.43946 9.19497C5.19406 9.43749 4.79834 9.43528 4.55567 9.19008C4.31299 8.94461 4.31508 8.54816 4.56055 8.30548L6.02702 6.8561C6.9476 5.9376 8.15801 5.36652 9.45231 5.23989Z" fill="currentColor"/><path d="M4.375 5.41699C4.375 5.07181 4.65482 4.79199 5 4.79199C5.34518 4.79199 5.625 5.07181 5.625 5.41699V8.12533H8.33334C8.67851 8.12533 8.95834 8.40515 8.95834 8.75033C8.95834 9.0955 8.67851 9.37533 8.33334 9.37533H5C4.65482 9.37533 4.375 9.0955 4.375 8.75033V5.41699Z" fill="currentColor"/></svg></button>
+      <button class="resetbtn" id="resetAll" type="button" aria-label="필터 초기화" title="초기화"><span class="rtx">초기화</span><i data-ic="reset" data-s="20" class="ric"></i></button>
       <div class="grow"><div class="result"><h1 id="resultTitle">레퍼런스</h1><span class="count" id="count"></span></div><div class="chips" id="chips"></div></div>
       <div class="sortfilter">
         <div class="sortwrap">
-          <button class="sortbtn" id="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="sortLabel">최근 순</span><i data-ic="chevronDown" data-s="16"></i><svg class="dic" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M9.56283 12.4792L6.54199 9.45833C6.50033 9.41667 6.4656 9.375 6.43783 9.33333C6.42394 9.27778 6.41699 9.22222 6.41699 9.16667C6.41699 9.05556 6.45171 8.95833 6.52116 8.875C6.60449 8.79167 6.70866 8.75 6.83366 8.75H13.167C13.292 8.75 13.3892 8.79167 13.4587 8.875C13.542 8.95833 13.5837 9.05556 13.5837 9.16667C13.5837 9.19444 13.542 9.29167 13.4587 9.45833L10.4378 12.4792C10.3684 12.5486 10.2989 12.5972 10.2295 12.625C10.16 12.6528 10.0837 12.6667 10.0003 12.6667C9.91699 12.6667 9.8406 12.6528 9.77116 12.625C9.70171 12.5972 9.63227 12.5486 9.56283 12.4792Z" fill="#5B595F"/></svg></button>
+          <button class="sortbtn" id="sortBtn" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="sortLabel">최근 순</span><i data-ic="chevronDown" data-s="16"></i><i data-ic="arrowDropDown:f" data-s="20" class="dic"></i></button>
           <div class="menu" id="sortMenu" role="listbox" hidden></div>
         </div>
-        <button class="fbtn" id="filterBtn" type="button" aria-label="필터 열기/닫기" aria-expanded="false"><i data-ic="filter" data-s="24"></i><svg class="fic-pc" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="3" y="5" width="18" height="2" rx="1"/><rect x="3" y="11" width="18" height="2" rx="1"/><rect x="3" y="17" width="18" height="2" rx="1"/><rect x="15" y="4" width="3" height="4" rx="1"/><rect x="6" y="10" width="3" height="4" rx="1"/></svg><svg class="tic" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M9.375 16.875V13.125C9.375 12.7798 9.65482 12.5 10 12.5C10.3452 12.5 10.625 12.7798 10.625 13.125V14.375H16.875C17.2202 14.375 17.5 14.6548 17.5 15C17.5 15.3452 17.2202 15.625 16.875 15.625H10.625V16.875C10.625 17.2202 10.3452 17.5 10 17.5C9.65482 17.5 9.375 17.2202 9.375 16.875ZM6.875 14.375C7.22018 14.375 7.5 14.6548 7.5 15C7.5 15.3452 7.22018 15.625 6.875 15.625H3.125C2.77982 15.625 2.5 15.3452 2.5 15C2.5 14.6548 2.77982 14.375 3.125 14.375H6.875ZM6.04167 11.875V10.625H3.125C2.77982 10.625 2.5 10.3452 2.5 10C2.5 9.65482 2.77982 9.375 3.125 9.375H6.04167V8.125C6.04167 7.77982 6.32149 7.5 6.66667 7.5C7.01184 7.5 7.29167 7.77982 7.29167 8.125V11.875C7.29167 12.2202 7.01184 12.5 6.66667 12.5C6.32149 12.5 6.04167 12.2202 6.04167 11.875ZM16.875 9.375C17.2202 9.375 17.5 9.65482 17.5 10C17.5 10.3452 17.2202 10.625 16.875 10.625H9.79167C9.44649 10.625 9.16667 10.3452 9.16667 10C9.16667 9.65482 9.44649 9.375 9.79167 9.375H16.875ZM12.7083 6.875V3.125C12.7083 2.77982 12.9882 2.5 13.3333 2.5C13.6785 2.5 13.9583 2.77982 13.9583 3.125V4.375H16.875C17.2202 4.375 17.5 4.65482 17.5 5C17.5 5.34518 17.2202 5.625 16.875 5.625H13.9583V6.875C13.9583 7.22018 13.6785 7.5 13.3333 7.5C12.9882 7.5 12.7083 7.22018 12.7083 6.875ZM10.2083 4.375C10.5535 4.375 10.8333 4.65482 10.8333 5C10.8333 5.34518 10.5535 5.625 10.2083 5.625H3.125C2.77982 5.625 2.5 5.34518 2.5 5C2.5 4.65482 2.77982 4.375 3.125 4.375H10.2083Z" fill="currentColor"/></svg><span class="ftxt">필터</span></button>
+        <button class="fbtn" id="filterBtn" type="button" aria-label="필터 열기/닫기" aria-expanded="false"><i data-ic="filter" data-s="24"></i><i data-ic="filter" data-s="20" class="fic-pc"></i><i data-ic="filter" data-s="20" class="tic"></i><span class="ftxt">필터</span></button>
       </div>
     </div>
     <div class="grid" id="grid" aria-live="polite"></div>
@@ -71,11 +71,11 @@
   <a data-r="me" href="#/me"><i data-ic="user" data-s="24"></i><span>마이페이지</span></a>
 </nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="icons.js?v=20261120o"></script>
-<script src="config.js?v=20261120o"></script>
-<script src="app.js?v=20261120o"></script>
-<script src="mobile.js?v=20261120o"></script>
-<script src="pages.js?v=20261120o"></script>
-<script src="i18n.js?v=20261120o"></script>
+<script src="icons.js?v=20261120q"></script>
+<script src="config.js?v=20261120q"></script>
+<script src="app.js?v=20261120q"></script>
+<script src="mobile.js?v=20261120q"></script>
+<script src="pages.js?v=20261120q"></script>
+<script src="i18n.js?v=20261120q"></script>
 </body>
 </html>

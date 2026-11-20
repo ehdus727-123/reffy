@@ -455,3 +455,7 @@
   .m-force .upl .up{grid-template-columns:1fr}
   .m-force .upl .pv,.m-force .upl .drop,.m-force .upl .dlg>header,.m-force .upl .up>*{width:auto;max-width:100%}
 }
+
+
+/* Keep feed controls visible beneath the mobile header while browsing images. */
+.m .bar{position:sticky;top:60px;z-index:19;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);box-shadow:0 8px 16px rgba(24,23,26,.06)}
