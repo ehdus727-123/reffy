@@ -2920,3 +2920,10 @@ html:not(.m) .st-doc .cp-cl h3{margin:0}
 html:not(.m) .st-btn.danger,.st-btn.danger{background:#ce3030}
 .btn.primary.rp-go,html:not(.m) .btn.primary.rp-go{background:#ce3030;border-color:#ce3030}
 .cp-tbl td:first-child,.cp-tbl th:first-child{width:150px;white-space:nowrap}
+/* 게시물 모달 이전·다음: 원 80 가운데에 chevron 56 */
+html:not(.m) .pm-nav{display:grid;place-items:center}
+html:not(.m) .pm-nav>.ic{width:56px;height:56px;display:block}
+/* 댓글 입력: 회색 칸 하나만 (안쪽 네모 테두리·포커스 테두리 없음) */
+.pm-cin,.pm-cin:focus,.pm-cin:focus-visible,.dp-cin .cin,.dp-cin .cin:focus,.dp-cin .cin:focus-visible{border:0;outline:none;box-shadow:none;background:none}
+.pm-cbox:focus-within,.dp-cin:focus-within{box-shadow:none}
+.pm-cbox input.pm-cin,.dp-cin input.cin{box-shadow:none !important;outline:none !important}   /* 전역 입력칸 포커스 테두리(안쪽 네모) 빼기 */

@@ -925,8 +925,8 @@ async function postModal(id, onChange, list, swap) {
   const goTo = async (k) => { const nid = list[idx + k]; if (nid == null || m.dataset.busy) return; m.dataset.busy = "1"; const old = m; await postModal(nid, onChange, list, true); old.remove(); };
   const navKey = (e) => { if (!document.body.contains(m)) return document.removeEventListener("keydown", navKey); if ($(".modal.lightbox, .modal.center") || /INPUT|TEXTAREA/.test(document.activeElement?.tagName || "")) return; if (e.key === "ArrowLeft" && idx > 0) goTo(-1); if (e.key === "ArrowRight" && idx >= 0 && idx < list.length - 1) goTo(1); };
   if (idx >= 0 && list.length > 1) {
-    if (idx > 0) m.append(h("button", { class: "pm-nav prev", type: "button", "aria-label": "이전 게시물", onclick: () => goTo(-1) }, figIc("chevL", 56)));
-    if (idx < list.length - 1) m.append(h("button", { class: "pm-nav next", type: "button", "aria-label": "다음 게시물", onclick: () => goTo(1) }, figIc("chevR", 56)));
+    if (idx > 0) m.append(h("button", { class: "pm-nav prev", type: "button", "aria-label": "이전 게시물", onclick: () => goTo(-1) }, icon("chevronLeft", 56)));   // Figma 아이콘 컴포넌트(2126:501) · 가운데 정렬
+    if (idx < list.length - 1) m.append(h("button", { class: "pm-nav next", type: "button", "aria-label": "다음 게시물", onclick: () => goTo(1) }, icon("chevronRight", 56)));
     document.addEventListener("keydown", navKey);
   }
   const right = h("div", { class: "pm-r" }), fab = h("div", { class: "dp-fab pm-fab" });
