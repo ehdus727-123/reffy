@@ -826,7 +826,7 @@ function materialsSec(d) {
 /* 일러스트 포즈 인식 (pose/rtm.js · RTMPose) 불러오기 */
 function loadRtm() {
   if (window.RTM) return Promise.resolve(window.RTM);
-  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=3" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
+  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=4" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
 }
 /* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z(앞으로 +)], visibility }
    - 그림 밖이거나 확신이 낮은 관절(상반신 그림의 다리 등)은 '자연스럽게 내린 자세'로 채우고 visibility 를 낮춤 → 마네킹 다리가 옆으로 꺾이지 않음

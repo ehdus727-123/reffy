@@ -3,9 +3,9 @@
    MediaPipe 는 실사 사진용이라 일러스트(특히 SD·과장된 비율)에서 자세를 잘 못 찾아서, 일러스트는 이걸 씀 */
 (function () {
   const BASE = "pose/";
-  // 관절 모델: DWPose-l(전신 133점, 일러스트에 더 강함 · 기본) / RTMPose-m(몸 17점, 가벼움)
-  const MODELS = { dw: { file: "dwpose-l-384-fp16.onnx", w: 288, h: 384, n: 133 }, rtm: { file: "rtmpose-m-body7-fp16.onnx", w: 192, h: 256, n: 17 } };
-  const ORDER = window.RTM_MODEL ? [window.RTM_MODEL] : ["dw", "rtm"];   // DWPose 로 먼저, 관절이 충분히 안 잡히면 RTMPose 로 한 번 더
+  // 관절 모델: RTMPose-m (몸 17점, fp16 27MB)
+  const MODELS = { rtm: { file: "rtmpose-m-body7-fp16.onnx", w: 192, h: 256, n: 17 } };
+  const ORDER = ["rtm"];
   let ready = null; const poseS = {};
   function loadOrt() {
     if (window.ort) return Promise.resolve(window.ort);
@@ -84,7 +84,7 @@
       const sess = await poseSession(M, key);
       for (const box of cands) {   // 앞 후보에서 관절이 충분히 안 잡히면 다음 후보로
         const kps = await keypoints(M, img, box, MODELS[key], sess);
-        if (window.RTM_ALL || kps.slice(0, 17).filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length, W, H, model: key };
+        if (kps.slice(0, 17).filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length, W, H, model: key };
       }
     }
     return null;
