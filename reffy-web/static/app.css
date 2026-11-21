@@ -2933,3 +2933,73 @@ html:not(.m) .kp-empty.st-bempty{position:absolute;left:0;right:0;top:376px;min-
 html:not(.m) .kp-empty.st-bempty .kp-ex{position:relative;display:block;width:104px;height:104px;margin:0;border-radius:500px;background:#f1f0f2}
 html:not(.m) .kp-empty.st-bempty .kp-ex .ic{position:absolute;left:25px;top:27px;width:53px;height:53px}
 html:not(.m) .kp-empty.st-bempty h2{margin:0;font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px;color:#18171a;white-space:nowrap}
+
+/* ---- 프로필 편집 PC (Figma 2992:132474 · 132760 · 133770) — 폭 632 가운데 · GNB 아래 24 ---- */
+html:not(.m) .pe.pe-pc{width:632px;max-width:calc(100% - 48px);margin:0 auto;padding:24px 0 80px;display:flex;flex-direction:column;gap:0;box-sizing:border-box}
+html:not(.m) .pe-pc>h1{margin:0;font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px;color:#18171a}
+html:not(.m) .pe-pc .pe-cv{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+html:not(.m) .pe-pc .pe-lbl,html:not(.m) .pe-pc .pe-f>label{display:block;margin:0;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .pe-pc .pe-cvimg{position:relative;height:128px;border-radius:12px;background:#f1f0f2;overflow:hidden;display:flex;align-items:center;justify-content:center}
+html:not(.m) .pe-pc .pe-cvimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+html:not(.m) .pe-pc .pe-cvbtns{position:relative;display:flex;gap:8px}
+html:not(.m) .pe-pc .pe-cvbtn{position:static;transform:none;height:32px;min-width:64px;padding:0 12px;gap:6px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #c3c2c5;border-radius:6px;background:#fff;box-shadow:none;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a;cursor:pointer}
+html:not(.m) .pe-pc .pe-cvbtn .ic{width:16px;height:16px}
+html:not(.m) .pe-pc .pe-cap{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+/* 구분선: 내용 왼쪽에서 오른쪽으로 길게 (Figma Line 210) */
+html:not(.m) .pe-pc .pe-hr{display:block;height:1px;width:1014px;max-width:calc(100vw - (100vw - 632px) / 2 - 22px);background:#f1f0f2;margin:13px 0 0}
+/* 프로필 이미지: 아바타 88 · 간격 20 · 라벨 / 버튼(사진 변경 외곽선 · 삭제 회색) / 안내 */
+html:not(.m) .pe-pc .pe-av{margin-top:4px;display:flex;align-items:center;gap:20px;height:88px}
+html:not(.m) .pe-pc .pe-avb{position:relative;width:88px;height:88px;padding:0;border:0;background:none;flex:none;cursor:pointer}
+html:not(.m) .pe-pc .pe-avb>i{display:none}
+html:not(.m) .pe-pc .pe-avt{width:88px;height:88px}
+html:not(.m) .pe-pc .pe-avtx{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+html:not(.m) .pe-pc .pe-avbtns{display:flex;gap:6px}
+html:not(.m) .pe-pc .pe-avbtns .btn{height:32px;min-width:64px;padding:0 12px;border-radius:6px;border:1px solid #c3c2c5;background:#fff;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html:not(.m) .pe-pc .pe-avbtns .btn.alt{border-color:#f1f0f2;background:#f1f0f2}
+html:not(.m) .pe-pc .pe-avtx>span{font:500 12px/16px Pretendard,sans-serif;color:#6f6d72}
+/* 입력칸 (Common/Text field: 48 · 좌우 14 · 모서리 10 · 라벨↔칸 4) */
+html:not(.m) .pe-pc .pe-f{margin-top:18px;display:flex;flex-direction:column;gap:4px}
+html:not(.m) .pe-pc .inp{height:48px;width:100%;box-sizing:border-box;padding:0 14px;border:1px solid #c3c2c5;border-radius:10px;background:#fff;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .pe-pc .inp::placeholder{color:#6f6d72}
+html:not(.m) .pe-pc .pe-nick{position:relative;display:block}
+html:not(.m) .pe-pc .pe-nick .inp{padding-right:96px}
+html:not(.m) .pe-pc .pe-nick .btn{position:absolute;right:7px;top:8px;height:32px;min-width:64px;padding:0 12px;border:0;border-radius:6px;background:#f1f0f2;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html:not(.m) .pe-pc .pe-hint{margin:0;font:400 12px/16px Pretendard,sans-serif;color:#6f6d72}
+html:not(.m) .pe-pc .pe-hint.err{color:#ce3030}
+html:not(.m) .pe-pc .pe-hint.ok{color:#7425f6}
+html:not(.m) .pe-pc .inp.err{border-color:#ce3030}
+/* 링크 목록 줄 (surface/subtle · border/subtle · link 20 · close 20) */
+html:not(.m) .pe-pc .pe-llist{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+html:not(.m) .pe-pc .pe-llist:empty{display:none}
+html:not(.m) .pe-pc .pe-lrow{display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;box-sizing:border-box;border:1px solid #f1f0f2;border-radius:10px;background:#f8f7f8;color:#6f6d72}
+html:not(.m) .pe-pc .pe-lrow>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px}
+html:not(.m) .pe-pc .pe-lrow .ic{width:20px;height:20px;flex:none}
+html:not(.m) .pe-pc .pe-lrow button{border:0;background:none;padding:0;display:grid;place-items:center;color:#6f6d72;cursor:pointer}
+/* 취소 · 저장 (Button M 40 · 16/24) */
+html:not(.m) .pe-pc .pe-ft{margin-top:62px;display:flex;justify-content:flex-end;gap:8px}
+html:not(.m) .pe-pc .pe-ft .btn{height:40px;min-width:64px;padding:0 16px;border-radius:8px;border:1px solid #c3c2c5;background:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .pe-pc .pe-ft .btn.primary{border-color:#7425f6;background:#7425f6;color:#fff}
+
+/* ---- 팔로워 / 팔로잉 창 (Figma Modal 2981:80859) — 520 · 안쪽 24/28 · 간격 16 · 높이는 내용만큼 ---- */
+html:not(.m) .dlg.fol{height:auto;max-height:min(700px,92vh);gap:16px;padding:24px 28px}
+html:not(.m) .dlg.fol .chd{display:flex;justify-content:flex-end;margin:0;min-height:32px}
+html:not(.m) .dlg.fol .fl-x{width:32px;height:32px;padding:0;color:#18171a}
+html:not(.m) .dlg.fol .fl-x .ic{width:32px;height:32px}
+html:not(.m) .fl-tabs{border-bottom:1px solid #f1f0f2}
+html:not(.m) .fl-tabs button{padding:9px 10px 11px;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#6f6d72;background:none}
+html:not(.m) .fl-tabs button.on{font-weight:600;color:#7425f6;border-bottom-color:#7425f6}
+html:not(.m) .fl-search{height:44px;min-height:44px;gap:10px;padding:0 16px;border-radius:10px;background:#f1f0f2;color:#18171a;box-sizing:border-box}
+html:not(.m) .fl-search .ic{width:20px;height:20px}
+html:not(.m) .fl-search input{font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#18171a}
+html:not(.m) .fl-search input::placeholder{color:#6f6d72}
+html:not(.m) .fl-body{gap:14px;flex:0 1 auto}
+html:not(.m) .fl-row{gap:12px;min-height:40px}
+html:not(.m) .fl-row .avt,html:not(.m) .fl-row a>img{width:40px;height:40px}
+html:not(.m) .fl-name b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .fl-name span{font:400 12px/16px Pretendard,sans-serif;color:#5b595f}
+html:not(.m) .fl-row .btn{height:32px;min-width:64px;padding:0 12px;border-radius:6px;border:1px solid #c3c2c5;background:#fff;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:#18171a}
+html:not(.m) .fl-row .btn.primary{border-color:#7425f6;background:#7425f6;color:#fff}
+html:not(.m) .pe.pe-pc .pe-avtx>.pe-lbl{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a}
+html:not(.m) .pe.pe-pc .pe-nick>.btn{position:absolute;right:7px;top:8px;height:32px;min-height:32px;line-height:20px;margin:0;padding:0 12px;border:0;border-radius:6px;background:#f1f0f2;font:500 14px/20px Pretendard,sans-serif;color:#18171a}
+html:not(.m) .pe.pe-pc>h1{font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px}
+html:not(.m) .mcard.pe-menu{min-width:217px}html:not(.m) .mcard.pe-menu button{white-space:nowrap}
