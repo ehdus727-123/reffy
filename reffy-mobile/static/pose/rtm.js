@@ -76,7 +76,7 @@
     cands.push({ x1: 0, y1: 0, x2: W, y2: H, s: 0 });
     for (const box of cands) {   // 앞 후보에서 관절이 충분히 안 잡히면 다음 후보로
       const kps = await keypoints(M, img, box);
-      if (kps.filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length };
+      if (kps.filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length, W, H };
     }
     return null;
   }

@@ -826,26 +826,40 @@ function materialsSec(d) {
 /* 일러스트 포즈 인식 (pose/rtm.js · RTMPose) 불러오기 */
 function loadRtm() {
   if (window.RTM) return Promise.resolve(window.RTM);
-  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=1" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
+  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=2" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
 }
-/* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z], visibility }
-   깊이는 알 수 없어서 z = 0 (그림 평면 그대로). 골반 가운데를 원점, 어깨~골반 길이를 0.5m 로 맞춤 */
-function kpsToWorld(k) {
-  const mid = (a, b) => [(k[a][0] + k[b][0]) / 2, (k[a][1] + k[b][1]) / 2];
-  const hip = mid(11, 12), sh = mid(5, 6), torso = Math.hypot(sh[0] - hip[0], sh[1] - hip[1]) || 1, s = 0.5 / torso;
-  const P = (x, y) => [(x - hip[0]) * s, -(y - hip[1]) * s, 0];
-  const at = (i) => ({ point: P(k[i][0], k[i][1]), visibility: k[i][2] > 0.3 ? 0.9 : 0.1 });
-  const ext = (a, b, t, v) => ({ point: P(k[b][0] + (k[b][0] - k[a][0]) * t, k[b][1] + (k[b][1] - k[a][1]) * t), visibility: Math.min(k[a][2], k[b][2]) > 0.3 ? v : 0.1 });   // a->b 방향으로 조금 더 (손·발 끝)
+/* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z(앞으로 +)], visibility }
+   - 그림 밖이거나 확신이 낮은 관절(상반신 그림의 다리 등)은 '자연스럽게 내린 자세'로 채우고 visibility 를 낮춤 → 마네킹 다리가 옆으로 꺾이지 않음
+   - 깊이는 알 수 없어서 z = 0 (발끝만 앞으로). 골반 가운데를 원점, 어깨~골반 길이를 0.5m 로 맞춤 */
+function kpsToWorld(k, W, H) {
+  W = W || 1e9; H = H || 1e9;
+  const ok = (i) => k[i][2] > 0.3 && k[i][0] > -0.02 * W && k[i][0] < 1.02 * W && k[i][1] > -0.02 * H && k[i][1] < 1.02 * H;
+  const q = k.map((p, i) => ({ x: p[0], y: p[1], v: ok(i) ? 0.9 : 0.1 }));
+  const sw = Math.max(1, Math.hypot(q[5].x - q[6].x, q[5].y - q[6].y));   // 어깨 너비
+  const smid = { x: (q[5].x + q[6].x) / 2, y: (q[5].y + q[6].y) / 2 };
+  // 골반이 안 보이면 어깨 아래로 몸통 길이(어깨 너비 × 1.4)만큼 곧게 내려 둠
+  if (q[11].v < 0.5 || q[12].v < 0.5) {
+    const side = q[5].x > q[6].x ? 1 : -1;   // 왼쪽(인물 기준) 어깨가 화면 어느 쪽인지
+    q[11] = { x: smid.x + side * sw * 0.3, y: smid.y + sw * 1.4, v: 0.6 }; q[12] = { x: smid.x - side * sw * 0.3, y: smid.y + sw * 1.4, v: 0.6 };
+  }
+  const down = (from, len) => ({ x: from.x, y: from.y + len, v: 0.1 });
+  const torso = Math.max(1, Math.hypot(smid.x - (q[11].x + q[12].x) / 2, smid.y - (q[11].y + q[12].y) / 2));
+  // 팔: 팔꿈치·손목을 못 찾으면 아래로 늘어뜨림 / 다리: 무릎·발목을 못 찾으면 곧게 섬
+  [[5, 7, 9], [6, 8, 10]].forEach(([s_, e, w]) => { if (q[e].v < 0.5) { q[e] = down(q[s_], torso * 0.6); q[w] = down(q[e], torso * 0.55); } else if (q[w].v < 0.5) q[w] = down(q[e], torso * 0.55); });
+  [[11, 13, 15], [12, 14, 16]].forEach(([h_, kn, an]) => { if (q[kn].v < 0.5) { q[kn] = down(q[h_], torso * 0.9); q[an] = down(q[kn], torso * 0.9); } else if (q[an].v < 0.5) q[an] = down(q[kn], torso * 0.9); });
+  const hip = { x: (q[11].x + q[12].x) / 2, y: (q[11].y + q[12].y) / 2 }, s = 0.5 / torso;
+  const pt = (p, z = 0) => ({ point: [(p.x - hip.x) * s, -(p.y - hip.y) * s, z], visibility: p.v });
+  const ext = (a, b, t) => pt({ x: q[b].x + (q[b].x - q[a].x) * t, y: q[b].y + (q[b].y - q[a].y) * t, v: Math.min(q[a].v, q[b].v) });   // 손끝: 팔뚝 방향으로 조금 더
   const COCO = { 0: 0, 2: 1, 5: 2, 7: 3, 8: 4, 11: 5, 12: 6, 13: 7, 14: 8, 15: 9, 16: 10, 23: 11, 24: 12, 25: 13, 26: 14, 27: 15, 28: 16 };
-  const NEAR = { 1: 1, 3: 1, 4: 2, 6: 2, 9: 0, 10: 0 };   // 눈 안·바깥쪽 = 눈, 입 = 코
   const out = [];
   for (let i = 0; i < 33; i++) {
-    if (i in COCO) out.push(at(COCO[i]));
-    else if (i in NEAR) { const o = at(NEAR[i]); if (i === 9 || i === 10) o.point = [o.point[0], o.point[1] - 0.04, 0]; out.push(o); }
-    else if (i === 17 || i === 19 || i === 21) out.push(ext(7, 9, 0.25, 0.8));    // 왼손 (새끼·검지·엄지)
-    else if (i === 18 || i === 20 || i === 22) out.push(ext(8, 10, 0.25, 0.8));   // 오른손
-    else if (i === 29) out.push(ext(13, 15, 0.08, 0.8)); else if (i === 30) out.push(ext(14, 16, 0.08, 0.8));   // 발뒤꿈치
-    else if (i === 31) out.push(ext(13, 15, 0.2, 0.8)); else out.push(ext(14, 16, 0.2, 0.8));                   // 발끝
+    if (i in COCO) out.push(pt(q[COCO[i]]));
+    else if (i === 1 || i === 3) out.push(pt(q[1])); else if (i === 4 || i === 6) out.push(pt(q[2]));    // 눈 안·바깥쪽 = 눈
+    else if (i === 9 || i === 10) out.push(pt({ ...q[0], y: q[0].y + torso * 0.08 }));                     // 입 = 코 조금 아래
+    else if (i === 17 || i === 19 || i === 21) out.push(ext(7, 9, 0.25));                                  // 왼손
+    else if (i === 18 || i === 20 || i === 22) out.push(ext(8, 10, 0.25));                                 // 오른손
+    else if (i === 29 || i === 30) { const a = q[i === 29 ? 15 : 16]; out.push(pt({ ...a, y: a.y + torso * 0.06 }, -0.03)); }   // 발뒤꿈치
+    else { const a = q[i === 31 ? 15 : 16]; out.push(pt({ ...a, y: a.y + torso * 0.1 }, 0.14)); }                              // 발끝: 앞쪽
   }
   return out;
 }
@@ -861,7 +875,7 @@ async function pullPose(idArg) {
     const img = new Image(); img.crossOrigin = "anonymous"; img.src = `/img/${id}`; await img.decode();
     let kind = "illust"; try { kind = (await api(`/api/images/${id}`)).kind || "illust"; } catch { /* 모르면 일러스트로 */ }
     // 일러스트: RTMPose(일러스트·SD 캐릭터도 꽤 잡음) 먼저, 사진: MediaPipe 먼저. 못 찾으면 다른 쪽으로 한 번 더
-    const viaRtm = async () => { const k = await loadRtm().then((M) => M.detect(img)).catch(() => null); return k ? { world: kpsToWorld(k.kps) } : null; };
+    const viaRtm = async () => { const k = await loadRtm().then((M) => M.detect(img)).catch(() => null); return k ? { world: kpsToWorld(k.kps, k.W, k.H) } : null; };
     const viaMp = async () => { const r = await R.detect(img).catch(() => null); return r && r.world.filter((x) => x.visibility > 0.4).length >= 8 ? r : null; };
     const r = kind === "photo" ? ((await viaMp()) || (await viaRtm())) : ((await viaRtm()) || (await viaMp()));
     if (!r) return toast("이 이미지에서 사람 자세를 찾지 못했어요. 마네킹을 직접 움직여 보세요.");
