@@ -5,7 +5,7 @@ import hmac
 import re
 import secrets
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 import io
@@ -239,7 +239,7 @@ def in_dnd(dnd: str, now: Optional[datetime] = None) -> bool:
         ah, am = map(int, a.split(":")); bh, bm = map(int, b.split(":"))
     except ValueError:
         return False
-    t = (now or datetime.now()); m = t.hour * 60 + t.minute; s, e = ah * 60 + am, bh * 60 + bm
+    t = (now or datetime.now(timezone(timedelta(hours=9)))); m = t.hour * 60 + t.minute; s, e = ah * 60 + am, bh * 60 + bm
     return (s <= m < e) if s < e else (m >= s or m < e) if s != e else False
 
 
@@ -262,7 +262,7 @@ def record_view(request: Request, image_id: int) -> None:
     if not u:
         return
     with db.engine.begin() as c:
-        n = c.execute(text("UPDATE views SET viewed_at = :t WHERE user_id = :u AND image_id = :i"), {"t": datetime.now(), "u": u["id"], "i": image_id}).rowcount
+        n = c.execute(text("UPDATE views SET viewed_at = :t WHERE user_id = :u AND image_id = :i"), {"t": db.utcnow(), "u": u["id"], "i": image_id}).rowcount
         if not n:
             c.execute(db.views.insert().values(user_id=u["id"], image_id=image_id))
 
@@ -422,7 +422,7 @@ def remove_keeps(body: IdsIn, request: Request):
 @router.get("/me/viewed")
 def my_viewed(request: Request):
     u = need(request)
-    since = datetime.now() - timedelta(days=7)      # 화면 문구: 최근 일주일 동안 본 게시물
+    since = db.utcnow() - timedelta(days=7)      # 화면 문구: 최근 일주일 동안 본 게시물
     ids = [r["image_id"] for r in db.rows("SELECT image_id FROM views WHERE user_id=:u AND viewed_at >= :s ORDER BY viewed_at DESC", u=u["id"], s=since)]
     return {"items": cards(ids), "total": len(ids)}
 
@@ -454,7 +454,7 @@ def _book(book_id: int, u: dict) -> dict:
 
 def _touch(book_id: int) -> None:
     with db.engine.begin() as c:
-        c.execute(text("UPDATE books SET updated_at = :t WHERE id = :b"), {"t": datetime.now(), "b": book_id})
+        c.execute(text("UPDATE books SET updated_at = :t WHERE id = :b"), {"t": db.utcnow(), "b": book_id})
 
 
 def _book_out(b: dict) -> dict:
@@ -497,7 +497,7 @@ def edit_book(book_id: int, body: BookIn, request: Request):
     if not body.name.strip():
         raise HTTPException(400, "북 이름을 입력해 주세요.")
     with db.engine.begin() as c:
-        c.execute(text("UPDATE books SET name=:n, description=:d, updated_at=:t WHERE id=:b"), {"n": body.name.strip()[:40], "d": body.description.strip()[:200], "t": datetime.now(), "b": book_id})
+        c.execute(text("UPDATE books SET name=:n, description=:d, updated_at=:t WHERE id=:b"), {"n": body.name.strip()[:40], "d": body.description.strip()[:200], "t": db.utcnow(), "b": book_id})
     return _book_out(_book(book_id, u))
 
 

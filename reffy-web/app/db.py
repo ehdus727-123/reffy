@@ -1,6 +1,11 @@
 from __future__ import annotations
 from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Integer, MetaData, String, Table, Text, UniqueConstraint, create_engine, event, inspect, text)
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def utcnow():
+    """저장 시각은 늘 UTC (서버가 어느 나라에 있든 같게). 화면에서는 브라우저가 한국 시간으로 바꿔 보여 줌"""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 from . import config
 
@@ -31,7 +36,7 @@ images = Table("images", md,
                Column("materials", Text),                   # 사용 소재 링크 ["https://...", ...]
                Column("tools", Text),                       # 사용한 툴 ["Procreate", ...] (main.TOOLS 중에서)
                Column("ext", Text),                         # 외부 사진(3D 포즈 실사 · Unsplash) {"src","pid","name","user","full","regular"} — 파일은 원본 주소로 바로 보여 줌
-               Column("created_at", DateTime, default=datetime.now))
+               Column("created_at", DateTime, default=utcnow))
 # 태그: AI 예측(ai_prob)과 사용자 수정(user_state)을 따로 보관. 최종 = AI(확률>=임계값) + 사용자 추가 - 사용자 삭제 (PRD 8.2)
 image_tags = Table("image_tags", md,
                    Column("image_id", Integer, ForeignKey("images.id", ondelete="CASCADE"), primary_key=True),
@@ -52,54 +57,54 @@ users = Table("users", md,
               Column("cover", String(40)),                     # 마이페이지 헤더(커버) 이미지 파일명 (없으면 NULL)
               Column("notif_off", String(40), default=""),     # 끈 알림 종류 (follow,comment,reply,like)
               Column("dnd", String(20), default=""),           # 방해 금지 시간 "23:00-08:00" (비우면 사용 안 함)
-              Column("created_at", DateTime, default=datetime.now))
+              Column("created_at", DateTime, default=utcnow))
 sessions = Table("sessions", md,
                  Column("token", String(64), primary_key=True),
                  Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
-                 Column("created_at", DateTime, default=datetime.now))
+                 Column("created_at", DateTime, default=utcnow))
 likes = Table("likes", md, Column("user_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
-              Column("created_at", DateTime, default=datetime.now))
+              Column("created_at", DateTime, default=utcnow))
 comments = Table("comments", md,
                  Column("id", Integer, primary_key=True, autoincrement=True),
                  Column("image_id", Integer, nullable=False, index=True), Column("user_id", Integer, nullable=False),
-                 Column("body", String(500), nullable=False), Column("created_at", DateTime, default=datetime.now),
+                 Column("body", String(500), nullable=False), Column("created_at", DateTime, default=utcnow),
                  Column("parent_id", Integer))   # 답글이면 원래 댓글 번호
 follows = Table("follows", md, Column("follower_id", Integer, primary_key=True), Column("followee_id", Integer, primary_key=True),
-                Column("created_at", DateTime, default=datetime.now))
+                Column("created_at", DateTime, default=utcnow))
 keeps = Table("keeps", md, Column("user_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
-              Column("created_at", DateTime, default=datetime.now), Column("pos", Integer))   # pos: 사용자가 정한 순서 (없으면 최근 순)
+              Column("created_at", DateTime, default=utcnow), Column("pos", Integer))   # pos: 사용자가 정한 순서 (없으면 최근 순)
 books = Table("books", md,
               Column("id", Integer, primary_key=True, autoincrement=True),
               Column("user_id", Integer, nullable=False, index=True), Column("name", String(40), nullable=False),
               Column("description", String(200), default=""), Column("cover", String(40)),
-              Column("updated_at", DateTime, default=datetime.now))
+              Column("updated_at", DateTime, default=utcnow))
 book_items = Table("book_items", md, Column("book_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
-                   Column("added_at", DateTime, default=datetime.now))
+                   Column("added_at", DateTime, default=utcnow))
 views = Table("views", md, Column("user_id", Integer, primary_key=True), Column("image_id", Integer, primary_key=True),
-              Column("viewed_at", DateTime, default=datetime.now))
+              Column("viewed_at", DateTime, default=utcnow))
 notifications = Table("notifications", md,
                       Column("id", Integer, primary_key=True, autoincrement=True),
                       Column("user_id", Integer, nullable=False, index=True),          # 받는 사람
                       Column("actor_id", Integer, nullable=False), Column("kind", String(8), nullable=False),   # like / comment / follow
                       Column("image_id", Integer), Column("body", String(200), default=""),
-                      Column("is_read", Boolean, default=False), Column("created_at", DateTime, default=datetime.now))
+                      Column("is_read", Boolean, default=False), Column("created_at", DateTime, default=utcnow))
 
 blocks = Table("blocks", md, Column("user_id", Integer, primary_key=True), Column("blocked_id", Integer, primary_key=True),
-               Column("created_at", DateTime, default=datetime.now))
+               Column("created_at", DateTime, default=utcnow))
 reports = Table("reports", md,
                 Column("id", Integer, primary_key=True, autoincrement=True), Column("user_id", Integer, nullable=False),
                 Column("target_type", String(8), nullable=False), Column("target_id", String(40), nullable=False),   # post / comment / user
                 Column("reason", String(40), nullable=False), Column("detail", String(200), default=""),
-                Column("created_at", DateTime, default=datetime.now))
+                Column("created_at", DateTime, default=utcnow))
 inquiries = Table("inquiries", md,
                   Column("id", Integer, primary_key=True, autoincrement=True), Column("user_id", Integer, nullable=False),
                   Column("kind", String(40), nullable=False), Column("body", Text, nullable=False),
                   Column("email", String(120), default=""), Column("title", String(100), default=""), Column("photos", Text),
-                  Column("created_at", DateTime, default=datetime.now))
+                  Column("created_at", DateTime, default=utcnow))
 
 poses = Table("poses", md,   # 3D 포즈 검색용 관절 (MediaPipe Pose 33점 × [정규화 x,y,z · 월드 x,y,z · visibility]). lm = "" 이면 사람 없음
               Column("image_id", Integer, primary_key=True), Column("lm", Text, default=""),
-              Column("created_at", DateTime, default=datetime.now))
+              Column("created_at", DateTime, default=utcnow))
 
 ACTIVE = "((t.user_state = 'add') OR (t.user_state IS NULL AND t.ai_prob >= :thr))"
 

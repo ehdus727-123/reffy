@@ -1,9 +1,9 @@
 "use strict";
 /* REFFY — 라우팅과 홈 밖의 화면: 로그인·회원가입, 킵 스페이스, 서랍(레퍼런스 북), 알림. app.js 의 공통 함수를 사용합니다. */
-const when = (iso) => new Date(String(iso).replace(" ", "T"));
+const when = (iso) => { const t = String(iso).replace(" ", "T"); return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(t) ? t : t + "Z"); };   // 서버 시각은 UTC (시간대 표시가 없으면 UTC 로 읽음)
 function ago(iso) {
   const s = (Date.now() - when(iso)) / 1000;
-  if (s < 60) return "방금"; if (s < 3600) return Math.floor(s / 60) + "분 전"; if (s < 86400) return Math.floor(s / 3600) + "시간 전";
+  if (s < 60) return "방금 전"; if (s < 3600) return Math.floor(s / 60) + "분 전"; if (s < 86400) return Math.floor(s / 3600) + "시간 전";
   if (s < 604800) return Math.floor(s / 86400) + "일 전"; return when(iso).toLocaleDateString("ko-KR");
 }
 const btn = (label, cls, fn, attrs) => h("button", { class: "btn " + (cls || ""), type: "button", onclick: fn, ...(attrs || {}) }, label);
@@ -773,7 +773,7 @@ const SET_DOCS = {
     ["제5조 (탈퇴)", "회원은 언제든지 내 설정 > 탈퇴하기에서 탈퇴할 수 있으며, 탈퇴 즉시 계정과 게시물이 삭제됩니다."]]],
 };
 const SET_MENU = [["notif", "알림 설정"], ["account", "계정 관리"], ["blocks", "차단 유저"], ["inquiry", "문의하기"], ["copyright", "저작권/AI 이용 원칙"], ["privacy", "개인정보 처리 방침"], ["terms", "서비스 약관"], ["leave", "탈퇴하기"]];
-const ymd = (s) => { const d = new Date(s); return isNaN(d) ? "" : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; };
+const ymd = (s) => { const d = when(s); return isNaN(d) ? "" : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`; };
 const hm12 = (v) => { const [H, M] = v.split(":").map(Number); return `${H < 12 ? "오전" : "오후"} ${H % 12 || 12}:${String(M).padStart(2, "0")}`; };
 
 async function settingsPC(sub) {

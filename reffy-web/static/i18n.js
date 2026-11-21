@@ -24,7 +24,7 @@
     "선택": "Select", "이동": "Move", "이동하기": "Move", "다음": "Next", "이전": "Previous", "추가": "Add", "만들기": "Create", "게시하기": "Post",
     "업로드": "Upload", "게시물 등록": "New post", "제목": "Title", "공개 설정": "Visibility", "다시 시도": "Try again", "불러오는 중…": "Loading…",
     "불러오지 못했어요": "Couldn't load", "내 북": "My books", "새 북 만들기": "New book", "+ 새 북 만들기": "+ New book", "반응한 게시물": "Reacted posts",
-    "최근 본 게시물": "Recently viewed", "이번 주": "This week", "오늘": "Today", "방금": "Just now", "모두 읽음": "Mark all read", "새 알림이 없어요": "No new notifications",
+    "최근 본 게시물": "Recently viewed", "이번 주": "This week", "오늘": "Today", "방금": "Just now", "방금 전": "Just now", "모두 읽음": "Mark all read", "새 알림이 없어요": "No new notifications",
     "내 설정": "Settings", "알림 설정": "Notifications", "계정 관리": "Account", "차단 유저": "Blocked users", "문의하기": "Contact us",
     "개인정보 처리 방침": "Privacy policy", "서비스 약관": "Terms of service", "탈퇴하기": "Delete account",
     "받고 싶은 알림을 선택하세요.": "Choose the notifications you want.", "활동 알림": "Activity", "대댓글": "Replies", "하트": "Hearts",
