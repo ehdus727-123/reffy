@@ -843,10 +843,17 @@ function kpsToWorld(k, W, H) {
     q[11] = { x: smid.x + side * sw * 0.3, y: smid.y + sw * 1.4, v: 0.6 }; q[12] = { x: smid.x - side * sw * 0.3, y: smid.y + sw * 1.4, v: 0.6 };
   }
   const down = (from, len) => ({ x: from.x, y: from.y + len, v: 0.1 });
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const atEdge = (p) => p.x < 0.04 * W || p.x > 0.96 * W || p.y < 0.04 * H || p.y > 0.96 * H;
+  // 팔다리 끝(손목·발목) 믿을 수 있는지: 중간 관절이 그림 가장자리에 걸렸으면 끝은 그림 밖, 아래쪽 마디가 위쪽 마디의 절반도 안 되면 잘못 찾은 것 (예: 허벅지까지만 있는 그림에서 발목을 무릎 위에 찍음)
+  [[5, 7, 9], [6, 8, 10], [11, 13, 15], [12, 14, 16]].forEach(([a, b, c]) => {
+    if (q[b].v >= 0.5 && q[c].v >= 0.5 && (atEdge(q[b]) || dist(q[b], q[c]) < 0.5 * dist(q[a], q[b]))) q[c].v = 0.1;
+  });
   const torso = Math.max(1, Math.hypot(smid.x - (q[11].x + q[12].x) / 2, smid.y - (q[11].y + q[12].y) / 2));
   // 팔: 팔꿈치·손목을 못 찾으면 아래로 늘어뜨림 / 다리: 무릎·발목을 못 찾으면 곧게 섬
-  [[5, 7, 9], [6, 8, 10]].forEach(([s_, e, w]) => { if (q[e].v < 0.5) { q[e] = down(q[s_], torso * 0.6); q[w] = down(q[e], torso * 0.55); } else if (q[w].v < 0.5) q[w] = down(q[e], torso * 0.55); });
-  [[11, 13, 15], [12, 14, 16]].forEach(([h_, kn, an]) => { if (q[kn].v < 0.5) { q[kn] = down(q[h_], torso * 0.9); q[an] = down(q[kn], torso * 0.9); } else if (q[an].v < 0.5) q[an] = down(q[kn], torso * 0.9); });
+  const cont = (a, b, len) => { const d = dist(a, b) || 1; return { x: b.x + (b.x - a.x) / d * len, y: b.y + (b.y - a.y) / d * len, v: 0.1 }; };   // a->b 방향으로 곧게 이어서
+  [[5, 7, 9], [6, 8, 10]].forEach(([s_, e, w]) => { if (q[e].v < 0.5) { q[e] = down(q[s_], torso * 0.6); q[w] = down(q[e], torso * 0.55); } else if (q[w].v < 0.5) q[w] = cont(q[s_], q[e], torso * 0.55); });
+  [[11, 13, 15], [12, 14, 16]].forEach(([h_, kn, an]) => { if (q[kn].v < 0.5) { q[kn] = down(q[h_], torso * 0.9); q[an] = down(q[kn], torso * 0.9); } else if (q[an].v < 0.5) q[an] = cont(q[h_], q[kn], torso * 0.9); });
   const hip = { x: (q[11].x + q[12].x) / 2, y: (q[11].y + q[12].y) / 2 }, s = 0.5 / torso;
   const pt = (p, z = 0) => ({ point: [(p.x - hip.x) * s, -(p.y - hip.y) * s, z], visibility: p.v });
   const ext = (a, b, t) => pt({ x: q[b].x + (q[b].x - q[a].x) * t, y: q[b].y + (q[b].y - q[a].y) * t, v: Math.min(q[a].v, q[b].v) });   // 손끝: 팔뚝 방향으로 조금 더
