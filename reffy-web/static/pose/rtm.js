@@ -3,7 +3,10 @@
    MediaPipe 는 실사 사진용이라 일러스트(특히 SD·과장된 비율)에서 자세를 잘 못 찾아서, 일러스트는 이걸 씀 */
 (function () {
   const BASE = "pose/";
-  let ready = null;
+  // 관절 모델: DWPose-l(전신 133점, 일러스트에 더 강함 · 기본) / RTMPose-m(몸 17점, 가벼움)
+  const MODELS = { dw: { file: "dwpose-l-384-fp16.onnx", w: 288, h: 384, n: 133 }, rtm: { file: "rtmpose-m-body7-fp16.onnx", w: 192, h: 256, n: 17 } };
+  const ORDER = window.RTM_MODEL ? [window.RTM_MODEL] : ["dw", "rtm"];   // DWPose 로 먼저, 관절이 충분히 안 잡히면 RTMPose 로 한 번 더
+  let ready = null; const poseS = {};
   function loadOrt() {
     if (window.ort) return Promise.resolve(window.ort);
     return new Promise((ok, bad) => {
@@ -21,10 +24,8 @@
       ort.env.wasm.wasmPaths = new URL("vendor/ort/", location.href).href;
       ort.env.wasm.numThreads = 1;   // 다중 스레드는 cross-origin isolation 이 필요해서 1개로
       const opt = { executionProviders: ["wasm"] };
-      const [det, pose] = await Promise.all([
-        ort.InferenceSession.create(BASE + "nn/rtmdet-nano-person.onnx", opt),
-        ort.InferenceSession.create(BASE + "nn/rtmpose-m-body7-fp16.onnx", opt)]);
-      return { ort, det, pose };
+      const det = await ort.InferenceSession.create(BASE + "nn/rtmdet-nano-person.onnx", opt);
+      return { ort, det, opt };
     })();
     ready.catch(() => { ready = null; });
     return ready;
@@ -49,21 +50,26 @@
     }
     return out;
   }
-  async function keypoints(M, img, b) {
+  async function poseSession(M, key) {   // 관절 모델은 필요할 때 한 번만 불러옴
+    if (!poseS[key]) { poseS[key] = M.ort.InferenceSession.create(BASE + "nn/" + MODELS[key].file, M.opt); poseS[key].catch(() => { delete poseS[key]; }); }
+    return poseS[key];
+  }
+  async function keypoints(M, img, b, PM, sess) {
     const cx = (b.x1 + b.x2) / 2, cy = (b.y1 + b.y2) / 2;
     let bw = (b.x2 - b.x1) * 1.25, bh = (b.y2 - b.y1) * 1.25;
-    if (bw / bh > 192 / 256) bh = bw * 256 / 192; else bw = bh * 192 / 256;
-    const k = 192 / bw, c = canvas(192, 256), ctx = c.getContext("2d", { willReadFrequently: true });
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, 192, 256);
-    ctx.setTransform(k, 0, 0, k, 96 - k * cx, 128 - k * cy); ctx.drawImage(img, 0, 0); ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const x = toTensor(M.ort, ctx, 192, 256, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375], false);
-    const o = await M.pose.run({ input: x });
-    const sx = o.simcc_x.data, sy = o.simcc_y.data, LX = 384, LY = 512, kps = [];
-    for (let j = 0; j < 17; j++) {
+    const IW = PM.w, IH = PM.h;
+    if (bw / bh > IW / IH) bh = bw * IH / IW; else bw = bh * IW / IH;
+    const k = IW / bw, c = canvas(IW, IH), ctx = c.getContext("2d", { willReadFrequently: true });
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, IW, IH);
+    ctx.setTransform(k, 0, 0, k, IW / 2 - k * cx, IH / 2 - k * cy); ctx.drawImage(img, 0, 0); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const x = toTensor(M.ort, ctx, IW, IH, [123.675, 116.28, 103.53], [58.395, 57.12, 57.375], false);
+    const o = await sess.run({ input: x });
+    const sx = o.simcc_x.data, sy = o.simcc_y.data, LX = IW * 2, LY = IH * 2, kps = [];
+    for (let j = 0; j < PM.n; j++) {
       let ax = 0, mx = -1e9, ay = 0, my = -1e9;
       for (let i = 0; i < LX; i++) { const v = sx[j * LX + i]; if (v > mx) { mx = v; ax = i; } }
       for (let i = 0; i < LY; i++) { const v = sy[j * LY + i]; if (v > my) { my = v; ay = i; } }
-      kps.push([(ax / 2 - 96) / k + cx, (ay / 2 - 128) / k + cy, Math.min(mx, my)]);
+      kps.push([(ax / 2 - IW / 2) / k + cx, (ay / 2 - IH / 2) / k + cy, Math.min(mx, my)]);
     }
     return kps;
   }
@@ -74,9 +80,12 @@
     // 가장 크고 확실한 사람 하나 (없으면 이미지 전체를 한 사람으로 보고 시도)
     const cands = ps.sort((a, b) => b.s * Math.sqrt((b.x2 - b.x1) * (b.y2 - b.y1)) - a.s * Math.sqrt((a.x2 - a.x1) * (a.y2 - a.y1))).slice(0, 3);
     cands.push({ x1: 0, y1: 0, x2: W, y2: H, s: 0 });
-    for (const box of cands) {   // 앞 후보에서 관절이 충분히 안 잡히면 다음 후보로
-      const kps = await keypoints(M, img, box);
-      if (kps.filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length, W, H };
+    for (const key of ORDER) {
+      const sess = await poseSession(M, key);
+      for (const box of cands) {   // 앞 후보에서 관절이 충분히 안 잡히면 다음 후보로
+        const kps = await keypoints(M, img, box, MODELS[key], sess);
+        if (window.RTM_ALL || kps.slice(0, 17).filter((p) => p[2] > 0.3).length >= 8) return { kps, box, people: ps.length, W, H, model: key };
+      }
     }
     return null;
   }

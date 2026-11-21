@@ -826,14 +826,15 @@ function materialsSec(d) {
 /* 일러스트 포즈 인식 (pose/rtm.js · RTMPose) 불러오기 */
 function loadRtm() {
   if (window.RTM) return Promise.resolve(window.RTM);
-  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=2" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
+  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=3" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
 }
 /* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z(앞으로 +)], visibility }
    - 그림 밖이거나 확신이 낮은 관절(상반신 그림의 다리 등)은 '자연스럽게 내린 자세'로 채우고 visibility 를 낮춤 → 마네킹 다리가 옆으로 꺾이지 않음
    - 깊이는 알 수 없어서 z = 0 (발끝만 앞으로). 골반 가운데를 원점, 어깨~골반 길이를 0.5m 로 맞춤 */
 function kpsToWorld(k, W, H) {
   W = W || 1e9; H = H || 1e9;
-  const ok = (i) => k[i][2] > 0.3 && k[i][0] > -0.02 * W && k[i][0] < 1.02 * W && k[i][1] > -0.02 * H && k[i][1] < 1.02 * H;
+  const TH = k.length >= 133 ? 0.2 : 0.3;   // DWPose 는 점수를 낮게 주는 편이라 기준을 조금 낮춤
+  const ok = (i) => k[i][2] > TH && k[i][0] > -0.02 * W && k[i][0] < 1.02 * W && k[i][1] > -0.02 * H && k[i][1] < 1.02 * H;
   const q = k.map((p, i) => ({ x: p[0], y: p[1], v: ok(i) ? 0.9 : 0.1 }));
   const sw = Math.max(1, Math.hypot(q[5].x - q[6].x, q[5].y - q[6].y));   // 어깨 너비
   const smid = { x: (q[5].x + q[6].x) / 2, y: (q[5].y + q[6].y) / 2 };
@@ -845,9 +846,9 @@ function kpsToWorld(k, W, H) {
   const down = (from, len) => ({ x: from.x, y: from.y + len, v: 0.1 });
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const atEdge = (p) => p.x < 0.04 * W || p.x > 0.96 * W || p.y < 0.04 * H || p.y > 0.96 * H;
-  // 팔다리 끝(손목·발목) 믿을 수 있는지: 중간 관절이 그림 가장자리에 걸렸으면 끝은 그림 밖, 아래쪽 마디가 위쪽 마디의 절반도 안 되면 잘못 찾은 것 (예: 허벅지까지만 있는 그림에서 발목을 무릎 위에 찍음)
+  // 팔다리 끝(손목·발목) 믿을 수 있는지: 중간 관절이 그림 가장자리에 걸렸고 끝의 확신이 낮으면 그림 밖, 아래쪽 마디가 위쪽 마디의 절반도 안 되면 잘못 찾은 것 (예: 허벅지까지만 있는 그림에서 발목을 무릎 위에 찍음)
   [[5, 7, 9], [6, 8, 10], [11, 13, 15], [12, 14, 16]].forEach(([a, b, c]) => {
-    if (q[b].v >= 0.5 && q[c].v >= 0.5 && (atEdge(q[b]) || dist(q[b], q[c]) < 0.5 * dist(q[a], q[b]))) q[c].v = 0.1;
+    if (q[b].v >= 0.5 && q[c].v >= 0.5 && ((atEdge(q[b]) && k[c][2] < 0.5) || dist(q[b], q[c]) < 0.5 * dist(q[a], q[b]))) q[c].v = 0.1;
   });
   const torso = Math.max(1, Math.hypot(smid.x - (q[11].x + q[12].x) / 2, smid.y - (q[11].y + q[12].y) / 2));
   // 팔: 팔꿈치·손목을 못 찾으면 아래로 늘어뜨림 / 다리: 무릎·발목을 못 찾으면 곧게 섬
@@ -858,11 +859,15 @@ function kpsToWorld(k, W, H) {
   const pt = (p, z = 0) => ({ point: [(p.x - hip.x) * s, -(p.y - hip.y) * s, z], visibility: p.v });
   const ext = (a, b, t) => pt({ x: q[b].x + (q[b].x - q[a].x) * t, y: q[b].y + (q[b].y - q[a].y) * t, v: Math.min(q[a].v, q[b].v) });   // 손끝: 팔뚝 방향으로 조금 더
   const COCO = { 0: 0, 2: 1, 5: 2, 7: 3, 8: 4, 11: 5, 12: 6, 13: 7, 14: 8, 15: 9, 16: 10, 23: 11, 24: 12, 25: 13, 26: 14, 27: 15, 28: 16 };
+  // DWPose(COCO-WholeBody 133점)면 손가락·발 관절도 씀: 새끼·검지 뿌리, 엄지, 발뒤꿈치, 엄지발가락. 손목·발목을 믿을 수 있을 때만
+  const WB = k.length >= 133 ? { 17: 108, 18: 129, 19: 96, 20: 117, 21: 94, 22: 115, 29: 19, 30: 22, 31: 17, 32: 20 } : {};
+  const wb = (j, root) => (q[root].v >= 0.5 && k[j][2] > TH ? { x: k[j][0], y: k[j][1], v: 0.9 } : null);
   const out = [];
   for (let i = 0; i < 33; i++) {
     if (i in COCO) out.push(pt(q[COCO[i]]));
     else if (i === 1 || i === 3) out.push(pt(q[1])); else if (i === 4 || i === 6) out.push(pt(q[2]));    // 눈 안·바깥쪽 = 눈
     else if (i === 9 || i === 10) out.push(pt({ ...q[0], y: q[0].y + torso * 0.08 }));                     // 입 = 코 조금 아래
+    else if (WB[i] != null && wb(WB[i], i >= 29 ? (i % 2 ? 15 : 16) : (i % 2 ? 9 : 10))) out.push(pt(wb(WB[i], i >= 29 ? (i % 2 ? 15 : 16) : (i % 2 ? 9 : 10)), i === 31 || i === 32 ? 0.05 : 0));   // DWPose 손·발 관절
     else if (i === 17 || i === 19 || i === 21) out.push(ext(7, 9, 0.25));                                  // 왼손
     else if (i === 18 || i === 20 || i === 22) out.push(ext(8, 10, 0.25));                                 // 오른손
     else if (i === 29 || i === 30) { const a = q[i === 29 ? 15 : 16]; out.push(pt({ ...a, y: a.y + torso * 0.06 }, -0.03)); }   // 발뒤꿈치

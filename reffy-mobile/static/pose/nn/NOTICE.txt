@@ -2,3 +2,5 @@
 - rtmpose-m-body7-fp16.onnx : RTMPose-m (simcc, body7, 256x192) — OpenMMLab MMPose, Apache-2.0. 원본 ONNX 를 fp16 으로 줄임.
 - rtmdet-nano-person.onnx   : RTMDet-nano 사람 검출 (320x320) — OpenMMLab MMPose/MMDetection, Apache-2.0.
 출처: https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose
+- dwpose-l-384-fp16.onnx    : DWPose-l (RTMPose-l 증류, COCO-WholeBody 133점, 288x384) — IDEA-Research/DWPose, Apache-2.0. 원본 dw-ll_ucoco_384.onnx(sha256 724f4ff2…)를 fp16 으로 줄임.
+  출처: https://github.com/IDEA-Research/DWPose · https://huggingface.co/yzd-v/DWPose
