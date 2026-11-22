@@ -373,9 +373,13 @@ function keepViewer(items, start, onDone, kind0) {
     if (kind === k) return; kind = k; drawChips();
     try { const r = await api("/api/me/keeps" + (k ? "?kind=" + k : "")); items.splice(0, items.length, ...r.items); idx = 0; picked.clear(); drawTrack(false); } catch (e) { toast(e.message); }
   } }, l)));
+  /* Figma 프로토타입(3321:257315): 가운데 카드를 '선택' 버튼(또는 카드 누르기)으로 고름 · 아래 트레이는 고른 이미지(없으면 담은 전체) */
+  const selBtn = h("button", { class: "kv-sel", type: "button", "aria-label": "선택", onclick: () => { const it = items[idx]; if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); const el = track.children[idx]; if (el) { el.classList.toggle("on", picked.has(it.id)); el.setAttribute("aria-pressed", String(picked.has(it.id))); } drawTitle(); } }, icon("check", 24));
   const drawTitle = () => {
     title.textContent = `${picked.size}개 선택됨`;
-    strip.replaceChildren(h("span", { class: "th" }, [0, 1, 2, 3, 4].map((i) => h("span", { style: items[i] ? `background-image:url(${items[i].thumb})` : null }))), ...(items.length > 5 ? [h("b", {}, `+${items.length - 5}`)] : []));
+    const cur = items[idx]; selBtn.classList.toggle("on", !!cur && picked.has(cur.id)); selBtn.setAttribute("aria-pressed", String(!!cur && picked.has(cur.id)));
+    const list = picked.size ? items.filter((x) => picked.has(x.id)) : items;
+    strip.replaceChildren(h("span", { class: "th" }, [0, 1, 2, 3, 4].map((i) => h("span", { style: list[i] ? `background-image:url(${list[i].thumb})` : null }))), ...(list.length > 5 ? [h("b", {}, `+${list.length - 5}`)] : []));
   };
   const drawTrack = (keep) => {
     track.replaceChildren(...items.map((it) => h("button", { class: "kv-card" + (picked.has(it.id) ? " on" : ""), type: "button", "data-id": it.id, "aria-pressed": String(picked.has(it.id)), "aria-label": (it.title || "레퍼런스 이미지") + " 선택",
@@ -386,7 +390,7 @@ function keepViewer(items, start, onDone, kind0) {
     requestAnimationFrame(() => track.scrollTo({ left: Math.max(0, idx * 252), behavior: keep ? "auto" : "instant" }));
     drawTitle();
   };
-  track.addEventListener("scroll", () => { const n = Math.round(track.scrollLeft / 252); if (n >= 0 && n < items.length) idx = n; }, { passive: true });
+  track.addEventListener("scroll", () => { const n = Math.round(track.scrollLeft / 252); if (n >= 0 && n < items.length && n !== idx) { idx = n; drawTitle(); } }, { passive: true });
   const del = async () => {
     const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
     if (!ids.length) return;
@@ -398,10 +402,11 @@ function keepViewer(items, start, onDone, kind0) {
     } catch (e) { toast(e.message); }
   };
   ov.append(mbar("", { back: close }), chips, track,
-    h("div", { class: "kv-act" }, h("span", {}, h("button", { class: "kv-del", type: "button", "aria-label": "삭제", onclick: del }, icon("trash", 24)), h("small", {}, "삭제"))),
+    h("div", { class: "kv-act" }, h("span", {}, h("button", { class: "kv-del", type: "button", "aria-label": "삭제", onclick: del }, icon("trash", 24)), h("small", {}, "삭제")),
+      h("span", {}, selBtn, h("small", {}, "선택"))),
     h("div", { class: "kv-foot" }, strip, h("button", { class: "btn primary", type: "button", onclick: () => {
       const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
-      if (ids.length) saveToBook(ids, { after: () => { picked.clear(); drawTrack(true); } });
+      if (ids.length) saveToBook(ids, { empty: true, after: () => { picked.clear(); drawTrack(true); } });
     } }, "북에 저장")));
   ov.querySelector(".mbar h1").replaceWith(title);
   document.body.append(ov);

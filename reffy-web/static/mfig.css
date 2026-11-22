@@ -617,3 +617,23 @@ html.m body #toast .t-undo{flex:none;white-space:nowrap}
 html.m body .layout .main,html.m body .layout:not(.f-open) .main{padding:12px 16px 104px}
 html.m body .clist .cmeta small{margin:0;padding:0}
 html.m body .drw .dmain{padding-top:21px}
+/* 크게 보기 (프로토타입 3321:257315): 가운데 카드 · 양옆 카드가 보임 · 삭제 / 선택 원형 버튼 */
+html.m body .kv2 .kv-track{padding:0 60px;scroll-padding-left:0}
+html.m body .kv2 .kv-card{scroll-snap-align:center}
+html.m body .kv2 .kv-act{gap:28px}
+html.m body .kv2 .kv-sel{width:58px;height:58px;border:0;border-radius:50%;background:var(--f-line2);color:var(--f-ink);box-shadow:0 2px 6px rgba(0,0,0,.08);display:grid;place-items:center}
+html.m body .kv2 .kv-sel.on{background:var(--f-brand);color:#fff}
+html.m body .kv2 .kv-sel svg{width:24px;height:24px}
+html.m body:has(.kv2) .modal{z-index:80}
+html.m body .kv2 .kv-card::after{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none}
+html.m body .kv2 .kv-card.on::after{box-shadow:inset 0 0 0 2px var(--f-brand)}
+html.m body .kv2 .kv-ck{z-index:1}
+/* 담은 레퍼런스 순서 변경 시트 (3321:258858): 높이는 내용만큼 · 설명 12 · 4열 정사각 썸네일 간격 8 · 끄는 중인 칸은 보라 점선 */
+html.m body .modal.msheet.tall .sheet:has(.ro-grid){height:auto;max-height:85dvh}
+html.m body .modal.msheet .sheet:has(.ro-grid)>.m-sheet-h{padding-bottom:4px}
+html.m body .modal.msheet .sheet:has(.ro-grid) .sheet-b{padding:0 16px 20px;overflow:auto}
+html.m body .modal.msheet .sheet:has(.ro-grid) .sheet-p{margin:0 0 14px;padding:0;font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .ro-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+html.m body .ro-it{aspect-ratio:1/1;border-radius:4px;overflow:hidden;background:var(--f-input)}
+html.m body .ro-it img{width:100%;height:100%;object-fit:cover;display:block}
+html.m body .ro-it.drag{outline:2px dashed var(--f-brand);outline-offset:-2px;opacity:.6}

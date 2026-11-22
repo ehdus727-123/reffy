@@ -156,7 +156,7 @@ async function saveToBook(ids, o = {}) {
       if (chosen == null) return toast("저장할 북을 골라 주세요.");
       try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); s.close(); toast(`‘${b.name}’ 북에 추가했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
     };
-    if (o.move) cb.checked = true;
+    if (o.move || o.empty) { cb.checked = true; rm = true; }   // 킵스페이스에서 저장할 때는 Figma처럼 '비우기'가 켜진 채로 시작
     const s = sheet("북에 저장", [h("div", { class: "bk-new" }, name, btn("만들기", "", make)), list],
       h("div", { class: "sheet-f bk-foot" }, h("label", { class: "bk-chk" }, cb, "저장 후 킵스페이스에서 비우기"), btn("저장", "primary", go)), "tall bksheet");
     return;
@@ -244,7 +244,7 @@ async function keepPage() {
     const mvBtn = btn("이동", "", () => n ? saveToBook([...picked], { move: true, after: () => { picked.clear(); sel = false; load(); } }) : toast("옮길 이미지를 골라 주세요."));   // Figma ActionBar 3064:55416: 삭제 · 이동(→ 북으로 이동)
     delBtn.disabled = mvBtn.disabled = !n;
     if (isM()) {   // Figma ActionBar (2856:18380): 'N개 선택' · 삭제(Outlined) · 북에 저장(Brand)
-      const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
+      const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { empty: true, after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
       const del2 = btn("삭제", "", async () => {
         if (!n) return toast("삭제할 이미지를 골라 주세요.");
         if (!(await confirmDialog(`선택한 ${n}개를 킵스페이스에서\n삭제할까요?`, "삭제한 레퍼런스는 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소" }))) return;
