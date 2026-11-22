@@ -552,3 +552,10 @@ html.m body .bar .chip.dark button{width:16px;height:16px;padding:0;border:0;bac
 html.m body .bar .chip.dark button svg{width:16px;height:16px;display:block}
 html.m body .bar .chip.dark .sw{width:12px;height:12px;border-radius:50%;margin-right:2px;border:1px solid rgba(116,37,246,.3)}
 html.m body .fbtn.on,html.m body .layout.f-open .fbtn.on{background:var(--f-brand)!important;border:0!important;color:#fff!important}
+/* 등록 화면: 창이 올라오는 애니메이션(transform) 때문에 position:fixed 버튼 줄이 같이 스크롤되던 문제
+   → 창을 세로 flex 로 나눠 가운데 내용만 스크롤하고 아래 버튼 줄은 늘 화면 맨 아래에 */
+html.m body .modal.upm .dlg{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding:0}
+html.m body .modal.upm #upBody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+html.m body .modal.upm .upm-b{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+html.m body .modal.upm .foot{position:static;flex:none;box-shadow:0 -1px 15px rgba(0,0,0,.08)}
+html.m body .modal.upm .dlg>header.mbar{flex:none;position:relative}

@@ -1205,7 +1205,7 @@ function pickButton(box, onPick, exclude) {
 function singleAxis(ax) { return S.vocab.groups.flatMap((g) => g.axes).find((a) => a.name === ax && a.mode === "단일"); }
 function drawUpload() {
   const body = $("#upBody"); if (!body || !up) return;
-  const sc = body.closest(".dlg"), keep = sc ? sc.scrollTop : 0;
+  const keep = body.querySelector(".upm-b")?.scrollTop || 0;
   const input = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", hidden: true, onchange: (e) => e.target.files[0] && analyze(e.target.files[0]) });
   const drop = h("div", { class: "drop" + (up.url ? " has" : ""), tabindex: "0", role: "button", "aria-label": "이미지 선택", onclick: () => !up.busy && input.click(), onkeydown: (e) => (e.key === "Enter" || e.key === " ") && input.click() },
     up.url ? h("img", { src: up.url, alt: "올린 이미지" }) : [icon("upload", 40), h("b", {}, "갤러리 · 클라우드에서 이미지 선택"), h("p", {}, "JPG · PNG · WEBP · GIF, 최대 15MB")],
@@ -1233,7 +1233,7 @@ function drawUpload() {
       priv),
     h("div", { class: "foot" }, h("button", { class: "btn", type: "button", onclick: () => { up.title = ""; up.materials.length = 0; up.tools.length = 0; up.private = false; if (up.url) URL.revokeObjectURL(up.url); up.url = null; up.token = null; up.tags = new Map(); store.set("reffy.draft", null); drawUpload(); } }, "초기화"),
       h("button", { class: "btn primary", id: "pub", type: "button", disabled: !up.token, onclick: publish }, "등록하기")));
-  if (sc) sc.scrollTop = keep;
+  body.querySelector(".upm-b").scrollTop = keep;
 }
 /* 사용 소재 링크 (MYP_0200): 입력 + 저장, 최대 10개 */
 function materialsField(list, redraw) {
