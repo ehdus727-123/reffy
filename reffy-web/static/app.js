@@ -1168,27 +1168,32 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if ($(".
 let up = null;
 function closeUpload() { $(".modal:not(.closing)")?.remove(); up = null; }
 function openUpload() { return isM() ? openUploadM() : openUploadPC(); }
+/* 모바일 게시물 등록 (Figma 2847:162229 일러스트 등록 · 2847:162271 사진 등록)
+   '+' → 바텀시트로 일러스트/사진 고르기 → 한 화면: 이미지 선택 칸 · 제목 · 사용 툴(일러스트) · 사용 소재/출처 · (AI 태그) · 비공개 설정 · 초기화 / 등록하기 */
 function openUploadM() {
   if (!needLogin()) return;
+  sheetMenu("게시물 등록", [{ ic: "image", label: "일러스트 등록", fn: () => openUploadForm("illust") }, { ic: "camera", label: "사진 등록", fn: () => openUploadForm("photo") }]);
+}
+function openUploadForm(kind) {
   const dr = store.get("reffy.draft", null);
-  up = { token: null, tags: new Map(), file: null, kind: dr?.kind || "illust", title: dr?.title || "", materials: dr?.materials || [], tools: dr?.tools || [], private: !!dr?.private };
-  const input = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", hidden: true, onchange: (e) => e.target.files[0] && analyze(e.target.files[0]) });
-  const drop = h("div", { class: "drop", tabindex: "0", role: "button", "aria-label": "이미지 선택", onclick: () => input.click(), onkeydown: (e) => (e.key === "Enter" || e.key === " ") && input.click(),
-    ondragover: (e) => { e.preventDefault(); drop.classList.add("over"); }, ondragleave: () => drop.classList.remove("over"), ondrop: (e) => { e.preventDefault(); drop.classList.remove("over"); e.dataTransfer.files[0] && analyze(e.dataTransfer.files[0]); } },
-    isM() ? icon("upload", 28) : null, h("b", {}, isM() ? "갤러리 · 클라우드에서 이미지 선택" : "이미지를 끌어다 놓거나 눌러서 선택하세요"), h("p", {}, isM() ? "JPG · PNG · WEBP · GIF, 최대 15MB" : "JPG · PNG · WEBP · GIF, 15MB 이하. 올리면 AI가 태그를 붙여 줘요."), input);
-  const m = h("div", { class: "modal upl" },
-    h("div", { class: "dlg", role: "dialog", "aria-modal": "true", "aria-label": "새 게시물" }, h("header", {}, h("h2", {}, isM() ? "게시물 등록" : "새 게시물"), h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: closeUpload }, icon("close"))), h("div", { id: "upBody" }, drop)));
+  up = { token: null, tags: new Map(), file: null, url: null, busy: false, kind, title: dr?.title || "", materials: dr?.materials || [], tools: dr?.tools || [], private: !!dr?.private };
+  const m = h("div", { class: "modal upl upm" },
+    h("div", { class: "dlg", role: "dialog", "aria-modal": "true", "aria-label": kind === "photo" ? "사진 등록" : "일러스트 등록" },
+      mbar(kind === "photo" ? "사진 등록" : "일러스트 등록", { back: async () => { if ((up.url || (up.title || "").trim() || up.materials.length) && !(await confirmDialog("작성을 그만둘까요?", "작성 중인 내용은 저장되지 않아요.", { ok: "그만두기", cancel: "계속 작성" }))) return; closeUpload(); }, right: [h("button", { class: "linkbtn", type: "button", onclick: saveDraft }, "임시 저장")] }),
+      h("div", { id: "upBody" })));
   document.body.append(m);
+  drawUpload();
 }
 async function analyze(file) {
-  const body = $("#upBody"); const url = URL.createObjectURL(file);
-  body.replaceChildren(h("div", { class: "up" }, h("div", { class: "pv" }, h("img", { src: url, alt: "올린 이미지" })), h("div", {}, h("p", {}, h("span", { class: "busy" }), "AI가 태그를 붙이는 중이에요…"))));
+  if (up.url) URL.revokeObjectURL(up.url);
+  up.url = URL.createObjectURL(file); up.token = null; up.tags = new Map(); up.msg = ""; up.busy = true; drawUpload();
   const fd = new FormData(); fd.append("file", file);
   try {
     const r = await api("/api/analyze", { method: "POST", body: fd });
-    up.token = r.token; up.tags = new Map(r.tags.map((t) => [t.ikey, t])); up.url = url; up.msg = r.message; up.sec = r.seconds;
-    drawUpload();
-  } catch (e) { body.replaceChildren(h("div", { class: "up", style: "grid-template-columns:1fr" }, h("div", {}, h("div", { class: "note warn" }, e.message), h("button", { class: "btn", onclick: () => { closeUpload(); openUpload(); } }, "다른 이미지 고르기")))); }
+    if (!up) return;
+    up.token = r.token; up.tags = new Map(r.tags.map((t) => [t.ikey, t])); up.msg = r.message; up.sec = r.seconds;
+  } catch (e) { if (!up) return; up.url = null; toast(e.message); }
+  up.busy = false; drawUpload();
 }
 function pickButton(box, onPick, exclude) {
   box.append(h("button", { class: "btn sm", type: "button", onclick: () => {
@@ -1199,28 +1204,36 @@ function pickButton(box, onPick, exclude) {
 }
 function singleAxis(ax) { return S.vocab.groups.flatMap((g) => g.axes).find((a) => a.name === ax && a.mode === "단일"); }
 function drawUpload() {
-  const body = $("#upBody"); const tags = [...up.tags.values()];
+  const body = $("#upBody"); if (!body || !up) return;
+  const sc = body.closest(".dlg"), keep = sc ? sc.scrollTop : 0;
+  const input = h("input", { type: "file", accept: "image/jpeg,image/png,image/webp,image/gif", hidden: true, onchange: (e) => e.target.files[0] && analyze(e.target.files[0]) });
+  const drop = h("div", { class: "drop" + (up.url ? " has" : ""), tabindex: "0", role: "button", "aria-label": "이미지 선택", onclick: () => !up.busy && input.click(), onkeydown: (e) => (e.key === "Enter" || e.key === " ") && input.click() },
+    up.url ? h("img", { src: up.url, alt: "올린 이미지" }) : [icon("upload", 40), h("b", {}, "갤러리 · 클라우드에서 이미지 선택"), h("p", {}, "JPG · PNG · WEBP · GIF, 최대 15MB")],
+    up.busy ? h("span", { class: "up-busy" }, h("span", { class: "busy" }), "AI가 태그를 붙이는 중이에요…") : null, input);
+  const tags = [...up.tags.values()];
   const byAxis = new Map(); tags.forEach((t) => { const k = (S.labels[t.ikey]?.axis) || t.group; if (!byAxis.has(k)) byAxis.set(k, []); byAxis.get(k).push(t); });
-  const title = h("input", { id: "upTitle", maxlength: "120", placeholder: "예) 앉아서 뒤돌아보는 포즈", value: up.title || "", oninput: (e) => (up.title = e.target.value) });
+  const title = h("input", { class: "inp", id: "upTitle", maxlength: "120", placeholder: "제목을 입력해주세요", value: up.title || "", oninput: (e) => (up.title = e.target.value) });
   const tagBtn = (t) => h("button", { type: "button", class: "tag " + (t.manual ? "user" : "ai"), title: "눌러서 삭제", "aria-label": `${t.label} 태그 삭제`, onclick: () => { up.tags.delete(t.ikey); drawUpload(); } },
-    "#" + t.label, t.prob != null && !t.manual ? h("span", { class: "pr" }, Math.round(t.prob * 100) + "%") : null, h("x", {}, "×"));
+    "#" + t.label, h("x", {}, "×"));
   const onPick = (t) => {
     if (singleAxis(t.axis)) [...up.tags.values()].filter((x) => S.labels[x.ikey]?.axis === t.axis).forEach((x) => up.tags.delete(x.ikey));
     up.tags.set(t.ikey, { ikey: t.ikey, label: t.label, manual: true, group: "" }); drawUpload();
   };
-  up.materials = up.materials || []; up.tools = up.tools || []; up.private = !!up.private;
-  const right = h("div", {},
-    up.msg ? h("div", { class: "note warn" }, up.msg) : h("div", { class: "note" }, `AI가 ${tags.length}개의 태그를 붙였어요 (${up.sec}초). 틀린 태그는 지우고, 빠진 태그는 추가하세요.`),
-    h("div", { class: "field" }, h("label", { for: "upTitle" }, "제목"), title),
-    h("div", { class: "field" }, h("label", {}, "종류"), h("div", { class: "seg", role: "radiogroup" }, [["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { type: "button", role: "radio", "aria-checked": String(up.kind === k), class: up.kind === k ? "on" : "", onclick: () => { up.kind = k; drawUpload(); } }, l)))),
-    h("div", { class: "field" }, h("label", {}, "태그"),
-      tags.length ? [...byAxis].map(([ax, ts]) => h("div", { class: "axisgrp" }, h("h4", {}, ax), h("div", { class: "tags" }, ts.map(tagBtn)))) : h("p", { class: "hint" }, "붙은 태그가 없어요. 아래에서 직접 추가하세요."),
-      pickButton(h("div", { class: "pick" }), onPick, () => new Set(up.tags.keys()))),
-    materialsField(up.materials, drawUpload),
-    toolsField(up.tools, drawUpload),
-    privacyField(up.private, (v) => { up.private = v; }));
-  body.replaceChildren(h("div", { class: "up" }, h("div", { class: "pv" }, h("img", { src: up.url, alt: "올린 이미지" })), right),
-    h("div", { class: "foot" }, isM() ? h("button", { class: "btn", type: "button", onclick: saveDraft }, "임시 저장") : h("button", { class: "btn", type: "button", onclick: closeUpload }, "취소"), h("button", { class: "btn primary", id: "pub", type: "button", onclick: publish }, isM() ? "등록" : "게시하기")));
+  const mat = materialsField(up.materials, drawUpload);
+  if (up.kind === "photo") mat.querySelector("label").textContent = "출처";
+  const priv = h("label", { class: "swrow up-sw" }, h("span", {}, h("b", {}, "비공개 설정"), h("small", {}, "키면 나만 볼 수 있어요")),
+    h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: !!up.private, onchange: (e) => { up.private = e.target.checked; } }), h("i", { class: "sw-ui" }));
+  body.replaceChildren(h("div", { class: "upm-b" }, drop,
+      h("div", { class: "field" }, h("label", { for: "upTitle" }, "제목"), title),
+      up.kind === "photo" ? null : toolsField(up.tools, drawUpload),
+      mat,
+      up.token ? h("div", { class: "field" }, h("label", {}, "태그"), up.msg ? h("p", { class: "hint" }, up.msg) : null,
+        tags.length ? h("div", { class: "tags" }, [...byAxis.values()].flat().map(tagBtn)) : h("p", { class: "hint" }, "붙은 태그가 없어요. 직접 추가하세요."),
+        pickButton(h("div", { class: "pick" }), onPick, () => new Set(up.tags.keys()))) : null,
+      priv),
+    h("div", { class: "foot" }, h("button", { class: "btn", type: "button", onclick: () => { up.title = ""; up.materials.length = 0; up.tools.length = 0; up.private = false; if (up.url) URL.revokeObjectURL(up.url); up.url = null; up.token = null; up.tags = new Map(); store.set("reffy.draft", null); drawUpload(); } }, "초기화"),
+      h("button", { class: "btn primary", id: "pub", type: "button", disabled: !up.token, onclick: publish }, "등록하기")));
+  if (sc) sc.scrollTop = keep;
 }
 /* 사용 소재 링크 (MYP_0200): 입력 + 저장, 최대 10개 */
 function materialsField(list, redraw) {
@@ -1228,7 +1241,7 @@ function materialsField(list, redraw) {
   const add = () => { const v = inp.value.trim(); if (!v) return; if (list.length >= 10) return toast("사용 소재는 10개까지 넣을 수 있어요."); if (!list.includes(v)) list.push(v); redraw(); };
   inp.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); add(); } };
   // PC(Figma Upload 2789:151148): 입력칸 안 오른쪽에 '추가' 버튼, 넣은 링크는 회색 칸(링크 아이콘 · 주소 · 지우기)
-  return h("div", { class: "field mat" }, h("label", {}, "사용 소재"), h("div", { class: "row" }, inp, h("button", { class: isM() ? "btn l" : "mat-add", type: "button", onclick: add }, isM() ? "저장" : "추가")),
+  return h("div", { class: "field mat" }, h("label", {}, "사용 소재"), h("div", { class: "row" }, inp, h("button", { class: isM() ? "btn" : "mat-add", type: "button", onclick: add }, "추가")),
     list.length ? h("ul", { class: "mat-list" }, list.map((l, i) => h("li", {}, icon("link", isM() ? 16 : 20), h("span", {}, l), h("button", { class: "icon-btn", type: "button", "aria-label": "링크 삭제", onclick: () => { list.splice(i, 1); redraw(); } }, icon("close", isM() ? 16 : 20))))) : null);
 }
 /* 사용 툴 (Figma 2601:52939): 업로드 · 수정 때 여러 개 고름 → 상세 패널 '사용한 툴'에 보임 */
@@ -1255,7 +1268,7 @@ async function publish() {
     const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: up.token, title: up.title || "", kind: up.kind || "illust", tags: [...up.tags.keys()], materials: up.materials || [], tools: up.tools || [], private: !!up.private }) });
     if ((up.kind || "illust") === "photo") poseFill(1, [r.id]);   // 사진이면 3D 포즈 검색용 관절을 뽑아 둠
     store.set("reffy.draft", null); closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
-  } catch (e) { b.disabled = false; b.textContent = isM() ? "등록" : "게시하기"; toast(e.message); }
+  } catch (e) { b.disabled = false; b.textContent = isM() ? "등록하기" : "게시하기"; toast(e.message); }
 }
 if ($("#uploadBtn")) $("#uploadBtn").onclick = openUpload;
 

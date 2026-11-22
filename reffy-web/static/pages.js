@@ -136,7 +136,12 @@ async function saveToBook(ids, o = {}) {
   let chosen = books[0]?.id ?? null, rm = !!o.move;   // o.move: 킵 스페이스 → 북으로 이동 (담고 킵에서 뺌)
   const list = h("div", {});
   const name = h("input", { type: "text", maxlength: "40", placeholder: isM() ? "예) 앉은 포즈 모음" : "예: 역동적인 구도", "aria-label": "새 북 이름" });
-  const drawList = () => list.replaceChildren(...(books.length ? books.map((b) => h("button", { class: "brow-pick" + (chosen === b.id ? " on" : ""), type: "button", role: "radio", "aria-checked": String(chosen === b.id), onclick: () => { chosen = b.id; drawList(); } },
+  /* 모바일 (Figma 2781:88541): Book card 2열(표지 3장 · 이름 · 개수 · 시간)에서 고르기 · 아래 '저장 후 킵스페이스에서 비우기' + 저장 */
+  const bookCardM = (b) => h("button", { class: "bk-pick" + (chosen === b.id ? " on" : ""), type: "button", role: "radio", "aria-checked": String(chosen === b.id), onclick: () => { chosen = b.id; drawList(); } },
+    h("span", { class: "cover" }, [0, 1, 2].map((i) => h("span", { style: b.covers[i] ? `background-image:url(/img/${b.covers[i]}?s=thumb)` : null }))),
+    h("span", { class: "bt" }, h("b", {}, b.name), h("span", {}, `${b.count}개 · ${ago(b.updated)}`)));
+  const drawList = () => isM() ? list.replaceChildren(...(books.length ? [h("div", { class: "bk-grid" }, books.map(bookCardM))] : [h("p", { class: "hint" }, "아직 북이 없어요. 위에서 새 북을 만들어 주세요.")]))
+    : list.replaceChildren(...(books.length ? books.map((b) => h("button", { class: "brow-pick" + (chosen === b.id ? " on" : ""), type: "button", role: "radio", "aria-checked": String(chosen === b.id), onclick: () => { chosen = b.id; drawList(); } },
     b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "th" }), h("span", { class: "bt" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)), isM() ? h("span", { class: "radio" }) : figSvg(chosen === b.id ? "radioOn" : "radioOff", "rd")))
     : [h("p", { class: "hint" }, "아직 북이 없어요. 위에서 새 북을 만들어 주세요.")]));
   drawList();
@@ -145,6 +150,17 @@ async function saveToBook(ids, o = {}) {
     try { const b = await api("/api/books", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: v }) }); books.unshift(b); chosen = b.id; name.value = ""; drawList(); } catch (e) { toast(e.message); }
   };
   const cb = h("input", { class: "cbx", type: "checkbox", onchange: (e) => (rm = e.target.checked) });
+  if (isM()) {
+    name.className = "inp"; name.placeholder = "새 북 이름 (예: 앉은 포즈 모음)";
+    const go = async () => {
+      if (chosen == null) return toast("저장할 북을 골라 주세요.");
+      try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); s.close(); toast(o.move ? `“${b.name}”(으)로 옮겼어요` : `“${b.name}”에 저장했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
+    };
+    if (o.move) cb.checked = true;
+    const s = sheet("북에 저장", [h("div", { class: "bk-new" }, name, btn("만들기", "", make)), list],
+      h("div", { class: "sheet-f bk-foot" }, h("label", { class: "bk-chk" }, cb, "저장 후 킵스페이스에서 비우기"), btn("저장", "primary", go)), "tall bksheet");
+    return;
+  }
   const m = modal(o.move ? "북으로 이동" : isM() ? "북에 저장" : "저장하기", h("div", {}, isM() ? h("div", { class: "newbook" }, h("b", {}, "+ 새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "새 북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make, { style: "height:44px" })))
       : h("div", { class: "newbook" }, h("b", {}, figSvg("plus"), "새 북 만들기"), h("span", { class: "lbl", style: "margin-top:0" }, "북 이름"), h("div", { class: "row" }, name, btn("만들기", "", make))),
     h("span", { class: "lbl" }, "내 북"), list),
@@ -219,6 +235,14 @@ async function keepPage() {
     });
     const mvBtn = btn("이동", "", () => n ? saveToBook([...picked], { move: true, after: () => { picked.clear(); sel = false; load(); } }) : toast("옮길 이미지를 골라 주세요."));   // Figma ActionBar 3064:55416: 삭제 · 이동(→ 북으로 이동)
     delBtn.disabled = mvBtn.disabled = !n;
+    if (isM()) {   // Figma SelectTray (2837:131745): 고른 이미지 썸네일(최대 5) + 나머지 개수 · 삭제 · 북에 저장
+      const its = data.items.filter((it) => picked.has(it.id));
+      const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
+      saveBtn.disabled = !n;
+      b.classList.add("kp-tray");
+      b.append(h("div", { class: "kt-th" }, [0, 1, 2, 3, 4].map((i) => h("span", { style: its[i] ? `background-image:url(${its[i].thumb})` : null }))), ...(its.length > 5 ? [h("b", { class: "kt-n" }, `+${its.length - 5}`)] : []), h("span", { class: "sp" }), delBtn, saveBtn);
+      return b;
+    }
     b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, mvBtn);
     return b;
   }
@@ -226,8 +250,8 @@ async function keepPage() {
     root.classList.toggle("selecting", sel);
     const chips = (isM() ? [["", "전체"], ["illust", "일러스트"], ["photo", "사진"]] : [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]]).map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
     const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts kp-acts0" }, (() => { const t = h("button", { class: "icon-btn kc-del", type: "button", disabled: true, "aria-label": "삭제" }); t.innerHTML = KC_TRASH; return t; })(), h("button", { class: "btn primary", type: "button", disabled: true }, "북에 저장")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
-    root.replaceChildren(isM() ? mbar("킵스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+    root.replaceChildren(isM() ? (sel ? mbar(`${picked.size}개 선택됨`, { back: () => { sel = false; picked.clear(); draw(); } }) : mbar("킵스페이스", { big: true, right: [selBtn] })) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
+      data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); if (isM()) { const t = root.querySelector(".mbar h1"); if (t) t.textContent = `${picked.size}개 선택됨`; } } }), "c6")
         : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
           : h("div", { class: "kp-empty" }, kpEx(), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("홈으로 이동", "", () => (location.hash = "#/"))),
       bar());
@@ -559,12 +583,12 @@ function followsDialog(u, kind, after) {
   const tabs = h("div", { class: "fl-tabs", role: "tablist" });
   const m = h("div", { class: "modal", onmousedown: (e) => e.target === m && close() },
     h("div", { class: "dlg fol", role: "dialog", "aria-modal": "true", "aria-label": `${u.uid} 팔로워 / 팔로잉` },
-      h("div", { class: "chd" }, h("button", { class: "icon-btn fl-x", type: "button", "aria-label": "닫기", onclick: () => close() }, icon("close", 32))),   // Figma Modal 2981:80859: 제목 없이 닫기 32만
+      h("div", { class: "chd" }, h("button", { class: "icon-btn fl-x", type: "button", "aria-label": "닫기", onclick: () => close() }, isM() ? icon("back", 28) : icon("close", 32))),   // 모바일 Figma 2837:146647: 뒤로 + 탭(팔로잉 · 팔로워) / PC Figma Modal 2981:80859: 제목 없이 닫기 32만
       tabs,
       h("label", { class: "fl-search" }, icon("search", 20), h("input", { type: "search", placeholder: "검색어를 입력하세요", "aria-label": "사용자 검색", oninput: (e) => { q = e.target.value.trim().toLowerCase(); drawList(); } })),
       body));
   const close = () => { m.remove(); after && after(); };
-  const drawTabs = () => tabs.replaceChildren(...[["followers", `팔로워 ${compact(u.followers)}`], ["following", `팔로잉 ${compact(u.following)}`]].map(([k, l]) =>
+  const drawTabs = () => tabs.replaceChildren(...(isM() ? [["following", "팔로잉"], ["followers", "팔로워"]] : [["followers", `팔로워 ${compact(u.followers)}`], ["following", `팔로잉 ${compact(u.following)}`]]).map(([k, l]) =>
     h("button", { type: "button", role: "tab", class: cur === k ? "on" : "", "aria-selected": String(cur === k), onclick: () => { cur = k; drawTabs(); load(); } }, l)));
   function drawList() {
     const rows = list.filter((x) => !q || x.uid.toLowerCase().includes(q) || x.nick.toLowerCase().includes(q));
@@ -646,7 +670,8 @@ async function profileEdit() {
   let links = [...u.links], avatar = u.avatar;
   const avBox = h("div", { class: "pe-av" });
   const nick = h("input", { class: "inp", id: "peNick", value: u.nick, maxlength: "20", placeholder: "입력해 주세요", "aria-label": "닉네임" });
-  const bio = isM() ? h("textarea", { class: "inp ta", maxlength: "100", placeholder: "한 줄 소개를 입력하세요 (최대 100자)", "aria-label": "소개" }, u.bio)
+  const bioM = h("input", { class: "inp", id: "peBioM", maxlength: "100", value: u.bio || "", placeholder: "한 줄 소개를 입력하세요 (최대 100자)", "aria-label": "소개" });
+  const bio = isM() ? bioM
     : h("input", { class: "inp", id: "peBio", maxlength: "100", value: u.bio || "", placeholder: "한 줄 소개를 입력하세요 (최대 100자)", "aria-label": "소개" });   // PC: Figma 2992:132474 한 줄 입력칸
   const pickAv = async (e) => {
     const f = e.target.files[0]; if (!f) return; if (f.size > 5 << 20) return toast("5MB 이하의 이미지만 올릴 수 있어요.");
@@ -658,7 +683,7 @@ async function profileEdit() {
   const cam = h("input", { type: "file", accept: "image/*", capture: "user", hidden: true, onchange: pickAv });
   const avMenu = (e) => (isM() ? sheetMenu("프로필 사진", [{ ic: "image", label: "앨범에서 선택", fn: () => file.click() }, { ic: "camera", label: "사진 찍기", fn: () => cam.click() }, ...(avatar ? [{ ic: "trash", label: "기본 이미지로 변경", fn: delAv }] : [])])
     : avatar ? menuCard(e.currentTarget, [{ ic: "image", label: "앨범에서 선택", fn: () => file.click() }, { ic: "trash", label: "기본 이미지로 변경", fn: delAv }]) : file.click());
-  const drawAv = () => avBox.replaceChildren(h("button", { class: "pe-avb", type: "button", "aria-label": "프로필 사진 변경", onclick: avMenu }, avatarEl({ nick: nick.value || u.nick, avatar }, isM() ? 96 : 88, "pe-avt"), h("i", {}, icon("camera", 16))), cam,
+  let drawAv = () => avBox.replaceChildren(h("button", { class: "pe-avb", type: "button", "aria-label": "프로필 사진 변경", onclick: avMenu }, avatarEl({ nick: nick.value || u.nick, avatar }, isM() ? 96 : 88, "pe-avt"), h("i", {}, icon("camera", 16))), cam,
     h("div", { class: "pe-avtx" }, isM() ? null : h("span", { class: "pe-lbl" }, "프로필 이미지"), h("div", { class: "pe-avbtns" }, btn("사진 변경", "", isM() ? avMenu : (e) => menuCard(e.currentTarget, [{ ic: "image", label: "앨범에서 선택", fn: () => file.click() }, { ic: "trash", label: "기본 이미지로 변경", fn: () => (avatar ? delAv() : toast("이미 기본 이미지예요")) }], null, { align: "start", cls: "pe-menu" })), avatar || !isM() ? btn("삭제", "alt", () => (avatar ? delAv() : toast("이미 기본 이미지예요"))) : null), h("span", {}, "JPG · PNG, 5MB 이하"), file));
   /* 헤더(커버) 이미지 (HOM_0501_01 · 0501_02): 헤더 변경 → 앨범에서 선택 / 기본 이미지로 변경 */
   let cover = u.cover;
@@ -670,7 +695,7 @@ async function profileEdit() {
   const delCv = async () => { try { await api("/api/me/cover", { method: "DELETE" }); cover = null; drawCv(); toast("기본 이미지로 바꿨어요"); } catch (er) { toast(er.message); } };
   const cvMenu = (e) => (isM() ? sheetMenu("헤더 이미지", [{ ic: "image", label: "앨범에서 선택", fn: () => cvFile.click() }, ...(cover ? [{ ic: "trash", label: "기본 이미지로 변경", fn: delCv }] : [])])
     : cover ? menuCard(e.currentTarget, [{ ic: "image", label: "앨범에서 선택", fn: () => cvFile.click() }, { ic: "trash", label: "기본 이미지로 변경", fn: delCv }]) : cvFile.click());
-  const drawCv = () => cvBox.replaceChildren(h("label", { class: "pe-lbl" }, "헤더 이미지"),
+  let drawCv = () => cvBox.replaceChildren(h("label", { class: "pe-lbl" }, "헤더 이미지"),
     h("div", { class: "pe-cvimg" + (cover ? " has" : "") }, cover ? h("img", { src: cover, alt: "" }) : null,
       isM() ? h("button", { class: "pe-cvbtn", type: "button", onclick: cvMenu }, icon("camera", 16), "헤더 변경")
         : h("div", { class: "pe-cvbtns" }, h("button", { class: "pe-cvbtn", type: "button", onclick: () => cvFile.click() }, icon("camera", 16), "헤더 변경"),
@@ -715,11 +740,32 @@ async function profileEdit() {
       h("div", { class: "pe-ft" }, btn("취소", "l", () => (location.hash = "#/me")), btn("저장", "primary l", save)));
     return;
   }
-  root.replaceChildren(isM() ? mbar("프로필 수정", { back: () => (location.hash = "#/me"), right: [h("button", { class: "linkbtn", type: "button", onclick: save }, "저장")] }) : "", isM() ? h("h1", {}, "프로필 편집") : h("div", { class: "pc-head" }, pcBack("#/me"), h("h1", {}, "프로필 편집")), cvBox, avBox,
-    h("div", { class: "pe-f" }, h("label", { for: "peNick" }, "닉네임"), h("div", { class: "pe-nick" }, nick, nickBtn), nickMsg),
-    h("div", { class: "pe-f s" }, h("label", {}, "소개"), bio, bioCnt),
-    h("div", { class: "pe-lh" }, h("h2", {}, "외부 링크"), linkCnt), linkBox,
-    h("div", { class: "pe-ft" }, btn("취소", "l", () => (location.hash = "#/me")), btn("저장", "primary l", save)));
+  /* 모바일: Figma 2837:161552 — 헤더(88, 오른쪽 위 사진 변경 · 삭제 원형 버튼) · 가운데 아바타 96(+카메라 32) · 닉네임 · 소개 · 링크(입력칸 안 '추가' + 아래 목록) · 아래 '저장하기' */
+  root.classList.add("pe-m");
+  const fab = (ic, label, fn) => h("button", { class: "pe-fab", type: "button", "aria-label": label, onclick: fn }, icon(ic, 18));
+  const mCover = h("div", { class: "pe-mcv" });
+  const drawMCv = () => mCover.replaceChildren(...(cover ? [h("img", { src: cover, alt: "" })] : []),
+    h("div", { class: "pe-fabs" }, fab("camera", "헤더 이미지 변경", () => cvFile.click()), fab("trash", "헤더 기본 이미지로 변경", () => (cover ? delCv() : toast("이미 기본 이미지예요")))), cvFile);
+  const _drawCv = drawCv; drawCv = () => { _drawCv(); drawMCv(); };
+  drawMCv();
+  const mAv = h("div", { class: "pe-mav" });
+  const drawMAv = () => mAv.replaceChildren(avatarEl({ nick: nick.value || u.nick, avatar }, 96, "pe-avt"), h("button", { class: "pe-fab", type: "button", "aria-label": "프로필 사진 변경", onclick: avMenu }, icon("camera", 18)), file, cam);
+  const _drawAv = drawAv; drawAv = () => { _drawAv(); drawMAv(); };
+  drawMAv();
+  nickMsg.hidden = true;
+  nickBtn.addEventListener("click", () => (nickMsg.hidden = false));
+  const mLinkIn = h("input", { class: "inp", id: "peLinkM", maxlength: "120", placeholder: "링크를 입력해주세요", "aria-label": "링크 입력", onkeydown: (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); mAdd(); } } });
+  const mList = h("div", { class: "pe-mlist" });
+  const drawM = () => mList.replaceChildren(...links.filter((l) => l.trim()).map((l) => h("div", { class: "pe-mrow" }, icon("link", 20), h("span", {}, l), h("button", { type: "button", "aria-label": "링크 삭제", onclick: () => { links.splice(links.indexOf(l), 1); drawM(); } }, icon("close", 20)))));
+  const mAdd = () => { const v = mLinkIn.value.trim(); if (!v) return; if (links.filter((x) => x.trim()).length >= 5) return toast("링크는 5개까지 넣을 수 있어요."); links.push(v); mLinkIn.value = ""; drawM(); };
+  drawM();
+  const mSave = async (ev) => { if (mLinkIn.value.trim()) mAdd(); return save(ev); };
+  root.replaceChildren(mbar("프로필 수정", { back: () => (location.hash = "#/me") }), mCover, mAv,
+    h("div", { class: "pe-mf" },
+      h("div", { class: "pe-f" }, h("label", { for: "peNick" }, "닉네임"), h("div", { class: "pe-nick" }, nick, nickBtn), nickMsg),
+      h("div", { class: "pe-f" }, h("label", { for: "peBioM" }, "소개"), bioM),
+      h("div", { class: "pe-f" }, h("div", { class: "pe-lh" }, h("label", { for: "peLinkM" }, "링크"), h("small", {}, "최대 5개")), h("div", { class: "pe-lin" }, mLinkIn, btn("추가", "", mAdd)), mList)),
+    h("div", { class: "pe-mft" }, btn("저장하기", "primary", mSave)));
 }
 
 function route() {

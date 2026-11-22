@@ -66,11 +66,11 @@ const REPORT_REASONS = ["스팸 · 광고", "음란물 · 선정적인 내용", 
 function reportSheet(type, id) {
   if (!needLogin()) return;
   let reason = "";
-  const detail = h("textarea", { class: "inp ta", maxlength: "200", placeholder: "신고 사유를 입력해 주세요 (최대 200자)", "aria-label": "신고 사유", hidden: true });
+  const detail = h("textarea", { class: "inp ta", maxlength: "200", placeholder: "신고 사유를 입력해 주세요 (최대 200자)", "aria-label": "신고 사유" });
   const list = h("div", { role: "radiogroup", "aria-label": "신고 사유" });
-  const draw = () => list.replaceChildren(...REPORT_REASONS.map((r) => h("button", { class: "srow rdrow", type: "button", role: "radio", "aria-checked": String(reason === r), onclick: () => { reason = r; detail.hidden = r !== "기타"; draw(); } }, h("i", { class: "rd" }), h("span", {}, r))));
+  const draw = () => list.replaceChildren(...REPORT_REASONS.map((r) => h("button", { class: "srow rdrow", type: "button", role: "radio", "aria-checked": String(reason === r), onclick: () => { reason = r; draw(); } }, h("i", { class: "rd" }), h("span", {}, r))));
   draw();
-  const s = sheet("신고하기", [h("p", { class: "sheet-p" }, "신고 사유를 선택해 주세요"), list, detail],
+  const s = sheet("신고하기", [list, detail],
     h("div", { class: "sheet-f" }, h("button", { class: "btn primary block rp-go", type: "button", onclick: async () => {
       if (!reason) return toast("신고 사유를 선택해 주세요.");
       try { await api("/api/reports", jsonOpt("POST", { target_type: type, target_id: String(id), reason, detail: detail.value })); s.close(); toast("신고가 접수됐어요"); } catch (e) { toast(e.message); }
