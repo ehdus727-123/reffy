@@ -637,3 +637,29 @@ html.m body .ro-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
 html.m body .ro-it{aspect-ratio:1/1;border-radius:4px;overflow:hidden;background:var(--f-input)}
 html.m body .ro-it img{width:100%;height:100%;object-fit:cover;display:block}
 html.m body .ro-it.drag{outline:2px dashed var(--f-brand);outline-offset:-2px;opacity:.6}
+
+/* ---- 새 북 만들기 · 북 수정 (2837:130834 · 2837:130849): 전체 화면 · 위 X + 가운데 제목 20 · 커버 82 + 설명 + 업로드(Outlined S) · Text field · 아래 보라 버튼 ---- */
+html.m body .modal.bkm{inset:0;background:#fff;align-items:stretch;padding:0}
+html.m body .modal.bkm .dlg.bk{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;max-height:none;margin:0;padding:0 0 calc(80px + env(safe-area-inset-bottom));border-radius:0;display:flex;flex-direction:column;gap:0;overflow:auto;background:#fff;box-sizing:border-box;animation:none;transform:none}
+html.m body .bkm .chd{position:relative;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;flex:none;height:52px;padding:0 16px;margin:0;border:0}
+html.m body .bkm .chd h2{position:absolute;left:72px;right:72px;margin:0;text-align:center;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:var(--f-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.m body .bkm .chd .icon-btn{width:28px;height:28px;padding:0;min-width:0;color:var(--f-ink)}
+html.m body .bkm .chd .icon-btn svg{width:28px;height:28px}
+html.m body .bkm .cvrow{display:flex;align-items:center;gap:12px;margin:16px 16px 0;padding:0}
+html.m body .bkm .cvprev{flex:none;width:82px;height:82px;border-radius:8px;overflow:hidden;background:var(--f-input)}
+html.m body .bkm .cvprev img{width:100%;height:100%;object-fit:cover}
+html.m body .bkm .cvtx{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-width:0}
+html.m body .bkm .cvtx b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000}
+html.m body .bkm .cvtx span{font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink2)}
+html.m body .bkm .cvup{display:inline-flex;align-items:center;gap:6px;height:auto;margin-top:6px;padding:6px 12px;min-width:64px;border:1px solid #c3c2c5;border-radius:6px;background:#fff;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .bkm .cvup svg{width:16px;height:16px}
+html.m body .bkm .fl2{display:block;margin:22px 16px 4px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink)}
+html.m body .bkm .cvrow+.fl2{margin-top:29px}
+html.m body .bkm .dlg>input{display:block;width:calc(100% - 32px);height:48px;margin:0 16px;padding:0 14px;border:1px solid #c3c2c5;border-radius:10px;background:#fff;box-sizing:border-box;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink);outline:none}
+html.m body .bkm .dlg>input:focus{border-color:var(--f-brand)}
+html.m body .bkm .dlg>input::placeholder{color:var(--f-ink3)}
+html.m body .bkm .cft{position:fixed;left:0;right:0;bottom:0;display:flex;gap:0;margin:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;box-shadow:0 -1px 15px rgba(0,0,0,.08)}
+html.m body .bkm .cft .btn:first-child{display:none}
+html.m body .bkm .cft .btn.primary{flex:1;height:44px;border:0;border-radius:8px;background:var(--f-brand);color:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px}
+html.m body .bkm .dlg>.chd{margin:0!important}
+html.m body .bkm .cvup{height:28px;padding:0 12px;box-sizing:border-box}

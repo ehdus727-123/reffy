@@ -174,7 +174,8 @@ async function saveToBook(ids, o = {}) {
 function bookDialog(book, done) {
   let file = null;
   const name = h("input", { type: "text", maxlength: "40", value: book?.name || "", placeholder: "예: 앉은 포즈 모음", "aria-label": "북 이름" });
-  const desc = h("textarea", { maxlength: "200", placeholder: "북에 대한 메모를 남겨보세요", "aria-label": "북 설명" }, book?.description || "");
+  const desc = isM() ? h("input", { type: "text", maxlength: "200", value: book?.description || "", placeholder: "북에 대한 메모를 남겨 보세요.", "aria-label": "북 설명" })   // 모바일 Figma 2837:130834: 한 줄 칸
+    : h("textarea", { maxlength: "200", placeholder: "북에 대한 메모를 남겨보세요", "aria-label": "북 설명" }, book?.description || "");
   const prev = h("span", { class: "cvprev" });
   const showPrev = (url) => prev.replaceChildren(url ? h("img", { src: url, alt: "커버 미리보기" }) : "");
   showPrev(book?.cover || (book?.covers?.[0] ? `/img/${book.covers[0]}?s=thumb` : null));
@@ -194,7 +195,8 @@ function bookDialog(book, done) {
           m.remove(); done();
         } catch (e) { toast(e.message); }
       }))));
-  document.body.append(m); setTimeout(() => name.focus(), 0);
+  if (isM()) m.classList.add("bkm");   // 모바일: 전체 화면(위 X · 가운데 제목) · 아래 보라 버튼 하나 · 열 때 키보드가 바로 올라오지 않게
+  document.body.append(m); if (!isM()) setTimeout(() => name.focus(), 0);
 }
 
 /* ---------------------------------------------------------------- 킵 스페이스 */
