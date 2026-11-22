@@ -1418,3 +1418,6 @@ document.addEventListener("click", (e) => {
     b.style.overflow = "hidden"; b.append(w); setTimeout(() => w.remove(), 520);
   }
 }, true);
+
+/* 휴대폰 '홈 화면에 추가'로 앱처럼 열 수 있게 (주소창 없이 전체 화면) */
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
