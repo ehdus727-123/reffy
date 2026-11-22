@@ -533,3 +533,22 @@ html.m body .modal .sheet-f.cwrap .cform input{flex:1;border:0;background:none;o
 html.m body .modal .sheet-f.cwrap .cform .btn{background:none;border:0;color:var(--f-ink3);padding:0;height:auto;font:500 14px/20px Pretendard,sans-serif}
 html.m body #panel .imgact .circ .dps{width:20px;height:20px}
 html.m body #panel .clist li.rep,html.m body .modal .clist li.rep{padding-left:38px}
+
+/* ---- 홈: 필터를 적용했을 때 (2837:129898)
+   1줄: 검색 결과 N개(왼쪽) · 정렬 + 필터(오른쪽) / 2줄: 초기화 아이콘 24 + 필터 칩(웹과 같은 Chip: 보라 연한 배경 · 보라 글자 · 지우기 아이콘) ---- */
+html.m body .bar::after{content:"";order:3;flex-basis:100%;height:0}
+html.m body .bar .result{order:1;display:none;align-items:center;gap:4px;margin:0}
+html.m body.searching .bar .result{display:flex}
+html.m body .bar .result h1,html.m body .bar .result #resultTitle{margin:0;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .bar .result .count{font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .bar .sortfilter{order:2}
+html.m body.searching .bar .resetbtn{order:4;display:grid;place-items:center;flex:none;width:24px;height:24px;margin:8px 5px 0 0;padding:0;border:0;background:none;color:var(--f-ink)}
+html.m body .bar .resetbtn .rtx{display:none}
+html.m body .bar .resetbtn svg{width:24px;height:24px}
+html.m body .bar .chips{order:5;flex:1 1 0;min-width:0;margin-top:8px;display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+html.m body .bar .chips::-webkit-scrollbar{display:none}
+html.m body .bar .chip.dark{flex:none;display:inline-flex;align-items:center;gap:2px;height:30px;padding:0 6px 0 10px;border:0;border-radius:999px;background:var(--f-brand-sub);color:var(--f-brand);font:500 12px/16px Pretendard,sans-serif;box-sizing:border-box;white-space:nowrap}
+html.m body .bar .chip.dark button{width:16px;height:16px;padding:0;border:0;background:none;display:grid;place-items:center;color:var(--f-brand);font-size:0}
+html.m body .bar .chip.dark button svg{width:16px;height:16px;display:block}
+html.m body .bar .chip.dark .sw{width:12px;height:12px;border-radius:50%;margin-right:2px;border:1px solid rgba(116,37,246,.3)}
+html.m body .fbtn.on,html.m body .layout.f-open .fbtn.on{background:var(--f-brand)!important;border:0!important;color:#fff!important}

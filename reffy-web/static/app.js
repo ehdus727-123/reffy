@@ -740,16 +740,16 @@ function drawBar(d) {
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
   const seen = new Set();
-  if (S.pose) chips.append(h("span", { class: "chip dark" }, `3D 포즈 · ${S.pose.label}`, h("button", { type: "button", "aria-label": "3D 포즈 검색 지우기", onclick: () => { S.pose = null; reload(); } }, isM() ? "✕" : chipX())));
-  if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, isM() ? "✕" : chipX())));
+  if (S.pose) chips.append(h("span", { class: "chip dark" }, `3D 포즈 · ${S.pose.label}`, h("button", { type: "button", "aria-label": "3D 포즈 검색 지우기", onclick: () => { S.pose = null; reload(); } }, chipX())));
+  if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, chipX())));
   S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k, short: S.labels[k]?.short || S.labels[k]?.label || k })).forEach((m) => {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
-    chips.append(h("span", { class: "chip dark" }, isM() ? "#" + m.label : m.short, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, isM() ? "✕" : chipX()) : null));
+    chips.append(h("span", { class: "chip dark" }, isM() ? "#" + m.label : m.short, S.applied.includes(m.ikey) ? h("button", { type: "button", "aria-label": `${m.label} 필터 해제`, onclick: () => { S.picked.delete(m.ikey); S.applied = S.applied.filter((x) => x !== m.ikey); drawGroups(); reload(); } }, chipX()) : null));
   });
   (S.kinds || []).forEach((k) => chips.append(h("span", { class: "chip dark" }, (isM() ? "#" : "") + (KINDS.find((x) => x[0] === k) || [k, k])[1],
-    h("button", { type: "button", "aria-label": "종류 필터 해제", onclick: () => { S.kinds = S.kinds.filter((x) => x !== k); S.pickedKind.delete(k); drawGroups(); reload(); } }, isM() ? "✕" : chipX()))));
+    h("button", { type: "button", "aria-label": "종류 필터 해제", onclick: () => { S.kinds = S.kinds.filter((x) => x !== k); S.pickedKind.delete(k); drawGroups(); reload(); } }, chipX()))));
   S.colors.forEach((c) => chips.append(h("span", { class: "chip dark" }, h("i", { class: "sw", style: `background:${c}` }), c.toUpperCase(),
-    h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); drawColorPanel(); reload(); } }, isM() ? "✕" : chipX()))));
+    h("button", { type: "button", "aria-label": `${c} 색상 해제`, onclick: () => { S.colors = S.colors.filter((x) => x !== c); drawColorPanel(); reload(); } }, chipX()))));
   $("#empty").hidden = true;   // 0개일 때는 drawZero() 가 빈 상태를 그립니다
 }
 new IntersectionObserver((en) => { if (en[0].isIntersecting && S.items.length) more(false); }, { rootMargin: "600px" }).observe($("#more"));
