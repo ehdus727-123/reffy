@@ -559,3 +559,53 @@ html.m body .modal.upm #upBody{flex:1 1 auto;min-height:0;display:flex;flex-dire
 html.m body .modal.upm .upm-b{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 html.m body .modal.upm .foot{position:static;flex:none;box-shadow:0 -1px 15px rgba(0,0,0,.08)}
 html.m body .modal.upm .dlg>header.mbar{flex:none;position:relative}
+
+/* ---- 킵스페이스 빈 화면 (2837:128817): 원 56 + 휴지통 · 제목 16 · 설명 12 · Outlined S 버튼 ---- */
+html.m body .kp-mempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:calc(100dvh - 260px);text-align:center}
+html.m body .kp-mic{width:56px;height:56px;border-radius:50%;background:var(--f-line2);display:grid;place-items:center;color:var(--f-ink2);margin-bottom:12px}
+html.m body .kp-mic svg{width:24px;height:24px}
+html.m body .kp-mempty h2{margin:0;font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body .kp-mempty p{margin:2px 0 12px;font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink2)}
+html.m body .kp-mempty .btn{height:32px;padding:6px 12px;border:1px solid #c3c2c5;border-radius:6px;background:#fff;color:var(--f-ink);font:500 12px/16px Pretendard,sans-serif}
+
+/* ---- 킵스페이스 선택 모드 (2781:88929): 상단 그대로('취소') · 선택한 카드 보라 테두리 + 체크 · ActionBar ---- */
+html.m body .kp-abar{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:8px;height:auto;margin:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border:0;border-radius:0;background:var(--f-sub);box-shadow:none;transform:none;width:auto;z-index:40}
+html.m body .kp-abar[hidden]{display:none}
+html.m body .kp-abar>b{flex:1;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink)}
+html.m body .kp-abar .btn{height:32px;min-width:64px;padding:6px 12px;border-radius:6px;font:500 14px/20px Pretendard,sans-serif}
+html.m body .kp-abar .btn:not(.primary){background:#fff;border:1px solid #c3c2c5;color:var(--f-ink)}
+html.m body .kp-abar .btn.primary{background:var(--f-brand);border:0;color:#fff}
+html.m body .kp-abar .btn:disabled{opacity:.4}
+html.m body .pad.selecting .card .im{position:relative}
+html.m body .pad.selecting .card.on .im{box-shadow:inset 0 0 0 2px var(--f-brand)}
+html.m body .dlg.confirm.wf h2{white-space:pre-line}
+/* 실행 취소 토스트 (2781:85725) */
+html.m body #toast .t-undo{margin-left:auto;padding:0 0 0 16px;border:0;background:none;color:#c9a8ff;font:500 14px/20px Pretendard,sans-serif}
+
+/* ---- 킵스페이스 크게 보기 (2837:131745): Center 상단 바 · 칩 · 카드 240×354 간격 12 · 삭제 원형 58 · SelectTray ---- */
+html.m body .kview.kv2{z-index:65;padding:0;display:flex;flex-direction:column}
+html.m body .kv2>.mbar{flex:none;margin:0}
+html.m body .kv2 .kv-chips{flex:none;display:flex;gap:5px;padding:12px 16px}
+html.m body .kv2 .kv-chips .pill{height:34px;padding:0 11px;border:1px solid #c3c2c5;border-radius:999px;background:#fff;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .kv2 .kv-chips .pill.on{background:var(--f-brand-sub);border-color:var(--f-brand-sub);color:var(--f-brand)}
+html.m body .kv2 .kv-track{flex:none;height:354px;margin-top:18px;padding:0 60px;gap:12px;align-items:stretch;scroll-snap-type:x mandatory}
+html.m body .kv2 .kv-card{position:relative;flex:0 0 240px;width:240px;height:354px;max-height:none;padding:0;border:0;border-radius:8px;background:var(--f-input);overflow:hidden;scroll-snap-align:center}
+html.m body .kv2 .kv-card img{width:100%;height:100%;object-fit:cover}
+html.m body .kv2 .kv-card.on{outline:none;box-shadow:inset 0 0 0 2px var(--f-brand)}
+html.m body .kv2 .kv-ck{position:absolute;left:8px;top:8px;width:20px;height:20px;border-radius:4px;background:var(--f-brand);color:#fff;display:none;place-items:center}
+html.m body .kv2 .kv-card.on .kv-ck{display:grid}
+html.m body .kv2 .kv-ck svg{width:16px;height:16px}
+html.m body .kv2 .kv-none{margin:auto;font:400 14px/20px Pretendard,sans-serif;color:var(--f-dis)}
+html.m body .kv2 .kv-act{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:61px 0 0}
+html.m body .kv2 .kv-act>span{gap:6px}
+html.m body .kv2 .kv-del{width:58px;height:58px;border:1px solid #e4e3e5;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);color:var(--f-ink)}
+html.m body .kv2 .kv-act small{font:500 12px/15px Pretendard,sans-serif;color:var(--f-ink2)}
+html.m body .kv2 .kv-foot{flex:none;height:69px;padding:0 16px calc(env(safe-area-inset-bottom));gap:8px;background:var(--f-sub);border-top:1px solid #e4e3e5;box-sizing:content-box}
+html.m body .kv2 .kv-strip{flex:1;gap:9px;padding:0;border:0;background:none}
+html.m body .kv2 .kv-strip .th{display:flex;gap:0}
+html.m body .kv2 .kv-strip .th span{width:40px;height:40px;margin-right:-14px;border-radius:4px;border:1px solid #fff;background:#e4e3e5 center/cover no-repeat;box-sizing:border-box}
+html.m body .kv2 .kv-strip .th span:last-child{margin-right:0}
+html.m body .kv2 .kv-strip b{font:600 15px/22.5px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink)}
+html.m body .kv2 .kv-foot .btn{height:32px;min-width:64px;padding:6px 12px;border-radius:6px;background:var(--f-brand);border:0;color:#fff;font:500 14px/20px Pretendard,sans-serif}
+html.m body .kv2 .kv-track{padding:0 36px;scroll-padding-left:36px}
+html.m body .kv2 .kv-card{scroll-snap-align:start}

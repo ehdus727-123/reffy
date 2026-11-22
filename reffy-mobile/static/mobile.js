@@ -358,43 +358,54 @@ async function settingsPage(sub) {
 }
 
 /* ---------------------------------------------------------------- 킵 스페이스 크게 보기 (KEP_0100) · 순서 변경 */
-function keepViewer(items, start, onDone) {
-  const picked = new Set(); let idx = start || 0;
-  const ov = h("div", { class: "kview", role: "dialog", "aria-modal": "true", "aria-label": "레퍼런스 크게 보기" });
+/* 킵스페이스 크게 보기 · 고르기 (Figma 2837:128898 · 2837:131745 · 2837:161967 · 2847:162128)
+   상단: < · 'N개 선택됨' / 종류 칩 / 카드 240×354(옆으로 넘김 · 누르면 선택: 보라 테두리 + 체크) / 삭제 원형 버튼 58
+   아래 SelectTray: 담은 레퍼런스 썸네일 5장(겹침) + 나머지 개수(누르면 순서 변경 시트) · 북에 저장 */
+function keepViewer(items, start, onDone, kind0) {
+  const picked = new Set(); let idx = start || 0, kind = kind0 || "";
+  const ov = h("div", { class: "kview kv2", role: "dialog", "aria-modal": "true", "aria-label": "레퍼런스 크게 보기" });
   const close = () => { ov.remove(); onDone && onDone(); };
   const track = h("div", { class: "kv-track" });
   const title = h("h1", {}, "");
+  const chips = h("div", { class: "kv-chips" });
   const strip = h("button", { class: "kv-strip", type: "button", "aria-label": "담은 레퍼런스 순서 변경", onclick: () => reorderSheet(items, () => drawTrack(true)) });
-  const selBtn = h("button", { class: "kv-sel", type: "button", "aria-label": "선택" }, icon("check", 24));
-  const drawTitle = () => { title.textContent = `${picked.size}개 선택됨`; const cur = items[idx]; selBtn.classList.toggle("on", !!cur && picked.has(cur.id)); selBtn.setAttribute("aria-pressed", String(!!cur && picked.has(cur.id)));
-    const sel = items.filter((x) => picked.has(x.id));
-    const n = sel.length ? sel.length : items.length;
-    strip.replaceChildren(h("span", { class: "th" }, (sel.length ? sel : items).slice(0, 5).map((x) => h("img", { src: x.thumb, alt: "" }))), ...(n > 5 ? [h("b", {}, `+${n - 5}`)] : [])); };
+  const drawChips = () => chips.replaceChildren(...[["", "전체"], ["illust", "일러스트"], ["photo", "사진"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: async () => {
+    if (kind === k) return; kind = k; drawChips();
+    try { const r = await api("/api/me/keeps" + (k ? "?kind=" + k : "")); items.splice(0, items.length, ...r.items); idx = 0; picked.clear(); drawTrack(false); } catch (e) { toast(e.message); }
+  } }, l)));
+  const drawTitle = () => {
+    title.textContent = `${picked.size}개 선택됨`;
+    strip.replaceChildren(h("span", { class: "th" }, [0, 1, 2, 3, 4].map((i) => h("span", { style: items[i] ? `background-image:url(${items[i].thumb})` : null }))), ...(items.length > 5 ? [h("b", {}, `+${items.length - 5}`)] : []));
+  };
   const drawTrack = (keep) => {
-    track.replaceChildren(...items.map((it) => h("div", { class: "kv-card" + (picked.has(it.id) ? " on" : ""), "data-id": it.id }, h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지" }))));
-    if (!items.length) return close();
+    track.replaceChildren(...items.map((it) => h("button", { class: "kv-card" + (picked.has(it.id) ? " on" : ""), type: "button", "data-id": it.id, "aria-pressed": String(picked.has(it.id)), "aria-label": (it.title || "레퍼런스 이미지") + " 선택",
+      onclick: (e) => { picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); e.currentTarget.classList.toggle("on", picked.has(it.id)); e.currentTarget.setAttribute("aria-pressed", String(picked.has(it.id))); drawTitle(); } },
+      h("img", { src: it.thumb, alt: it.title || "레퍼런스 이미지" }), h("i", { class: "kv-ck" }, icon("check", 16)))));
+    if (!items.length) { drawTitle(); track.replaceChildren(h("p", { class: "kv-none" }, "담은 레퍼런스가 없어요")); return; }
     idx = Math.min(idx, items.length - 1);
-    requestAnimationFrame(() => track.children[idx]?.scrollIntoView({ inline: "center", block: "nearest", behavior: keep ? "auto" : "instant" }));
+    requestAnimationFrame(() => track.scrollTo({ left: Math.max(0, idx * 252), behavior: keep ? "auto" : "instant" }));
     drawTitle();
   };
-  track.addEventListener("scroll", () => { const w = track.clientWidth; const n = Math.round(track.scrollLeft / (w * 0.72)); if (n !== idx && n >= 0 && n < items.length) { idx = n; drawTitle(); } }, { passive: true });
-  selBtn.onclick = () => { const it = items[idx]; if (!it) return; picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); track.children[idx]?.classList.toggle("on", picked.has(it.id)); drawTitle(); };
+  track.addEventListener("scroll", () => { const n = Math.round(track.scrollLeft / 252); if (n >= 0 && n < items.length) idx = n; }, { passive: true });
   const del = async () => {
     const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
     if (!ids.length) return;
-    if (!(await confirmDialog(ids.length > 1 ? `${ids.length}개의 레퍼런스를 삭제할까요?` : "이 레퍼런스를 삭제할까요?", "킵 스페이스에서 삭제돼요. 게시물 자체는 지워지지 않아요.", { ok: "삭제", danger: true }))) return;
-    try { await api("/api/me/keeps/remove", jsonOpt("POST", { ids })); ids.forEach((i) => picked.delete(i)); for (let k = items.length - 1; k >= 0; k--) if (ids.includes(items[k].id)) items.splice(k, 1); toast("킵 스페이스에서 삭제했어요"); drawTrack(true); } catch (e) { toast(e.message); }
+    if (!(await confirmDialog("킵스페이스에서 삭제할까요?", "레퍼런스를 삭제하면 킵 스페이스에서 사라져요.", { ok: "확인", cancel: "취소" }))) return;
+    const order = items.map((x) => x.id), removed = items.filter((x) => ids.includes(x.id));
+    try {
+      await api("/api/me/keeps/remove", jsonOpt("POST", { ids })); ids.forEach((i) => picked.delete(i)); for (let k = items.length - 1; k >= 0; k--) if (ids.includes(items[k].id)) items.splice(k, 1); drawTrack(true);
+      keepUndoToast(ids, order, () => { removed.forEach((r) => items.splice(order.indexOf(r.id), 0, r)); drawTrack(true); });
+    } catch (e) { toast(e.message); }
   };
-  ov.append(h("div", { class: "mbar" }, h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: close }, icon("back", 24)), title, h("div", { class: "mbar-r" })),
-    track,
-    h("div", { class: "kv-act" }, h("span", {}, h("button", { class: "kv-del", type: "button", "aria-label": "삭제", onclick: del }, icon("trash", 24)), h("small", {}, "삭제")),
-      h("span", {}, selBtn, h("small", {}, "선택"))),
+  ov.append(mbar("", { back: close }), chips, track,
+    h("div", { class: "kv-act" }, h("span", {}, h("button", { class: "kv-del", type: "button", "aria-label": "삭제", onclick: del }, icon("trash", 24)), h("small", {}, "삭제"))),
     h("div", { class: "kv-foot" }, strip, h("button", { class: "btn primary", type: "button", onclick: () => {
       const ids = picked.size ? [...picked] : items[idx] ? [items[idx].id] : [];
-      if (ids.length) saveToBook(ids, { after: () => { picked.clear(); drawTitle(); } });
+      if (ids.length) saveToBook(ids, { after: () => { picked.clear(); drawTrack(true); } });
     } }, "북에 저장")));
+  ov.querySelector(".mbar h1").replaceWith(title);
   document.body.append(ov);
-  drawTrack(false);
+  drawChips(); drawTrack(false);
 }
 function reorderSheet(items, after) {
   const grid = h("div", { class: "ro-grid" });

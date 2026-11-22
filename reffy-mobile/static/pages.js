@@ -154,7 +154,7 @@ async function saveToBook(ids, o = {}) {
     name.className = "inp"; name.placeholder = "새 북 이름 (예: 앉은 포즈 모음)";
     const go = async () => {
       if (chosen == null) return toast("저장할 북을 골라 주세요.");
-      try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); s.close(); toast(o.move ? `“${b.name}”(으)로 옮겼어요` : `“${b.name}”에 저장했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
+      try { const b = await api(`/api/books/${chosen}/items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids, remove_from_keep: rm }) }); s.close(); toast(`‘${b.name}’ 북에 추가했어요`); o.after && o.after(); } catch (e) { toast(e.message); }
     };
     if (o.move) cb.checked = true;
     const s = sheet("북에 저장", [h("div", { class: "bk-new" }, name, btn("만들기", "", make)), list],
@@ -220,6 +220,14 @@ function rrGrid(items, o, opt = {}) {
   new ResizeObserver(lay).observe(g);
   return g;
 }
+/* 킵스페이스 삭제 후 '실행 취소' 토스트 (Figma 2781:85725): 누르면 지운 것을 다시 담고 순서도 되돌림 */
+function keepUndoToast(ids, order, after) {
+  toast("킵스페이스에서 삭제했어요");
+  $("#toast").append(h("button", { class: "t-undo", type: "button", onclick: async () => {
+    $("#toast").classList.remove("show");
+    try { for (const id of ids) await api(`/api/images/${id}/keep`, { method: "POST" }); await api("/api/me/keeps/order", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: order }) }); after && after(); } catch (e) { toast(e.message); }
+  } }, "실행 취소"));
+}
 async function keepPage() {
   if (!needLogin()) return;
   let kind = "", sel = false, data = { items: [] }; const picked = new Set();
@@ -235,12 +243,17 @@ async function keepPage() {
     });
     const mvBtn = btn("이동", "", () => n ? saveToBook([...picked], { move: true, after: () => { picked.clear(); sel = false; load(); } }) : toast("옮길 이미지를 골라 주세요."));   // Figma ActionBar 3064:55416: 삭제 · 이동(→ 북으로 이동)
     delBtn.disabled = mvBtn.disabled = !n;
-    if (isM()) {   // Figma SelectTray (2837:131745): 고른 이미지 썸네일(최대 5) + 나머지 개수 · 삭제 · 북에 저장
-      const its = data.items.filter((it) => picked.has(it.id));
+    if (isM()) {   // Figma ActionBar (2856:18380): 'N개 선택' · 삭제(Outlined) · 북에 저장(Brand)
       const saveBtn = btn("북에 저장", "primary", () => n ? saveToBook([...picked], { after: () => { picked.clear(); sel = false; load(); } }) : toast("저장할 이미지를 골라 주세요."));
-      saveBtn.disabled = !n;
-      b.classList.add("kp-tray");
-      b.append(h("div", { class: "kt-th" }, [0, 1, 2, 3, 4].map((i) => h("span", { style: its[i] ? `background-image:url(${its[i].thumb})` : null }))), ...(its.length > 5 ? [h("b", { class: "kt-n" }, `+${its.length - 5}`)] : []), h("span", { class: "sp" }), delBtn, saveBtn);
+      const del2 = btn("삭제", "", async () => {
+        if (!n) return toast("삭제할 이미지를 골라 주세요.");
+        if (!(await confirmDialog(`선택한 ${n}개를 킵스페이스에서\n삭제할까요?`, "삭제한 레퍼런스는 다시 복구할 수 없어요.", { ok: "삭제", cancel: "취소" }))) return;
+        const ids = [...picked], order = data.items.map((x) => x.id);
+        try { await api("/api/me/keeps/remove", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }) }); picked.clear(); sel = false; load(); keepUndoToast(ids, order, load); } catch (e) { toast(e.message); }
+      });
+      saveBtn.disabled = del2.disabled = !n;
+      b.classList.add("kp-abar");
+      b.append(h("b", {}, `${n}개 선택`), del2, saveBtn);
       return b;
     }
     b.append(h("b", {}, `${n}개 선택`), h("span", { class: "sp" }), delBtn, mvBtn);
@@ -250,9 +263,9 @@ async function keepPage() {
     root.classList.toggle("selecting", sel);
     const chips = (isM() ? [["", "전체"], ["illust", "일러스트"], ["photo", "사진"]] : [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]]).map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
     const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts kp-acts0" }, (() => { const t = h("button", { class: "icon-btn kc-del", type: "button", disabled: true, "aria-label": "삭제" }); t.innerHTML = KC_TRASH; return t; })(), h("button", { class: "btn primary", type: "button", disabled: true }, "북에 저장")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
-    root.replaceChildren(isM() ? (sel ? mbar(`${picked.size}개 선택됨`, { back: () => { sel = false; picked.clear(); draw(); } }) : mbar("킵스페이스", { big: true, right: [selBtn] })) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
-      data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); if (isM()) { const t = root.querySelector(".mbar h1"); if (t) t.textContent = `${picked.size}개 선택됨`; } } }), "c6")
-        : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
+    root.replaceChildren(isM() ? mbar("킵스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
+      data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load, kind) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
+        : isM() ? h("div", { class: "kp-mempty" }, h("span", { class: "kp-mic" }, icon("trash", 24)), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), h("p", {}, "피드에서 마음에 드는 레퍼런스를 담아보세요"), btn("피드 둘러보기", "", () => (location.hash = "#/")))
           : h("div", { class: "kp-empty" }, kpEx(), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("홈으로 이동", "", () => (location.hash = "#/"))),
       bar());
   }
