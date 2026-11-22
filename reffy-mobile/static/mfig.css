@@ -609,3 +609,7 @@ html.m body .kv2 .kv-strip b{font:600 15px/22.5px Pretendard,sans-serif;letter-s
 html.m body .kv2 .kv-foot .btn{height:32px;min-width:64px;padding:6px 12px;border-radius:6px;background:var(--f-brand);border:0;color:#fff;font:500 14px/20px Pretendard,sans-serif}
 html.m body .kv2 .kv-track{padding:0 36px;scroll-padding-left:36px}
 html.m body .kv2 .kv-card{scroll-snap-align:start}
+/* 토스트 (2781:85523 · 85725): 좌우 16 · 모서리 8 · 왼쪽 글자 14 · 오른쪽 '실행 취소' */
+html.m body #toast{left:16px;right:16px;width:auto;max-width:none;transform:none;bottom:calc(104px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:rgba(24,23,26,.92);color:#fff;text-align:left;font:500 14px/20px Pretendard,sans-serif;box-sizing:border-box}
+html.m body #toast:not(.show){pointer-events:none}
+html.m body #toast .t-undo{flex:none;white-space:nowrap}
