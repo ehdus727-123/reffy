@@ -512,3 +512,24 @@ html.m body .modal.msheet textarea.inp.ta{width:100%;height:96px;margin:12px 0 0
 html.m body .modal.msheet .sheet-f .btn.primary{height:48px;border-radius:8px;background:var(--f-brand);border:0;color:#fff;font:500 16px/24px Pretendard,sans-serif}
 /* 빈 화면 버튼 · 기본 보라 버튼 */
 html.m body .notice .btn.primary,html.m body .btn.primary.block{background:var(--f-brand);border-color:var(--f-brand);color:#fff;border-radius:8px}
+
+/* ---- 홈 피드 위에 필터 · 시트 · 상세 · 모달이 떠 있을 때 뒤 피드가 같이 스크롤되지 않게 ---- */
+html.m.m-detail,html.m:has(body .layout.f-open),html.m:has(body .modal),html.m.m-search{overflow:hidden;overscroll-behavior:none}
+html.m.m-detail body,html.m:has(body .layout.f-open) body,html.m:has(body .modal) body,html.m.m-search body{overflow:hidden;touch-action:pan-y}
+html.m body #panel,html.m body .side .groups,html.m body .side .cpanel,html.m body .side .ppanel,html.m body .modal .sheet-b,html.m body .modal .dlg,html.m body #suggest{overscroll-behavior:contain}
+/* 답글: 들여쓰기 · '시간 · 답글 쓰기' 줄 · 답글 다는 중 표시 */
+html.m body .clist li.rep{padding-left:38px}
+html.m body .clist .cmeta{display:flex;align-items:center;gap:10px;margin-top:2px}
+html.m body .clist .cmeta small{font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .clist .creply{padding:0;border:0;background:none;font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .clist .av,html.m body .clist .avt{flex:none;width:28px!important;height:28px!important;border-radius:14px!important;overflow:hidden;display:grid;place-items:center;background:#c3c2c5;color:#fff;font-size:11px!important}
+html.m body .clist .avt img{width:100%;height:100%;object-fit:cover}
+html.m body .rto{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;padding:6px 12px;border-radius:8px;background:var(--f-brand-sub);font:500 12px/16px Pretendard,sans-serif;color:var(--f-brand)}
+html.m body .rto[hidden]{display:none}
+html.m body .rto button{padding:0;border:0;background:none;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .modal .sheet-f.cwrap{display:block;padding:12px 20px}
+html.m body .modal .sheet-f.cwrap .cform{display:flex;gap:8px;align-items:center;height:44px;padding:0 14px;border-radius:10px;background:var(--f-input)}
+html.m body .modal .sheet-f.cwrap .cform input{flex:1;border:0;background:none;outline:none;font:400 14px/20px Pretendard,sans-serif}
+html.m body .modal .sheet-f.cwrap .cform .btn{background:none;border:0;color:var(--f-ink3);padding:0;height:auto;font:500 14px/20px Pretendard,sans-serif}
+html.m body #panel .imgact .circ .dps{width:20px;height:20px}
+html.m body #panel .clist li.rep,html.m body .modal .clist li.rep{padding-left:38px}

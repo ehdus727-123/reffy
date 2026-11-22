@@ -760,7 +760,7 @@ async function profileEdit() {
   const mAdd = () => { const v = mLinkIn.value.trim(); if (!v) return; if (links.filter((x) => x.trim()).length >= 5) return toast("링크는 5개까지 넣을 수 있어요."); links.push(v); mLinkIn.value = ""; drawM(); };
   drawM();
   const mSave = async (ev) => { if (mLinkIn.value.trim()) mAdd(); return save(ev); };
-  root.replaceChildren(mbar("프로필 수정", { back: () => (location.hash = "#/me") }), mCover, mAv,
+  root.replaceChildren(mbar("프로필 수정", { back: () => backTo("#/me") }), mCover, mAv,
     h("div", { class: "pe-mf" },
       h("div", { class: "pe-f" }, h("label", { for: "peNick" }, "닉네임"), h("div", { class: "pe-nick" }, nick, nickBtn), nickMsg),
       h("div", { class: "pe-f" }, h("label", { for: "peBioM" }, "소개"), bioM),
@@ -768,7 +768,17 @@ async function profileEdit() {
     h("div", { class: "pe-mft" }, btn("저장하기", "primary", mSave)));
 }
 
+/* 앱 안 이동 기록: 뒤로 버튼이 '바로 전 화면'으로 가는 거면 새 기록을 쌓지 않고 진짜 뒤로가기(history.back)를 씀
+   → 휴대폰 뒤로가기와 화면의 뒤로 버튼이 같은 순서로 움직이고, 설정 ↔ 마이페이지처럼 앞뒤로 맴도는 일이 없어요 */
+const NAV = [];
+function backTo(target) {
+  const t = target || "#/", norm = (x) => (x === "" || x === "#" ? "#/" : x);
+  if (NAV.length > 1 && norm(NAV[NAV.length - 2]) === norm(t)) history.back();
+  else if (!target && NAV.length > 1) history.back();
+  else location.hash = t;
+}
 function route() {
+  { const cur = location.hash || "#/"; if (NAV.length > 1 && NAV[NAV.length - 2] === cur) NAV.pop(); else if (NAV[NAV.length - 1] !== cur) NAV.push(cur); }
   const [, a = "", b = "", c = ""] = (location.hash.slice(1) || "/").split("/");
   document.body.classList.toggle("auth", a === "login" || a === "signup");
   if (a !== "post") route.prev = location.hash || "#/";

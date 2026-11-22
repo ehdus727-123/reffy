@@ -5,7 +5,7 @@
 /* ---------------------------------------------------------------- 공통: 앱바 · 바텀시트 */
 function mbar(title, o = {}) {
   return h("header", { class: "mbar" + (o.big ? " big" : "") },
-    o.back ? h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: typeof o.back === "function" ? o.back : () => history.back() }, icon("back", 24)) : null,
+    o.back ? h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: typeof o.back === "function" ? o.back : () => backTo() }, icon("back", 24)) : null,
     h("h1", {}, title), h("div", { class: "mbar-r" }, o.right || []));
 }
 function sheet(title, body, foot, cls) {
@@ -78,27 +78,48 @@ function reportSheet(type, id) {
 }
 
 /* ---------------------------------------------------------------- 게시물 상세 (COM_0100) */
-function commentRow(d, c, edit, after) {
-  return h("li", {}, h("span", { class: "av lg" }, c.nick.slice(0, 1)),
-    h("div", { class: "ct" }, h("b", {}, c.nick, h("small", {}, ago(c.created))), h("span", {}, c.body)),
+/* 댓글 순서: 원래 댓글 바로 아래에 그 답글들 (답글은 한 단계) */
+function threadOrder(list) {
+  const top = list.filter((c) => !c.parent), out = [];
+  top.forEach((c) => { out.push(c); list.filter((r) => r.parent === c.id).forEach((r) => out.push(r)); });
+  list.filter((r) => r.parent && !top.some((c) => c.id === r.parent)).forEach((r) => out.push(r));
+  return out;
+}
+/* Figma CommentItem: 아바타 28 · 이름 14 · 내용 12 · 아래 '시간 · 답글 쓰기' · 더보기 20 (답글은 들여서) */
+function commentRow(d, c, edit, after, onReply) {
+  return h("li", { class: c.parent ? "rep" : "" }, avatarEl(c, 28, "av"),
+    h("div", { class: "ct" }, h("b", {}, c.nick), h("span", {}, c.body),
+      h("div", { class: "cmeta" }, h("small", {}, ago(c.created)), onReply ? h("button", { type: "button", class: "creply", onclick: () => needLogin() && onReply(c) }, "답글 쓰기") : null)),
     h("button", { class: "icon-btn cmore", type: "button", "aria-label": "댓글 더보기", onclick: () => sheetMenu("댓글", [c.mine
-      ? { ic: "trash", label: "댓글 삭제하기", danger: true, fn: async () => { try { await api(`/api/comments/${c.id}`, { method: "DELETE" }); await refreshSocial(d, edit); after && after(); } catch (e) { toast(e.message); } } }
+      ? { ic: "trash", label: c.parent ? "답글 삭제하기" : "댓글 삭제하기", danger: true, fn: async () => { try { await api(`/api/comments/${c.id}`, { method: "DELETE" }); await refreshSocial(d, edit); after && after(); } catch (e) { toast(e.message); } } }
       : { ic: "flag", label: "댓글 신고하기", danger: true, fn: () => reportSheet("comment", c.id) }]) }, icon("more", 20)));
+}
+/* 답글 대상 표시 줄 + 입력칸 안내 문구를 바꿔 주는 도우미 */
+function replyCtl(input, base) {
+  const bar = h("div", { class: "rto", hidden: true });
+  const st = { to: null, bar, set: (c) => {
+    st.to = c; bar.hidden = !c; input.placeholder = c ? `${c.nick}님에게 답글을 남겨보세요` : base;
+    bar.replaceChildren(...(c ? [h("span", {}, `${c.nick}님에게 답글 다는 중`), h("button", { type: "button", onclick: () => st.set(null) }, "취소")] : []));
+    if (c) input.focus();
+  } };
+  return st;
 }
 function commentsSheet(d, edit) {
   const list = h("ul", { class: "clist" });
   const input = h("input", { class: "cin", maxlength: "500", placeholder: "댓글을 남겨보세요", "aria-label": "댓글 입력" });
+  const rp = replyCtl(input, "댓글을 남겨보세요");
   const send = async () => {
     const v = input.value.trim(); if (!ME) { s.close(); return needLogin(); } if (!v) return;
-    try { await api(`/api/images/${d.id}/comments`, jsonOpt("POST", { body: v })); input.value = ""; await refreshSocial(d, edit); draw(); } catch (e) { toast(e.message); }
+    try { await api(`/api/images/${d.id}/comments`, jsonOpt("POST", { body: v, parent: rp.to ? rp.to.id : null })); input.value = ""; rp.set(null); await refreshSocial(d, edit); draw(); } catch (e) { toast(e.message); }
   };
   input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
-  const s = sheet("댓글", list, h("div", { class: "sheet-f cform" }, input, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")), "tall");
+  const s = sheet("댓글", list, h("div", { class: "sheet-f cwrap" }, rp.bar, h("div", { class: "cform" }, input, h("button", { class: "btn primary", type: "button", onclick: send }, "게시"))), "tall");
   const draw = () => {
     s.el.querySelector(".m-sheet-h h2").textContent = `댓글 ${d.so.comments.length}`;
-    list.replaceChildren(...(d.so.comments.length ? d.so.comments.map((c) => commentRow(d, c, edit, draw)) : [h("p", { class: "hint" }, "아직 댓글이 없어요. 첫 댓글을 남겨 보세요.")]));
+    list.replaceChildren(...(d.so.comments.length ? threadOrder(d.so.comments).map((c) => commentRow(d, c, edit, draw, rp.set)) : [h("p", { class: "hint" }, "아직 댓글이 없어요. 첫 댓글을 남겨 보세요.")]));
   };
   draw();
+  return { reply: rp.set };
 }
 function drawDetailM(d, edit = false) {
   const panel = $("#panel"), so = d.so || { likes: 0, comments: [], owner: null, editable: false }, o = so.owner;
@@ -117,7 +138,8 @@ function drawDetailM(d, edit = false) {
     ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
     : [{ ic: "flag", label: "신고하기", danger: true, fn: () => reportSheet("post", d.id) }]);
   const comment = h("input", { class: "cin", maxlength: "500", placeholder: ME ? "댓글을 남겨보세요" : "로그인하고 댓글을 남겨보세요", "aria-label": "댓글 입력" });
-  const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
+  const rp = replyCtl(comment, ME ? "댓글을 남겨보세요" : "로그인하고 댓글을 남겨보세요");
+  const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v, parent: rp.to ? rp.to.id : null }, edit); };
   comment.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
   const circ = (ic, label, fn) => h("button", { class: "circ", type: "button", "aria-label": label, title: label, onclick: fn }, icon(ic, 20));
   const rel = h("div", { class: "sec rel" });
@@ -125,9 +147,9 @@ function drawDetailM(d, edit = false) {
   panel.replaceChildren(
     h("div", { class: "mbar" },
       h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: () => (S.hist.length ? goBack() : closeDetail()) }, icon("back", 24)),
-      h("h1", {}, ""), h("div", { class: "mbar-r" })),
+      h("h1", {}, ""), h("div", { class: "mbar-r" }, h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: closeDetail }, icon("close", 24)))),
     h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", onclick: () => openLightbox(d.full, d.title) }),
-      h("div", { class: "imgact" }, circ("person", "이 이미지의 구도로 3D 포즈 찾기", () => pullPose()), circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id)),
+      h("div", { class: "imgact" }, h("button", { class: "circ", type: "button", "aria-label": "이 이미지의 구도로 3D 포즈 찾기", title: "이 이미지의 구도로 3D 포즈 찾기", onclick: () => pullPose() }, dpSvg("pose", 20)), h("button", { class: "circ", type: "button", "aria-label": "이 이미지의 색상으로 찾기", title: "이 이미지의 색상으로 찾기", onclick: () => pullPalette(d.id) }, dpSvg("palette", 20)),
         h("button", { class: "circ add", type: "button", "aria-label": "저장하기", title: "저장하기", onclick: () => needLogin() && saveMenu() }, icon("plus", 24)))),
     h("div", { class: "pbody" },
       h("div", { class: "who" }, o ? avatarEl(o, 40, "av") : h("span", { class: "av" }, (d.author || "?").slice(0, 1)),
@@ -150,9 +172,9 @@ function drawDetailM(d, edit = false) {
       materialsSec(d),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, `댓글 ${so.comments.length}`)),
-        h("div", { class: "cform" }, ME ? avatarEl(ME, 24, "cav") : h("span", { class: "cav" }), comment, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")),
-        h("ul", { class: "clist" }, so.comments.slice(0, 2).map((c) => commentRow(d, c, edit))),
-        so.comments.length > 2 ? h("button", { class: "btn block allc", type: "button", onclick: () => commentsSheet(d, edit) }, `댓글 ${so.comments.length}개 모두 보기`) : null),
+        rp.bar, h("div", { class: "cform" }, ME ? avatarEl(ME, 24, "cav") : h("span", { class: "cav" }), comment, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")),
+        h("ul", { class: "clist" }, threadOrder(so.comments).slice(0, 3).map((c) => commentRow(d, c, edit, null, rp.set))),
+        so.comments.length > 3 ? h("button", { class: "btn block allc", type: "button", onclick: () => commentsSheet(d, edit) }, `댓글 ${so.comments.length}개 모두 보기`) : null),
       rel));
   if (d.rel) drawRel();
   else api(`/api/images/${d.id}/related`).then((r) => { d.rel = r.items; if (S.open === d.id) drawRel(); }).catch(() => {});
@@ -162,7 +184,7 @@ function drawDetailM(d, edit = false) {
 async function notifPage() {
   if (!needLogin()) return;
   const box = h("div", { class: "npage" });
-  page(h("div", { class: "mpage" }, mbar("알림", { back: () => (location.hash = "#/"), right: [h("button", { class: "linkbtn", type: "button", onclick: async () => {
+  page(h("div", { class: "mpage" }, mbar("알림", { back: () => backTo("#/"), right: [h("button", { class: "linkbtn", type: "button", onclick: async () => {
     try { await api("/api/notifications/read", { method: "POST" }); UNREAD = 0; drawMe(); drawNotif(box); } catch (e) { toast(e.message); } } }, "모두 읽음")] }), box));
   drawNotif(box);
 }
@@ -174,7 +196,7 @@ async function drawerPageM(sub, id) {
     if (sub === "book") return await bookDetailM(root, id);
     if (sub === "recent") {
       const d = await api("/api/me/viewed");
-      return root.replaceChildren(mbar("최근 본 게시물", { back: () => (location.hash = "#/drawer/act") }),
+      return root.replaceChildren(mbar("최근 본 게시물", { back: () => backTo("#/drawer/act") }),
         h("div", { class: "pad" }, d.items.length ? pgrid(d.items, { noMore: true }, "c2") : notice("최근 본 게시물이 없어요", "홈에서 마음에 드는 레퍼런스를 찾아 보세요.")));
     }
     if (sub === "liked") {
@@ -189,7 +211,7 @@ async function drawerPageM(sub, id) {
         body.replaceChildren(h("div", { class: "kbar" }, [["", "전체"], ["like", "하트"], ["comment", "댓글"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; load().catch((e) => toast(e.message)); } }, l))),
           d.items.length ? h("div", { class: "grid c2" }, cards) : notice("아직 반응한 게시물이 없어요", "하트나 댓글을 남기면 여기에 모여요."));
       };
-      root.replaceChildren(mbar("반응한 게시물", { back: () => (location.hash = "#/drawer/act") }), h("div", { class: "pad" }, body));
+      root.replaceChildren(mbar("반응한 게시물", { back: () => backTo("#/drawer/act") }), h("div", { class: "pad" }, body));
       return await load();
     }
     const act_ = sub === "act", main = h("div", { class: "dmain" });
@@ -230,7 +252,7 @@ async function bookDetailM(root, id) {
     try { await api("/api/books/" + id, { method: "DELETE" }); location.hash = "#/drawer"; } catch (e) { toast(e.message); } } }]);
   function draw() {
     root.classList.toggle("selecting", sel);
-    root.replaceChildren(mbar("", { back: () => (location.hash = "#/drawer"), right: [b.items.length ? h("button", { class: "linkbtn", type: "button", onclick: () => { sel = !sel; picked.clear(); draw(); } }, sel ? "취소" : "선택") : null] }),
+    root.replaceChildren(mbar("", { back: () => backTo("#/drawer"), right: [b.items.length ? h("button", { class: "linkbtn", type: "button", onclick: () => { sel = !sel; picked.clear(); draw(); } }, sel ? "취소" : "선택") : null] }),
       h("div", { class: "pad" },
         h("div", { class: "bk-h" }, h("div", {}, h("h1", {}, b.name), h("p", {}, `총 ${b.count}장 · ${ago(b.updated)}`), b.description ? h("p", {}, b.description) : null),
           h("span", { class: "vdots" }, h("button", { class: "icon-btn", type: "button", "aria-label": "북 메뉴", onclick: more }, icon("more", 24)))),
@@ -250,7 +272,7 @@ async function settingsPage(sub) {
   if (!needLogin()) return;
   if (!isM()) return settingsPC(sub);
   const root = h("div", { class: "mpage set" }); page(root);
-  const show = (title, ...kids) => root.replaceChildren(mbar(title, { back: () => (location.hash = sub ? "#/settings" : "#/me") }), ...kids.flat(4).filter((k) => k != null && k !== false));
+  const show = (title, ...kids) => root.replaceChildren(mbar(title, { back: () => backTo(sub ? "#/settings" : "#/me") }), ...kids.flat(4).filter((k) => k != null && k !== false));
   const row = (label, href, extra) => h("a", { class: "srow2", href }, h("span", {}, label), extra ? h("small", {}, extra) : null, icon("chevR", 20));
   const sw = (label, sub_, on, fn, disabled) => h("label", { class: "swrow" + (disabled ? " off" : "") }, h("span", {}, h("b", {}, label), h("small", {}, sub_)),
     h("input", { type: "checkbox", class: "sw-in", role: "switch", checked: on, disabled, onchange: (e) => fn && fn(e.target.checked) }), h("i", { class: "sw-ui" }));
