@@ -613,3 +613,7 @@ html.m body .kv2 .kv-card{scroll-snap-align:start}
 html.m body #toast{left:16px;right:16px;width:auto;max-width:none;transform:none;bottom:calc(104px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:rgba(24,23,26,.92);color:#fff;text-align:left;font:500 14px/20px Pretendard,sans-serif;box-sizing:border-box}
 html.m body #toast:not(.show){pointer-events:none}
 html.m body #toast .t-undo{flex:none;white-space:nowrap}
+/* 여백 바로잡기: 홈 정렬 줄은 검색 바 아래 12 (Figma Body pt12) · 댓글 '시간 · 답글 쓰기' 줄은 이름과 같은 왼쪽선 */
+html.m body .layout .main,html.m body .layout:not(.f-open) .main{padding:12px 16px 104px}
+html.m body .clist .cmeta small{margin:0;padding:0}
+html.m body .drw .dmain{padding-top:21px}
