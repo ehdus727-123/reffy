@@ -1,0 +1,358 @@
+/* =====================================================================
+   모바일 앱 — Figma "Mobile UI 최종"(2781:82141) · 앱 컴포넌트(2128:502)
+   기존 mobile.css / app.css 의 모바일 규칙 위에 덮어씀 (html.m body 로 시작해 우선순위를 높임)
+   ===================================================================== */
+
+/* ---- 공통 토큰 ---- */
+html.m body{--f-brand:#7425f6;--f-brand-sub:#f6f0fe;--f-ink:#18171a;--f-ink2:#5b595f;--f-ink3:#6f6d72;--f-dis:#8e8c91;--f-line:#e4e3e5;--f-line2:#f1f0f2;--f-input:#f1f0f2;--f-sub:#f8f7f8;--f-err:#ce3030}
+
+/* ---- App/Bottom navigation/Floating bar (2254:1039): 268×48 알약 · 아래 44 · 항목 62×48 · 아이콘 22 · 흐린 유리 배경 ---- */
+html.m body .mtab,html.m body #mtab{position:fixed;left:50%;right:auto;bottom:calc(44px + env(safe-area-inset-bottom));transform:translateX(-50%);width:268px;height:48px;padding:0 10px;gap:0;border:0;border-radius:999px;
+  background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 12px rgba(0,0,0,.15);justify-content:center;align-items:center;z-index:60}
+html.m body #mtab a{flex:0 0 62px;width:62px;height:48px;padding:0;gap:0;display:flex;align-items:center;justify-content:center;color:var(--f-ink)}
+html.m body #mtab a span{display:none}
+html.m body #mtab a .ic{width:22px;height:22px}
+html.m body #mtab a.on{color:var(--f-brand)}
+
+/* ---- App/Search bar (2843:1773): 52 · 좌우 16 · 간격 10 · 로고 28 · 검색칸 36(모서리 10) · 알림 24 ---- */
+html.m body .top{height:52px;padding:0 16px;gap:10px;border:0;background:#fff}
+html.m body .top .brand .logo,html.m body .top .brand .logo-gnb{width:28px;height:28px}
+html.m body .top .search{height:36px;padding:0 12px;gap:5px;border-radius:10px;background:var(--f-input)}
+html.m body .top .search .gnb-ic,html.m body .top .search>.ic{width:20px;height:20px;color:var(--f-ink3)}
+html.m body .top .search input{font:400 12px/16px Pretendard,sans-serif;letter-spacing:0;color:var(--f-ink)}
+html.m body .top .search input::placeholder{color:var(--f-ink3)}
+html.m body .top #bell{width:24px;height:24px;padding:0;position:relative}
+html.m body .top #bell .ic{width:24px;height:24px}
+
+/* ---- 홈: 정렬 · 필터 줄 (오른쪽 정렬, 최근 순 ▾ + 보라 필터 버튼) ---- */
+html.m body .main{padding:12px 16px 104px}
+html.m body .bar{position:static;box-shadow:none;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:0;min-height:32px;margin:0 0 12px}
+html.m body .bar .resetbtn{display:none}
+html.m body .bar .grow{display:contents}
+html.m body .bar .result{display:none}
+html.m body .bar .chips{order:3;flex:1 0 100%;margin-top:8px}
+html.m body .bar .chips:empty{display:none}
+html.m body .bar .sortfilter{order:2;display:flex;align-items:center;gap:0;margin-left:auto}
+html.m body .sortbtn{height:32px;padding:8px 8px 8px 12px;gap:4px;border:0;border-radius:6px;background:none;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink);align-items:center}
+html.m body .sortbtn .ic{display:none}
+html.m body .sortbtn .dic{display:block;width:16px;height:16px}
+html.m body .fbtn,html.m body .layout.f-open .fbtn{order:9;width:auto;min-width:0;height:24px;margin-left:0;padding:4px 8px;gap:4px;border:0!important;border-radius:4px;background:var(--f-brand)!important;color:#fff!important;display:inline-flex;align-items:center;font:500 12px/16px Pretendard,sans-serif}
+html.m body .fbtn .fic-pc,html.m body .fbtn .tic{display:none}
+html.m body .fbtn>.ic{display:block;width:14px;height:14px;color:#fff}
+html.m body .fbtn .ftxt{display:inline;color:#fff;font:500 12px/16px Pretendard,sans-serif}
+
+/* ---- Common/Card Size=M (158): 정보 줄 32 · 아바타 14 · 닉네임 11 · 하트 12 + 수 11 · 열 간격 12 · 카드 간격 8 ---- */
+html.m body #grid.mas{column-gap:12px}
+html.m body .card{margin-bottom:8px;border-radius:0;overflow:visible}
+html.m body .card .im{border-radius:8px;overflow:hidden}
+html.m body .card .meta{height:32px;padding:0 2px;gap:5px}
+html.m body .card .meta .av{width:14px;height:14px}
+html.m body .card .meta .tx b{font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .card .meta .like{gap:3px;color:#c3c2c5}
+html.m body .card .meta .like .chf,html.m body .card .meta .like svg{width:12px;height:12px}
+html.m body .card .meta .lk{font:500 11px/16px Pretendard,sans-serif;color:var(--f-dis)}
+
+/* ---- 시트가 열리면 플로팅 바 숨김 ---- */
+html.m body:has(.layout.f-open) #mtab,html.m body:has(.modal) #mtab,html.m body:has(.msheet) #mtab,html.m body:has(.npage) #mtab{display:none!important}
+
+/* ---- 홈 > 필터 시트 (2833:106173 키워드 · 107339 3D 포즈 · 108480 무드) ---- */
+html.m body .layout .side{top:0;bottom:0;height:auto;padding:0;gap:0;border-radius:16px 16px 0 0;z-index:70;flex-direction:column;overflow:hidden}
+html.m body .layout.f-open .side{display:flex}
+html.m body .side .m-sheet-h{padding:24px 16px 0;height:auto;flex:none;align-items:center}
+html.m body .side .m-sheet-h h2{font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:var(--f-ink)}
+html.m body .side .m-sheet-h .icon-btn{width:24px;height:24px;padding:0;min-width:0}
+html.m body .side .m-sheet-h .icon-btn svg{width:24px;height:24px}
+/* Common/Tabs/Tab bar (Brand · XL · 3) */
+html.m body .side .tabs{display:flex;margin:12px 16px 0;padding:0;gap:0;border-bottom:1px solid var(--f-line2);flex:none}
+html.m body .side .tabs button:not(.reset){flex:1 1 0;padding:9px 10px 11px;margin:0 0 -1px;border:0;border-bottom:2px solid transparent;background:none;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink3);text-align:center}
+html.m body .side .tabs button.on{font-weight:600;color:var(--f-brand);border-bottom-color:var(--f-brand);padding-bottom:11px}
+html.m body .side .groups,html.m body .side .cpanel,html.m body .side .ppanel{flex:1 1 auto;min-height:0;overflow:auto;padding:14px 16px 24px;margin:0;gap:0}
+/* 그룹: Category item(24) · 12 · 내용 · 22 · 구분선 · 22 */
+html.m body .side .mfg{display:flex;flex-direction:column;gap:0;border:0;padding:0 0 22px;margin:0 0 22px;border-bottom:1px solid var(--f-line2)}
+html.m body .side .mfg:last-child{border-bottom:0;margin-bottom:0}
+html.m body .side .mfg>.mcat{display:flex;align-items:center;gap:8px;width:100%;height:24px;padding:0;border:0;background:none;border-radius:6px;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink);text-align:left}
+html.m body .side .mfg>.mcat span{flex:1}
+html.m body .side .mfg>.mcat .ic,html.m body .side .mfg>.mcat svg{width:24px;height:24px;color:var(--f-ink);transition:transform .15s}
+html.m body .side .mfg[data-open="false"]>.mcat svg{transform:rotate(-90deg)}
+html.m body .side .mfg[data-open="true"]>.mcat svg{transform:none}
+html.m body .side .mfg>.fbody{display:block;padding:12px 0 0;margin:0}
+html.m body .side .mfg[data-open="false"]>.fbody{display:none}
+html.m body .side .mfg .fp-secs{display:flex;flex-direction:column;gap:20px}
+html.m body .side .mfg .fp-sec{display:flex;flex-direction:column;gap:8px;margin:0;padding:0}
+html.m body .side .mfg .fp-sub{font:500 12px/16px Pretendard,sans-serif;color:var(--f-dis)}
+html.m body .side .mfg .fp-group{display:flex;flex-direction:column;gap:18px}
+html.m body .side .mfg .fp-group>.fp-ttl,html.m body .side .mfg .fp-sec.big>.fp-ttl{font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink);padding:0}
+html.m body .side .mfg .fp-togrow{display:flex;align-items:center;gap:12px}
+/* Common/Chip (Outlined · S · 30) */
+html.m body .side .fp-chips{display:flex;flex-wrap:wrap;gap:10px 8px}
+html.m body .side .fp-chip{height:30px;padding:0 9px;border-radius:999px;background:#fff;box-shadow:none;border:1px solid #c3c2c5;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .side .fp-chip.on,html.m body .side .fp-chip.on:hover{background:var(--f-brand-sub);border-color:var(--f-brand);color:var(--f-brand);box-shadow:none}
+/* Common/Color swatch 30 (선택 34) + 라벨 */
+html.m body .side .fp-sws{display:flex;flex-wrap:wrap;gap:10px 19px;padding:0 4px}
+html.m body .side .fp-sw{width:30px;gap:4px;overflow:visible}
+html.m body .side .fp-sw i{width:30px;height:30px}
+html.m body .side .fp-sw.on i{width:34px;height:34px;margin:-2px}
+html.m body .side .fp-sw span{font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink2);white-space:nowrap}
+html.m body .side .fp-icons{gap:12px}
+html.m body .side .fp-ic svg{width:32px;height:32px}
+/* 아래 버튼 줄: 초기화(Outlined 90) + 적용하기(Brand) */
+html.m body .side .apply{flex:none;display:flex;gap:10px;margin:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;box-shadow:0 -1px 15px rgba(0,0,0,.08)}
+html.m body .side .apply .btn{height:44px;border-radius:8px;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;padding:8px 16px}
+html.m body .side .apply #mReset{flex:0 0 90px;width:90px;background:#fff;border:1px solid #c3c2c5;color:var(--f-ink)}
+html.m body .side .apply #apply{flex:1 1 auto;background:var(--f-brand);border:0;color:#fff}
+/* 3D 포즈 탭 */
+html.m body .side .ppanel{display:flex;flex-direction:column;gap:20px}
+html.m body .side .ppanel[hidden]{display:none}
+html.m body .side .pose-vpw{flex:none;border-radius:8px;background:var(--f-line2);overflow:hidden;margin:0}
+html.m body .side .pose-hint{margin:-12px 0 0;font:500 12px/16px Pretendard,sans-serif;color:var(--f-dis);text-align:center}
+html.m body .side .pose-sec{flex:none;display:flex;flex-direction:column;gap:12px;padding-top:20px;border-top:1px solid var(--f-line2);margin:0}
+html.m body .side .pose-h{margin:0;display:flex;align-items:center;justify-content:space-between}
+html.m body .side .pose-h h3{margin:0;font:600 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body .side .pose-h .linkbtn{font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink2);text-decoration:none}
+html.m body .side .pose-chips{display:flex;flex-wrap:wrap;gap:10px 8px}
+html.m body .side .pose-chips .pill,html.m body .side .pose-ctl .pill{height:30px;padding:0 9px;border-radius:999px;background:#fff;border:1px solid #c3c2c5;box-shadow:none;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .side .pose-chips .pill.on{background:var(--f-brand-sub);border-color:var(--f-brand);color:var(--f-brand)}
+html.m body .side .pose-credit{font:400 11px/16px Pretendard,sans-serif;color:var(--f-dis);margin:0}
+/* 무드 탭 (2833:108480) */
+html.m body .side .cpanel{display:flex;flex-direction:column;gap:0}
+html.m body .side .cpanel[hidden]{display:none}
+html.m body .side .cbox{height:172px;border-radius:8px;margin:0}
+html.m body .side .chrow{display:flex;align-items:center;gap:16px;margin:16px 0 0;height:20px}
+html.m body .side .ceye{width:20px;height:20px;padding:0;color:var(--f-ink)}
+html.m body .side .chue{flex:1;height:16px;border-radius:999px;margin:0}
+html.m body .side .ccode{display:flex;align-items:center;gap:16px;margin:16px 0 0}
+html.m body .side .ccode>span{font:600 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .side .ccode .cfield{display:flex;align-items:center;gap:6px;width:102px;height:32px;padding:0 8px;border:1px solid #c3c2c5;border-radius:6px;box-sizing:border-box;background:#fff}
+html.m body .side .ccode .chex{flex:1;min-width:0;border:0;padding:0;height:auto;background:none;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .side .ccode .sw{width:16px;height:16px;border-radius:50%;flex:none}
+html.m body .side .ccode .btn{margin-left:auto;width:64px;min-width:64px;height:32px;padding:0;border:1px solid var(--f-brand);border-radius:6px;background:#fff;color:var(--f-brand);font:500 14px/20px Pretendard,sans-serif}
+html.m body .side .cdiv{display:none}
+html.m body .side .ctit{margin:24px 0 12px;font:600 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .side .cpal{display:flex;flex-wrap:wrap;gap:10px}
+html.m body .side .cpal .ccirc{width:30px;height:30px}
+html.m body .side .cpal .hint{display:none}
+
+/* ---- App/Bottom sheet (2827:1750): 위 모서리 16 · 머리 pt22 px20 (제목 20/28 + 닫기 24) · 항목 42 px20 · 간격 4 · 아래 14 ---- */
+html.m body .modal.msheet .sheet{border-radius:16px 16px 0 0;padding:0 0 calc(14px + env(safe-area-inset-bottom));background:#fff}
+html.m body .modal.msheet .sheet>.m-sheet-h{display:flex;align-items:center;justify-content:space-between;height:auto;padding:22px 20px 14px;margin:0;border:0}
+html.m body .modal.msheet .sheet>.m-sheet-h h2{margin:0;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:var(--f-ink)}
+html.m body .modal.msheet .sheet>.m-sheet-h .icon-btn{width:24px;height:24px;min-width:0;padding:0;color:var(--f-ink)}
+html.m body .modal.msheet .sheet>.m-sheet-h .icon-btn svg{width:24px;height:24px}
+html.m body .modal.msheet.smenu .sheet-b{display:flex;flex-direction:column;gap:4px;padding:0;margin:0}
+html.m body .modal.msheet.smenu .srow{display:flex;align-items:center;gap:12px;width:100%;height:42px;min-height:0;padding:0 20px;margin:0;border:0;border-radius:0;background:none;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink);text-align:left}
+html.m body .modal.msheet.smenu .srow>span{flex:1}
+html.m body .modal.msheet.smenu .srow .ic,html.m body .modal.msheet.smenu .srow svg{width:24px;height:24px;flex:none}
+html.m body .modal.msheet.smenu .srow[aria-pressed="true"]{background:rgba(116,37,246,.08);color:var(--f-brand)}
+html.m body .modal.msheet.smenu .srow[aria-pressed="true"] svg{color:var(--f-brand)}
+html.m body .modal.msheet.smenu .srow.danger{color:var(--f-err)}
+
+/* ---- App/Top app bar (2136:931): 52 · 좌우 16 · 뒤로 28 · 제목 20/28(가운데, 폭 216) · 큰 제목 24/32 · 오른쪽 글자 버튼 14 세미볼드 ---- */
+html.m body .mbar{height:52px;padding:0 16px;gap:12px;background:#fff;border:0}
+html.m body .mbar>.icon-btn{width:28px;height:28px;padding:0;min-width:0;color:var(--f-ink)}
+html.m body .mbar>.icon-btn svg{width:28px;height:28px}
+html.m body .mbar h1{font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:var(--f-ink)}
+html.m body .mbar.big h1{font:600 24px/32px Pretendard,sans-serif;letter-spacing:-.24px}
+html.m body .mbar-r{gap:16px}
+html.m body .mbar-r .icon-btn{width:24px;height:24px;padding:0;min-width:0}
+html.m body .mbar-r .icon-btn svg{width:24px;height:24px}
+html.m body .mbar-r .linkbtn{font:600 14px/20px Pretendard,sans-serif;color:var(--f-ink);text-decoration:none;padding:0}
+
+/* ---- 알림 (2837:127469) ---- */
+html.m body .npage{padding:0 16px 24px}
+html.m body .npage .ntabs{display:flex;gap:0;margin:0 0 18px;border-bottom:1px solid var(--f-line2)}
+html.m body .npage .ntabs button{flex:1 1 0;padding:8px 10px 10px;margin:0 0 -1px;border:0;border-bottom:2px solid transparent;background:none;font:500 14px/20px Pretendard,sans-serif;letter-spacing:0;color:var(--f-ink3)}
+html.m body .npage .ntabs button.on{font-weight:600;color:var(--f-brand);border-bottom-color:var(--f-brand);padding-bottom:10px}
+html.m body .npage .hd,html.m body .npage h4{display:none!important}
+html.m body .npage>div:not(.ntabs):not(.hd){display:flex;flex-direction:column;gap:12px}
+html.m body .npage>div+div:not(.ntabs){margin-top:12px}
+html.m body .npage div.nitem{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0;background:none}
+html.m body .npage button.nitem{display:flex;align-items:center;gap:10px;min-height:48px;text-align:left;background:none;border:0}
+html.m body .npage .nitem .av{flex:none;width:32px;height:32px;border-radius:50%;background:#c3c2c5;color:#fff;font:600 12px/32px Pretendard,sans-serif;text-align:center}
+html.m body .npage .nitem .nt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .npage .nitem .nt small{font:500 11px/16px Pretendard,sans-serif;color:var(--f-dis)}
+html.m body .npage .nitem img{flex:none;width:40px;height:40px;border-radius:4px;object-fit:cover;margin-left:6px;background:var(--f-line2)}
+html.m body .npage div.nitem>.btn{flex:none;width:70px;min-width:64px;height:32px;padding:6px 12px;border-radius:6px;background:var(--f-brand);border:0;color:#fff;font:500 12px/16px Pretendard,sans-serif}
+html.m body .npage .nempty{font:400 14px/20px Pretendard,sans-serif;color:var(--f-dis);text-align:center;padding:40px 0}
+
+/* ---- 검색 (2837:129038): 뒤로 28 + 검색칸 · 최근 검색어 18 세미볼드 · 전체 삭제 12 · 칩(지우기 16) ---- */
+html.m.m-search body #mtab{display:none!important}
+html.m body .top #mBack{width:28px;height:28px;padding:0;min-width:0;flex:none}
+html.m body .top #mBack svg{width:28px;height:28px}
+html.m body .top .search input,html.m body .top .search input:focus,html.m body .top .search input:focus-visible{outline:none!important;box-shadow:none!important;border:0!important;background:none}
+html.m.m-search body #suggest{top:52px;bottom:0;padding:0;background:#fff}
+html.m body #suggest h3{display:flex;align-items:center;justify-content:space-between;margin:0;padding:12px 16px;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:#000}
+html.m body #suggest h3 button{padding:0;border:0;background:none;text-decoration:none;font:500 12px/16px Pretendard,sans-serif;color:#767676}
+html.m body #suggest .recent{display:flex;flex-wrap:wrap;gap:9px;padding:4px 16px 16px}
+html.m body #suggest .recent .chip{display:inline-flex;align-items:center;gap:2px;height:30px;padding:0 6px;border:1px solid #c3c2c5;border-radius:999px;background:#fff;box-sizing:border-box}
+html.m body #suggest .recent .chip button{padding:0;border:0;background:none;display:inline-flex;align-items:center}
+html.m body #suggest .recent .chip button:first-child{padding:0 4px;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body #suggest .recent .chip button:last-child{width:16px;height:16px;color:var(--f-ink)}
+html.m body #suggest .recent .chip svg{width:16px;height:16px}
+html.m body #suggest .pop{margin:0;padding:4px 16px 16px}
+
+/* ---- 탭 루트 상단 바(Root): 큰 제목 22/28 · 오른쪽 글자 버튼 14 미디엄 ---- */
+html.m body .mbar.big h1{font:600 22px/28px Pretendard,sans-serif;letter-spacing:-.22px}
+html.m body .mbar.big .mbar-r .linkbtn{font:500 14px/20px Pretendard,sans-serif}
+html.m body .mbar.big .mbar-r .icon-btn svg{width:24px;height:24px}
+
+/* ---- 킵스페이스 (2837:128630): Chip M 34 · 14 미디엄 · 좌우 12 · 간격 8 / 선택: brand-subtle 배경 + 보라 글자(테두리 없음) ---- */
+html.m body .kbar{display:flex;align-items:center;gap:8px;margin:12px 0 12px;min-height:34px}
+html.m body .kbar .pill{height:34px;padding:0 11px;border:1px solid #c3c2c5;border-radius:999px;background:#fff;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink);box-shadow:none}
+html.m body .kbar .pill.on{background:var(--f-brand-sub);border-color:var(--f-brand-sub);color:var(--f-brand)}
+
+/* ---- 서랍 (2837:130291): Tab bar Brand L(14) · 목록 머리 12 · Book card(표지 64 · 3장 · 간격 2 · 모서리 8 / 제목 14 세미볼드 · 정보 12 · 케밥 18) ---- */
+html.m body .mtabs{display:flex;gap:0;margin:0;padding:0;border-bottom:1px solid var(--f-line2)}
+html.m body .mtabs a{flex:1 1 0;text-align:center;padding:8px 12px 10px;margin:0 0 -1px;border-bottom:2px solid transparent;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink3);text-decoration:none}
+html.m body .mtabs a.on{font-weight:600;letter-spacing:-.07px;color:var(--f-brand);border-bottom-color:var(--f-brand);padding-bottom:10px}
+html.m body .drw .dmain{padding:23px 16px 104px}
+html.m body .drw .dhead{display:flex;align-items:flex-end;margin:0 0 8px;min-height:16px}
+html.m body .drw .dhead .sub{margin:0;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .drw .dhead .sortbtn{height:16px;padding:0;gap:4px;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .drw .dhead .sortbtn svg{width:15px;height:15px}
+html.m body .drw .books{display:grid;grid-template-columns:1fr 1fr;gap:24px 12px}
+html.m body .drw .bk{display:flex;flex-direction:column;gap:8px;min-width:0}
+html.m body .drw .bk .cover{display:flex;gap:2px;height:64px;border-radius:8px;overflow:hidden;background:none}
+html.m body .drw .bk .cover>span{flex:1 1 0;min-width:0;height:100%;background:#f1f0f2 center/cover no-repeat;position:relative}
+html.m body .drw .bk .cover>span:nth-child(3)::after{content:"";position:absolute;inset:0;background:#18171a;opacity:.05}
+html.m body .drw .bk .brow{display:flex;align-items:flex-start;gap:4px}
+html.m body .drw .bk .bt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;padding:0;text-align:left;background:none;border:0}
+html.m body .drw .bk .bt b{font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:#18171a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.m body .drw .bk .bt span{font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .drw .bk .bk-more{width:18px;height:18px;padding:0;min-width:0;flex:none}
+html.m body .drw .bk .bk-more svg{width:18px;height:18px}
+html.m body .drw .bk .brow{margin:0}
+html.m body .drw .bk .book{width:100%;padding:0;border:0;background:none}
+html.m body .drw .bk .cover{width:100%}
+html.m body .bk .more-btn svg{transform:none}
+
+/* ---- 마이페이지 · 타 유저 프로필 (2837:130182): 배너 88 · 아바타 88(오른쪽 16, 배너 아래로 걸침) · 이름 20 · 아이디 12 · 소개 14 · 통계 18+12(간격 28) · 링크 상자 · 프로필 수정(Outlined M 40) · 탭 Brand L · 이미지 158×200 ---- */
+html.m body .pf-banner{height:88px}
+html.m body .pf-side{position:relative;padding:0 16px;gap:0}
+html.m body .pf-av{top:-46px;right:16px;width:88px!important;height:88px!important;font-size:30px!important}
+html.m body .pf-name{margin-top:14px;padding-right:100px;display:flex;flex-direction:column;gap:1px}
+html.m body .pf-name h1{margin:0;font:600 20px/28px Pretendard,sans-serif;letter-spacing:-.2px;color:var(--f-ink)}
+html.m body .pf-name span{font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .pf-bio{order:2;margin:18px 0 0;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .pf-stats{order:3;margin-top:16px;gap:28px;justify-content:flex-start}
+html.m body .pf-stat{display:inline-flex;align-items:center;gap:2px;padding:0;background:none;border:0;font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink2)}
+html.m body .pf-stat b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body .pf-links{order:4;margin:14px 0 0;display:flex;flex-direction:column;gap:3px}
+html.m body .pf-links h2{display:block;margin:0;font:600 12px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink2)}
+html.m body .pf-links ul{margin:0;padding:10px 12px;list-style:none;display:flex;flex-direction:column;gap:5px;background:var(--f-sub);border-radius:5px}
+html.m body .pf-links li{display:flex;align-items:center;gap:6px;min-width:0;color:var(--f-ink2)}
+html.m body .pf-links li svg{width:16px;height:16px;flex:none}
+html.m body .pf-links a{font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink2);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.m body .pf-acts{order:5;margin-top:14px;display:flex;gap:8px}
+html.m body .pf-links+.pf-acts{margin-top:10px}
+html.m body .pf-acts .btn{flex:1;height:40px;padding:8px 16px;border-radius:8px;border:1px solid #c3c2c5;background:#fff;font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body .pf-acts .btn.primary{background:var(--f-brand);border-color:var(--f-brand);color:#fff}
+html.m body .pf-main{padding:18px 0 104px}
+html.m body .pf-tabs{display:flex;gap:0;margin:0 0 15px;border-bottom:1px solid var(--f-line2)}
+html.m body .pf-tab{flex:1 1 0;text-align:center;padding:8px 12px 10px;margin:0 0 -1px;border:0;border-bottom:2px solid transparent;background:none;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .pf-tab.on{font-weight:600;letter-spacing:-.07px;color:var(--f-brand);border-bottom-color:var(--f-brand)}
+html.m body .pf-main>:not(.pf-tabs){margin-left:16px;margin-right:16px}
+html.m body .pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;width:auto;column-count:auto;margin-top:0}
+html.m body .pf-cell{position:relative;width:auto;min-width:0;aspect-ratio:auto;height:200px;margin:0;padding:0;border:0;border-radius:8px;overflow:hidden;background:var(--f-input)}
+html.m body .pf-cell img{width:100%;height:100%;object-fit:cover;display:block}
+html.m body .pf-cell::after{content:"";position:absolute;inset:0;background:#18171a;opacity:.05;pointer-events:none}
+
+/* ---- 설정 (2781:87827): 소제목 12 미디엄(pt16 pb6) · 행 px16 py14 · 16/24 Regular · chevronRight 20 · 구분 8 #f8f7f8 ---- */
+html.m body:has(.mpage.set) #mtab{display:none!important}
+html.m body .set .sgroup{margin:0;padding:16px 16px 6px;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .set .srow2{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:14px 16px;margin:0;border:0;border-radius:0;background:#fff;box-sizing:border-box;font:400 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink);text-align:left;text-decoration:none}
+html.m body .set .srow2>span{flex:1;min-width:0;font:inherit}
+html.m body .set .srow2 small{font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink3)}
+html.m body .set .srow2 svg{width:20px;height:20px;flex:none;color:var(--f-ink)}
+html.m body .set .srow2.dim{color:var(--f-ink3)}
+html.m body .set .sgap{height:8px;margin:0;background:var(--f-sub)}
+/* 설정 하위: 스위치(Brand 44×26) · 알림 설정 행 · 차단 유저 · 문의하기 */
+html.m body .set .swrow{display:flex;align-items:center;gap:12px;padding:12px 16px;margin:0;min-height:64px;box-sizing:border-box}
+html.m body .set .swrow>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html.m body .set .swrow b{font:500 16px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body .set .swrow small{font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .sw-in:checked+.sw-ui{background:var(--f-brand)}
+html.m body .set .srow2.off{opacity:.4}
+html.m body .set .scount{margin:0;padding:16px 16px 6px;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .set .fl-row{display:flex;align-items:center;gap:12px;padding:8px 16px}
+html.m body .set .fl-row .fl-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html.m body .set .fl-row .fl-name b{font:600 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .set .fl-row .fl-name span{font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .set .fl-row .btn{height:32px;padding:6px 12px;border:1px solid #c3c2c5;border-radius:6px;background:#fff;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .set .sform{display:flex;flex-direction:column;gap:8px;padding:16px 16px 24px}
+html.m body .set .sform>label,html.m body .set .sform .iq-lb{margin:12px 0 0;font:600 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .set .sform>label:first-child{margin-top:0}
+html.m body .set .sform .inp{width:100%;height:44px;padding:0 12px;border:1px solid #c3c2c5;border-radius:8px;background:#fff;box-sizing:border-box;font:400 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body .set .sform .inp::placeholder{color:var(--f-dis)}
+html.m body .set .iq-sel{position:relative;display:block}
+html.m body .set .iq-sel select{appearance:none;-webkit-appearance:none;padding-right:40px;color:var(--f-ink3)}
+html.m body .set .iq-sel svg{position:absolute;right:12px;top:12px;width:20px;height:20px;pointer-events:none;color:var(--f-ink)}
+html.m body .set .iq-ta{position:relative;display:block}
+html.m body .set .iq-ta textarea.inp{height:140px;padding:12px 12px 32px;resize:none}
+html.m body .set .iq-cnt{position:absolute;right:12px;bottom:10px;font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body .set .iq-photos{display:flex;gap:8px}
+html.m body .set .iq-add,html.m body .set .iq-ph{position:relative;width:72px;height:72px;border-radius:8px;flex:none;overflow:hidden}
+html.m body .set .iq-add{display:grid;place-items:center;border:1px dashed #c3c2c5;background:var(--f-sub);color:var(--f-ink)}
+html.m body .set .iq-ph img{width:100%;height:100%;object-fit:cover}
+html.m body .set .iq-ph button{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;padding:0}
+html.m body .set .iq-foot{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff}
+html.m body .set .iq-foot .btn,html.m body .set .sform .btn.primary{height:48px;border-radius:8px;background:var(--f-brand);border:0;color:#fff;font:500 16px/24px Pretendard,sans-serif}
+html.m body .set .sform.iq{padding-bottom:96px}
+html.m body .dnd-pick{display:flex;align-items:center;gap:8px;padding:0 20px 16px}
+html.m body .dnd-pick select{flex:1;height:44px;border:1px solid #c3c2c5;border-radius:8px;padding:0 10px;font:400 14px/20px Pretendard,sans-serif}
+html.m body .modal.msheet .sheet-f{padding:0 20px}
+html.m body .modal.msheet .sheet-f .btn.primary{height:48px;border-radius:8px;background:var(--f-brand);border:0;font:500 16px/24px Pretendard,sans-serif}
+
+/* ---- 게시물 상세 (2810:11850 · 2810:63866) ----
+   상단 바: 뒤로만 · 이미지 오른쪽 아래: 포즈 · 팔레트(흰 원 24) + 저장(보라 원 32) · 정보 pt20 px16 · 섹션 간격 24 */
+html.m body #panel .mbar .mbar-r:empty{display:none}
+html.m body #panel .pimg .imgtop,html.m body #panel .pimg .imgwho{display:none}
+html.m body #panel .pimg .imgact{position:absolute;right:16px;bottom:16px;left:auto;top:auto;display:flex;flex-direction:column;align-items:center;gap:12px}
+html.m body #panel .pimg .imgact .circ{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--f-ink);box-shadow:none;display:grid;place-items:center;padding:0}
+html.m body #panel .pimg .imgact .circ svg{width:20px;height:20px}
+html.m body #panel .pimg .imgact .circ.add{width:40px;height:40px;background:var(--f-brand);color:#fff}
+html.m body #panel .pimg .imgact .circ.add svg{width:24px;height:24px}
+html.m body #panel .pbody{padding:20px 16px 24px;display:flex;flex-direction:column;gap:0}
+html.m body #panel .who{display:flex;align-items:center;gap:10px;margin:0}
+html.m body #panel .who .av,html.m body #panel .who .avt{width:40px!important;height:40px!important;border-radius:20px!important}
+html.m body #panel .who>div{flex:1;min-width:0;display:flex;flex-direction:column}
+html.m body #panel .who .pname,html.m body #panel .who>div>b{font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink);text-decoration:none}
+html.m body #panel .who>div>span{font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body #panel .who .btn{height:32px;padding:6px 12px;border-radius:6px;font:500 14px/20px Pretendard,sans-serif;border:1px solid #c3c2c5;background:#fff;color:var(--f-ink)}
+html.m body #panel .who .btn.primary{background:var(--f-brand);border-color:var(--f-brand);color:#fff}
+html.m body #panel .ptitle{margin:16px 0 0;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body #panel .prow{display:flex;align-items:center;gap:16px;margin:15px 0 0}
+html.m body #panel .prow .stat{display:inline-flex;align-items:center;gap:4px;padding:0;border:0;background:none;font:500 14px/20px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body #panel .prow .stat svg{width:20px;height:20px}
+html.m body #panel .prow .stat.on{color:var(--f-brand)}
+html.m body #panel .prow .sp{flex:1}
+html.m body #panel .prow .icon-btn{width:24px;height:24px;padding:0;min-width:0;color:var(--f-ink)}
+html.m body #panel .prow .icon-btn svg{width:24px;height:24px}
+html.m body #panel .pbody .sec{margin:24px 0 0;padding:0;border:0;display:flex;flex-direction:column;gap:8px}
+html.m body #panel .sec-h{display:flex;align-items:center;justify-content:space-between;margin:0}
+html.m body #panel .sec-h h3{margin:0;font:600 18px/24px Pretendard,sans-serif;letter-spacing:-.08px;color:var(--f-ink)}
+html.m body #panel .tags{display:flex;flex-wrap:wrap;gap:8px}
+html.m body #panel .tags .tag{height:28px;padding:0 10px;border:0;border-radius:999px;background:var(--f-line2);font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body #panel .mat-list{margin:0;padding:0 1px;list-style:none;display:flex;flex-direction:column;gap:5px}
+html.m body #panel .mat-list li{display:flex;align-items:center;gap:6px;min-width:0;color:var(--f-ink2)}
+html.m body #panel .mat-list li svg{width:15px;height:15px;flex:none}
+html.m body #panel .mat-list a{font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.m body #panel .mat-list li:first-child a{color:#245cb3;text-decoration:underline}
+/* 댓글 입력: 회색 상자 44 · 모서리 10 · 아바타 24 · 글자 14 · 게시(글자 버튼) */
+html.m body #panel .cform{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:10px;background:var(--f-input);margin:0}
+html.m body #panel .cform .cav{flex:none;width:24px!important;height:24px!important;border-radius:12px!important;background:#c3c2c5;overflow:hidden;font-size:10px!important;display:grid;place-items:center;color:#fff}
+html.m body #panel .cform .cav img{width:100%;height:100%;object-fit:cover}
+html.m body #panel .cform input.cin{flex:1;min-width:0;height:auto;padding:0;border:0!important;background:none;box-shadow:none!important;outline:none;font:400 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink)}
+html.m body #panel .cform input.cin::placeholder{color:var(--f-ink2)}
+html.m body #panel .cform .btn{height:auto;min-width:0;padding:0;border:0;background:none!important;color:var(--f-ink3);font:500 14px/20px Pretendard,sans-serif}
+/* 댓글 목록: 아바타 28 · 이름 14 세미볼드 + 시간 11 · 내용 12 · 더보기 20 · 간격 14 */
+html.m body #panel .clist{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px}
+html.m body #panel .clist li{display:flex;align-items:flex-start;gap:10px;padding:0;border:0}
+html.m body #panel .clist .av{flex:none;width:28px;height:28px;border-radius:14px;background:#c3c2c5;color:#fff;font:600 12px/28px Pretendard,sans-serif;text-align:center}
+html.m body #panel .clist .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html.m body #panel .clist .ct b{display:flex;align-items:center;gap:6px;font:600 14px/20px Pretendard,sans-serif;letter-spacing:-.07px;color:var(--f-ink)}
+html.m body #panel .clist .ct b small{font:500 11px/16px Pretendard,sans-serif;color:var(--f-ink3)}
+html.m body #panel .clist .ct>span{font:400 12px/16px Pretendard,sans-serif;color:var(--f-ink)}
+html.m body #panel .clist .cmore{width:20px;height:20px;padding:0;min-width:0}
+html.m body #panel .clist .cmore svg{width:20px;height:20px}
+html.m body #panel .allc{height:auto;margin:6px 0 0;padding:0;border:0;background:none;text-align:left;font:500 12px/16px Pretendard,sans-serif;color:var(--f-ink3);width:auto;justify-content:flex-start}
+html.m body #panel .rel .grid{column-gap:12px}

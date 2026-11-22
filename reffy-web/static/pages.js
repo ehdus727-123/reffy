@@ -224,9 +224,9 @@ async function keepPage() {
   }
   function draw() {
     root.classList.toggle("selecting", sel);
-    const chips = [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]].map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
+    const chips = (isM() ? [["", "전체"], ["illust", "일러스트"], ["photo", "사진"]] : [["", "전체"], ["photo", "사진"], ["illust", "일러스트"]]).map(([k, l]) => h("button", { class: "pill" + (kind === k ? " on" : ""), type: "button", onclick: () => { kind = k; picked.clear(); load(); } }, l));
     const selBtn = !data.items.length && !isM() ? h("div", { class: "kp-acts kp-acts0" }, (() => { const t = h("button", { class: "icon-btn kc-del", type: "button", disabled: true, "aria-label": "삭제" }); t.innerHTML = KC_TRASH; return t; })(), h("button", { class: "btn primary", type: "button", disabled: true }, "북에 저장")) : data.items.length ? (sel ? btn("취소", isM() ? "linkbtn" : "", () => { sel = false; picked.clear(); draw(); }) : btn("선택", isM() ? "linkbtn" : "primary", () => { sel = true; draw(); })) : null;
-    root.replaceChildren(isM() ? mbar("킵 스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
+    root.replaceChildren(isM() ? mbar("킵스페이스", { big: true, right: [selBtn] }) : "", h("div", { class: "kbar" }, chips, h("span", { class: "sp" }), isM() ? null : selBtn),
       data.items.length ? (isM() ? pgrid : rrGrid)(data.items, (it) => ({ noMore: true, on: picked.has(it.id), click: (_, el) => { if (!sel) return isM() ? keepViewer(data.items.slice(), data.items.indexOf(it), load) : keepCompare(data.items.slice(), data.items.indexOf(it), kind, (k) => { kind = k; picked.clear(); page(root); load(); }, () => { page(root); load(); }); picked.has(it.id) ? picked.delete(it.id) : picked.add(it.id); el.classList.toggle("on", picked.has(it.id)); root.querySelector(".selbar").replaceWith(bar()); } }), "c6")
         : isM() ? notice(kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요", "피드에서 마음에 드는 레퍼런스를 담아보세요", btn("홈으로", "primary", () => (location.hash = "#/")))
           : h("div", { class: "kp-empty" }, kpEx(), h("h2", {}, kind ? "이 종류의 킵이 없어요" : "킵 스페이스가 비어있어요"), btn("홈으로 이동", "", () => (location.hash = "#/"))),
@@ -385,7 +385,7 @@ const dIc = (k) => { const sp = h("span", { class: "dic2" }); sp.innerHTML = D_S
 async function bookList(main, sort = "recent") {
   const d = await api("/api/books?sort=" + sort);
   const redo = () => bookList(main, sort);
-  const sortBtn = h("button", { class: "sortbtn", type: "button", onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["최근 순", () => { sort = "recent"; redo(); }], ["이름 순", () => { sort = "name"; redo(); }]]); } }, sort === "name" ? "이름 순" : "최근 순", dIc("drop"));
+  const sortBtn = h("button", { class: "sortbtn", type: "button", onclick: (e) => { e.stopPropagation(); popMenu(e.currentTarget, [["최근 순", () => { sort = "recent"; redo(); }], ["이름 순", () => { sort = "name"; redo(); }]]); } }, sort === "name" ? "이름 순" : isM() ? "최근 수정 순" : "최근 순", isM() ? icon("chevronDown", 15) : dIc("drop"));
   main.replaceChildren(h("div", { class: "dhead" }, h("div", {}, h("h1", {}, "내 북"), h("p", { class: "sub" }, `북 ${d.total}개`)), h("span", { class: "sp" }), sortBtn, (() => { const b = btn("새 북 만들기", "primary newbk", () => bookDialog(null, redo)); b.prepend(dIc("plus")); return b; })()),
     d.items.length ? h("div", { class: "books" }, d.items.map((b) => h("div", { class: "bk" },
       h("button", { class: "book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) }, h("span", { class: "cover" + (b.cover ? " one" : "") }, b.cover ? h("img", { src: b.cover, alt: "" }) : [0, 1, 2].map((i) => h("span", {}, b.covers[i] ? h("img", { src: `/img/${b.covers[i]}?s=thumb`, alt: "" }) : null)))),
@@ -458,7 +458,7 @@ function bucket(iso) { const d = when(iso), n = new Date(); if (d.toDateString()
 async function drawNotif(box = $("#notif")) {
   let r;
   try { r = await api("/api/notifications" + (nTab ? "?kind=" + nTab : "")); } catch (e) { box.replaceChildren(h("p", { class: "nempty" }, e.message)); return; }
-  const text = (n) => n.kind === "like" ? `${n.actor}님이 회원님의 게시물에 하트를 눌렀어요` : n.kind === "comment" ? `${n.actor}님이 댓글을 남겼어요: “${n.body}”` : `${n.actor}님이 회원님을 팔로우해요`;
+  const text = (n) => isM() ? (n.kind === "like" ? `${n.actor}님이 회원님의 게시물에 하트를 눌렀어요.` : n.kind === "comment" ? `${n.actor}님이 회원님의 게시물에 댓글을 남겼어요. “${n.body}”` : `${n.actor}님이 회원님을 팔로우하기 시작했어요.`) : n.kind === "like" ? `${n.actor}님이 회원님의 게시물에 하트를 눌렀어요` : n.kind === "comment" ? `${n.actor}님이 댓글을 남겼어요: “${n.body}”` : `${n.actor}님이 회원님을 팔로우해요`;
   const groups = {}; r.items.forEach((n) => (groups[bucket(n.created)] ||= []).push(n));
   box.replaceChildren(h("div", { class: "hd" }, h("h2", {}, "알림"), h("button", { type: "button", onclick: async () => { try { await api("/api/notifications/read", { method: "POST" }); UNREAD = 0; drawMe(); drawNotif(box); } catch (e) { toast(e.message); } } }, "모두 읽음")),
     h("div", { class: "ntabs", role: "tablist" }, [["", "전체"], ["like", "하트"], ["comment", "댓글"], ["follow", "팔로잉"]].map(([k, l]) => h("button", { type: "button", role: "tab", class: nTab === k ? "on" : "", "aria-selected": String(nTab === k), onclick: () => { nTab = k; drawNotif(box); } }, l))),
@@ -597,7 +597,7 @@ async function profilePage(uid) {
     books = u.me && isM() ? (await api(`/api/users/${uid}/books`)).items : [];
   }
   function draw() {
-    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 18) : h("span", { class: "lic" }, icon("link", 16)), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
+    const links = u.links.length ? h("div", { class: "pf-links" }, h("h2", {}, "링크"), h("ul", {}, u.links.map((l) => h("li", {}, isM() ? icon("link", 16) : h("span", { class: "lic" }, icon("link", 16)), h("a", { href: l, target: "_blank", rel: "noopener noreferrer nofollow" }, shortLink(l)))))) : null;
     const shareBtn = h("button", { class: "btn pf-share", type: "button", "aria-label": "프로필 링크 복사", title: "프로필 링크 복사", onclick: async () => { const url = location.origin + location.pathname + "#/u/" + encodeURIComponent(u.uid); try { await navigator.clipboard.writeText(url); toast("프로필 링크를 복사했어요"); } catch { toast(url); } } }, dpSvg("share", 24));
     const stat = (n, l, fn) => (fn ? h("button", { class: "pf-stat", type: "button", onclick: fn }, h("b", {}, compact(n)), h("span", {}, l)) : h("span", { class: "pf-stat" }, h("b", {}, compact(n)), h("span", {}, l)));
     const blockAsk = () => blockUserAsk(u.uid, u.nick, async () => { await loadAll(); draw(); });
@@ -615,7 +615,7 @@ async function profilePage(uid) {
     const tabBtn = (k, l, sc = "") => { const on = tab === k && (k !== "posts" || scope === sc); return h("button", { class: "pf-tab" + (on ? " on" : ""), type: "button", role: "tab", "aria-selected": String(on), onclick: async () => { tab = k; if (k === "posts" && scope !== sc) { scope = sc; try { await loadAll(); } catch (e) { toast(e.message); } } draw(); } }, l); };
     const cell = (it) => h("button", { class: "pf-cell", type: "button", "aria-label": it.title || "레퍼런스 이미지", onclick: () => (isM() ? goPost(it.id) : postModal(it.id, async () => { await loadAll(); draw(); }, posts.map((x) => x.id))) }, h("img", { src: it.thumb, alt: it.title || "", loading: "lazy" }), it.private ? h("span", { class: "prv" }, "비공개") : null);
     const grid = u.blocked ? notice("차단한 유저예요", `차단을 해제하면 ${u.nick}님의 게시물을 다시 볼 수 있어요.`) : tab === "posts"
-      ? (posts.length && isM() ? pgrid(posts, {}, "c2") : posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
+      ? (posts.length ? h("div", { class: "pf-grid" }, posts.map(cell))
         : notice(kind === "illust" ? "일러스트 게시물이 없어요" : kind === "photo" ? "사진 게시물이 없어요" : scope === "private" ? "비공개 게시물이 없어요" : scope === "public" ? "공개 게시물이 없어요" : "아직 올린 게시물이 없어요", u.me ? "첫 레퍼런스를 올리면 AI가 태그를 붙여 줘요." : "", u.me ? btn("+ 업로드", "primary", () => openUpload()) : null))
       : (books.length ? h("div", { class: "pf-grid" }, books.map((b) => h("button", { class: "pf-cell book", type: "button", "aria-label": `${b.name} 열기`, onclick: () => (location.hash = "#/drawer/book/" + b.id) },
         b.cover ? h("img", { src: b.cover, alt: "" }) : (b.covers[0] ? h("img", { src: `/img/${b.covers[0]}?s=thumb`, alt: "" }) : h("span", { class: "ph" })), h("span", { class: "bn" }, h("b", {}, b.name), h("span", {}, `${b.count}개`)))))

@@ -76,27 +76,24 @@ function drawGroups() {
   const root = $("#groups"); root.replaceChildren();
   S.pickedKind = S.pickedKind || new Set();
   if (!isM()) return drawFilterPC(root);
-  // 종류(사진 · 일러스트)는 맨 위 그룹. 모바일은 축(인물 수 · 성별 …)마다 접히는 그룹으로 보여 줍니다 (HOM_0201)
-  const kindAxis = { name: "종류", mode: "", kind: true, tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
-  const groups = isM()
-    ? [{ name: "종류", axes: [kindAxis] }, ...S.vocab.groups.flatMap((g) => g.axes.map((a) => ({ name: a.name, axes: [a], one: true })))]
-    : [{ name: "종류", axes: [kindAxis], one: true }, ...S.vocab.groups];
-  groups.forEach((g, gi) => {
-    if (!isM() && gi === 0) {   // Web 2차: '종류'는 접히지 않는 작은 제목 + 구분선
-      root.append(h("div", { class: "ftype" }, h("h4", {}, "종류"), h("div", { class: "ftype-items" }, g.axes[0].tags.map((t) => h("label", { class: "chk" },
-        h("input", { type: "checkbox", checked: S.pickedKind.has(t.kind), onchange: (e) => { e.target.checked ? S.pickedKind.add(t.kind) : S.pickedKind.delete(t.kind); liveApply(); } }), t.label)))));
-      return;
-    }
-    const open = openState[g.name] ?? gi < (isM() ? 3 : 2);
-    const box = h("div", { class: "fgroup", "data-open": String(open) });
-    const btn = h("button", { type: "button", "aria-expanded": String(open), onclick: () => { const o = box.dataset.open !== "true"; box.dataset.open = String(o); btn.setAttribute("aria-expanded", String(o)); openState[g.name] = o; store.set("reffy.open", openState); } }, g.name, icon("chevronDown"));
-    const body = h("div", { class: "fbody" });
-    g.axes.forEach((a) => body.append(h("div", { class: "axis" },
-      g.one || a.name === g.name ? null : h("h4", {}, a.name),
-      a.tags.map((t) => h("label", { class: "chk" },
-        h("input", { type: "checkbox", checked: t.kind ? S.pickedKind.has(t.kind) : S.picked.has(t.ikey), onchange: (e) => { const set = t.kind ? S.pickedKind : S.picked; const v = t.kind || t.ikey; e.target.checked ? set.add(v) : set.delete(v); liveApply(); } }),
-        t.label)))));
-    box.append(btn, body); root.append(box);
+  return drawFilterM(root);
+}
+/* ---- 모바일 필터 시트 · 키워드 탭 (Figma 2833:106173) ----
+   접히는 그룹(Common/Category item: 18 세미볼드 + 펼침 화살표) 안에 PC 와 같은 칩 · 스와치 · 감정/날씨 아이콘 · 스위치를 씀.
+   고르기만 하고, 아래 '적용하기'를 눌러야 결과에 반영돼요 */
+function drawFilterM(root) {
+  const g0 = S.vocab.groups.find((g) => g.name === "기본 정보") || { axes: [] };
+  const kindAxis = { name: "종류", tags: KINDS.map(([k, l]) => ({ ikey: "kind:" + k, label: l, kind: k })) };
+  const style = g0.axes.filter((a) => a.name.split(" › ")[0] === "스타일"), basic = g0.axes.filter((a) => a.name.split(" › ")[0] !== "스타일");
+  const groups = [["종류", h("div", { class: "fp-secs" }, fpTags(kindAxis))]];
+  if (style.length) groups.push(["스타일", h("div", { class: "fp-secs" }, style.length === 1 && style[0].name === "스타일" ? fpTags(style[0]) : style.map((a) => fpSection(a, true)))]);
+  if (basic.length) groups.push(["기본 정보", h("div", { class: "fp-secs" }, basic.map((a) => fpSection(a, true)))]);
+  FP_CATS.forEach(([g, , title]) => { const grp = S.vocab.groups.find((x) => x.name === g); if (grp) groups.push([title.replace("/", "·"), h("div", { class: "fp-secs" }, fpBlocks(grp.axes))]); });
+  groups.forEach(([name, body], gi) => {
+    const open = openState["m:" + name] ?? gi < 3;
+    const box = h("div", { class: "fgroup mfg", "data-open": String(open) });
+    const btn = h("button", { type: "button", class: "mcat", "aria-expanded": String(open), onclick: () => { const o = box.dataset.open !== "true"; box.dataset.open = String(o); btn.setAttribute("aria-expanded", String(o)); openState["m:" + name] = o; store.set("reffy.open", openState); } }, h("span", {}, name), icon("chevronDown", 24));
+    box.append(btn, h("div", { class: "fbody" }, body)); root.append(box);
   });
 }
 /* ---- PC 필터 패널 (Figma FilterPanel 2460:122490) ----
@@ -515,7 +512,7 @@ async function drawSuggest() {
   const box = $("#suggest"); box.replaceChildren();
   const rc = recent();
   if (rc.length) box.append(h("h3", {}, "최근 검색어", h("button", { type: "button", onmousedown: (e) => { e.preventDefault(); store.set("reffy.recent", []); drawSuggest(); } }, "전체 삭제")),
-    h("div", { class: "recent" }, rc.map((x) => h("span", { class: "chip" }, h("button", { type: "button", onmousedown: (e) => { e.preventDefault(); runQuery(x); } }, x), h("button", { type: "button", "aria-label": `${x} 삭제`, onmousedown: (e) => { e.preventDefault(); store.set("reffy.recent", recent().filter((y) => y !== x)); drawSuggest(); } }, "✕")))));
+    h("div", { class: "recent" }, rc.map((x) => h("span", { class: "chip" }, h("button", { type: "button", onmousedown: (e) => { e.preventDefault(); runQuery(x); } }, x), h("button", { type: "button", "aria-label": `${x} 삭제`, onmousedown: (e) => { e.preventDefault(); store.set("reffy.recent", recent().filter((y) => y !== x)); drawSuggest(); } }, isM() ? icon("close", 16) : "✕")))));
   let pop = [];
   try { pop = await api("/api/popular"); } catch { /* 인기 태그 없이 표시 */ }
   box.append(h("h3", {}, "인기 태그"));

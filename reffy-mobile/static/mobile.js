@@ -48,7 +48,7 @@ if (isM()) {
   setFilterOpen(false);
   qEl.placeholder = "찾고 싶은 레퍼런스, 유저를 검색해보세요";
   $("#tabTag").textContent = "키워드"; $("#tabColor").textContent = "무드";
-  $("#tabPose").textContent = "3D Pose";
+  $("#tabPose").textContent = "3D 포즈";
   $("#apply").textContent = "적용하기";
   mobileBar(false);
 }
@@ -109,12 +109,13 @@ function drawDetailM(d, edit = false) {
     : h("button", { class: "tag", type: "button", onclick: () => { S.picked = new Set([t.ikey]); S.applied = [t.ikey]; S.q = ""; qEl.value = ""; drawGroups(); closeDetail(); location.hash = "#/"; reload(); } }, "#" + t.label);
   const keepAct = () => act(d, so.kept ? "DELETE" : "POST", `/api/images/${d.id}/keep`, null, edit);
   const bookAct = () => needLogin() && saveToBook([d.id], { after: () => refreshSocial(d, edit) });
-  const menu = () => sheetMenu("더보기", [
-    { ic: "save", label: "북에 추가", fn: bookAct },
+  /* Figma 2504:53804 저장하기 시트(킵에 담기 · 북에 저장) / 2810:11851 더보기(신고하기 · 내 게시물은 수정 · 삭제) */
+  const saveMenu = () => sheetMenu("저장하기", [
     { ic: "keep", label: so.kept ? "킵 해제" : "킵에 담기", fn: keepAct },
-    ...(so.editable
-      ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
-      : [{ ic: "share", label: "공유하기", fn: () => sharePost(d) }, { ic: "flag", label: "이 게시물 신고하기", danger: true, fn: () => reportSheet("post", d.id) }])]);
+    { ic: "drawer", label: "북에 저장", fn: bookAct }]);
+  const menu = () => sheetMenu("더보기", so.editable
+    ? [{ ic: "edit", label: "수정하기", fn: () => editPost(d) }, { ic: "trash", label: "삭제하기", danger: true, fn: () => removePost(d) }]
+    : [{ ic: "flag", label: "신고하기", danger: true, fn: () => reportSheet("post", d.id) }]);
   const comment = h("input", { class: "cin", maxlength: "500", placeholder: ME ? "댓글을 남겨보세요" : "로그인하고 댓글을 남겨보세요", "aria-label": "댓글 입력" });
   const send = () => { const v = comment.value.trim(); if (!ME) return needLogin(); if (v) act(d, "POST", `/api/images/${d.id}/comments`, { body: v }, edit); };
   comment.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); send(); } };
@@ -124,11 +125,10 @@ function drawDetailM(d, edit = false) {
   panel.replaceChildren(
     h("div", { class: "mbar" },
       h("button", { class: "icon-btn", type: "button", "aria-label": "뒤로", onclick: () => (S.hist.length ? goBack() : closeDetail()) }, icon("back", 24)),
-      h("h1", {}, ""), h("div", { class: "mbar-r" }, h("button", { class: "icon-btn", type: "button", "aria-label": "닫기", onclick: closeDetail }, icon("close", 24)))),
+      h("h1", {}, ""), h("div", { class: "mbar-r" })),
     h("div", { class: "pimg" }, h("img", { src: d.full, alt: d.title || "레퍼런스 이미지", class: "zoomable", onclick: () => openLightbox(d.full, d.title) }),
-      h("div", { class: "imgtop" }, circ("share", "공유하기", () => sharePost(d)), h("span", { class: "vdots" }, circ("more", "더보기", menu))),
-      h("div", { class: "imgact" }, circ("person", "이 이미지의 구도로 3D 포즈 찾기", () => pullPose()), circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id))),
-      o ? h("a", { class: "imgwho", href: "#/u/" + o.uid }, avatarEl(o, 20), "@" + o.uid) : null),
+      h("div", { class: "imgact" }, circ("person", "이 이미지의 구도로 3D 포즈 찾기", () => pullPose()), circ("palette", "이 이미지의 색상으로 찾기", () => pullPalette(d.id)),
+        h("button", { class: "circ add", type: "button", "aria-label": "저장하기", title: "저장하기", onclick: () => needLogin() && saveMenu() }, icon("plus", 24)))),
     h("div", { class: "pbody" },
       h("div", { class: "who" }, o ? avatarEl(o, 40, "av") : h("span", { class: "av" }, (d.author || "?").slice(0, 1)),
         h("div", {}, o ? h("a", { class: "pname", href: "#/u/" + o.uid }, d.author) : h("b", {}, d.author), h("span", {}, o ? `@${o.uid}` : `조회 ${d.views.toLocaleString()}`)),
@@ -136,7 +136,10 @@ function drawDetailM(d, edit = false) {
       h("h2", { class: "ptitle" }, d.title || "제목 없음", d.private ? h("span", { class: "prv-b" }, "비공개") : null),
       h("div", { class: "prow" },
         h("button", { class: "stat" + (so.liked ? " on" : ""), type: "button", "aria-pressed": String(!!so.liked), "aria-label": "하트", "data-like": "1", onclick: () => act(d, so.liked ? "DELETE" : "POST", `/api/images/${d.id}/like`, null, edit) }, icon("heart", 22), String(so.likes)),
-        h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => commentsSheet(d, edit) }, icon("comment", 22), String(so.comments.length))),
+        h("button", { class: "stat", type: "button", "aria-label": "댓글", onclick: () => commentsSheet(d, edit) }, icon("comment", 22), String(so.comments.length)),
+        h("span", { class: "sp" }),
+        h("button", { class: "icon-btn", type: "button", "aria-label": "공유하기", onclick: () => sharePost(d) }, icon("share", 24)),
+        h("button", { class: "icon-btn", type: "button", "aria-label": "더보기", onclick: menu }, icon("more", 24))),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, "태그"), so.editable ? h("button", { class: "btn sm", type: "button", onclick: () => drawDetail(d, !edit) }, edit ? "수정 완료" : "태그 수정") : null),
         edit ? kindTag(d, true, () => drawDetailM(d, true)) : null,
@@ -147,7 +150,7 @@ function drawDetailM(d, edit = false) {
       materialsSec(d),
       h("div", { class: "sec" },
         h("div", { class: "sec-h" }, h("h3", {}, `댓글 ${so.comments.length}`)),
-        h("div", { class: "cform" }, comment, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")),
+        h("div", { class: "cform" }, ME ? avatarEl(ME, 24, "cav") : h("span", { class: "cav" }), comment, h("button", { class: "btn primary", type: "button", onclick: send }, "게시")),
         h("ul", { class: "clist" }, so.comments.slice(0, 2).map((c) => commentRow(d, c, edit))),
         so.comments.length > 2 ? h("button", { class: "btn block allc", type: "button", onclick: () => commentsSheet(d, edit) }, `댓글 ${so.comments.length}개 모두 보기`) : null),
       rel));
@@ -257,10 +260,21 @@ async function settingsPage(sub) {
       h("div", { class: "sgap" }), group("고객 지원"), row("문의하기", "#/settings/inquiry"), h("div", { class: "srow2" }, h("span", {}, "앱 버전"), h("small", {}, "v1.0.0")), row("개인정보 처리 방침", "#/settings/privacy"), row("서비스 약관", "#/settings/terms"),
       ...(NO_LOGIN ? [] : [h("div", { class: "sgap" }), h("button", { class: "srow2 plain", type: "button", onclick: logoutAsk }, "로그아웃"), h("a", { class: "srow2 plain dim", href: "#/settings/leave" }, "탈퇴하기")]));
     if (sub === "notif") {
-      const st = await api("/api/me/settings"); const n = st.notif;
-      const put = async (k, v) => { n[k] = v; try { await api("/api/me/settings", jsonOpt("PUT", { notif: n })); } catch (e) { toast(e.message); } };
+      const st = await api("/api/me/settings"); const n = st.notif; let dnd = st.dnd || "", last = dnd || "21:00-09:00";
+      const put = async (k, v) => { if (k) n[k] = v; try { await api("/api/me/settings", jsonOpt("PUT", { notif: n, dnd })); } catch (e) { toast(e.message); } };
+      /* 방해 금지 (Figma 2781:87867): 스위치 + '수신 시간' 줄(시간 범위 · 눌러서 바꾸기). 꺼져 있으면 시간 줄은 흐리게 */
+      const rangeTx = () => last.split("-").map(hm12).join(" ~ ");
+      const timeRow = h("button", { class: "srow2" + (dnd ? "" : " off"), type: "button", onclick: () => {
+        const times = []; for (let m = 0; m < 1440; m += 30) times.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
+        const [a, b] = last.split("-");
+        const sel = (v, label) => h("select", { class: "inp", "aria-label": label }, times.map((t) => h("option", { value: t, selected: t === v }, hm12(t))));
+        const f = sel(a, "방해 금지 시작 시간"), t = sel(b, "방해 금지 끝 시간");
+        const s = sheet("수신 시간", h("div", { class: "dnd-pick" }, f, h("span", {}, "~"), t), h("div", { class: "sheet-f" }, h("button", { class: "btn primary block", type: "button", onclick: () => {
+          last = `${f.value}-${t.value}`; if (dnd) dnd = last; timeRow.querySelector("small").textContent = rangeTx(); s.close(); put();
+        } }, "저장")));
+      } }, h("span", {}, "수신 시간"), h("small", {}, rangeTx()), icon("chevR", 20));
       return show("알림 설정", group("활동 알림"), sw("팔로워", "새로운 팔로워가 생기면 알려드려요", n.follow, (v) => put("follow", v)), sw("댓글", "내 게시물에 댓글이 달리면", n.comment, (v) => put("comment", v)), sw("대댓글", "내 댓글에 답글이 달리면", n.reply !== false, (v) => put("reply", v)), sw("하트", "내 게시물에 하트가 눌리면", n.like, (v) => put("like", v)),
-        h("div", { class: "sgap" }), group("알림 수신 시간"), sw("방해 금지 시간 사용", "준비 중인 기능이에요", false, null, true));
+        h("div", { class: "sgap" }), group("알림 수신 시간"), sw("방해 금지 시간 사용", "설정한 시간에는 알림을 보내지 않아요", !!dnd, (v) => { dnd = v ? last : ""; timeRow.classList.toggle("off", !v); put(); }), timeRow);
     }
     if (NO_LOGIN && ["account", "security", "leave"].includes(sub)) { location.hash = "#/settings"; return; }
     if (sub === "account") return show("계정 관리", group("로그인 정보"), h("div", { class: "srow2" }, h("span", {}, "아이디"), h("small", {}, "@" + ME.uid)), h("div", { class: "srow2" }, h("span", {}, "닉네임"), h("small", {}, ME.nick)),
@@ -280,12 +294,24 @@ async function settingsPage(sub) {
           btn("차단 해제", "", async () => { try { await api(`/api/users/${x.uid}/block`, { method: "DELETE" }); toast("차단을 해제했어요"); settingsPage("blocks"); } catch (e) { toast(e.message); } })))
           : notice("차단한 유저가 없어요", "프로필의 더보기 메뉴에서 차단할 수 있어요."));
     }
-    if (sub === "inquiry") {
+    if (sub === "inquiry") {   // Figma 2781:88034: 문의 유형(선택 상자) · 문의 내용(글자 수) · 답변 받을 이메일 · 사진 첨부(선택) · 아래 보내기
       const kind = h("select", { class: "inp", id: "iqKind" }, h("option", { value: "" }, "유형을 선택하세요"), ["계정 · 로그인", "게시물 · 태그", "신고 · 차단", "오류 제보", "기타"].map((x) => h("option", {}, x)));
-      const body = h("textarea", { class: "inp ta", id: "iqBody", maxlength: "1000", placeholder: "문의 내용을 자세히 적어 주세요 (최대 1,000자)" });
-      return show("문의하기", h("form", { class: "sform", onsubmit: async (e) => { e.preventDefault();
-        try { await api("/api/inquiries", jsonOpt("POST", { kind: kind.value, body: body.value })); toast("문의를 보냈어요"); location.hash = "#/settings"; } catch (er) { toast(er.message); } } },
-        h("label", { for: "iqKind" }, "문의 유형"), kind, h("label", { for: "iqBody" }, "문의 내용"), body, h("button", { class: "btn primary block", type: "submit" }, "문의 보내기")));
+      const cnt = h("small", { class: "iq-cnt" }, "0 / 1,000");
+      const body = h("textarea", { class: "inp ta", id: "iqBody", maxlength: "1000", placeholder: "문의 내용을 자세히 적어 주세요 (최대 1,000자)", oninput: () => { cnt.textContent = `${body.value.length.toLocaleString()} / 1,000`; } });
+      const email = h("input", { class: "inp", id: "iqMail", type: "email", placeholder: "reffy@email.com", autocomplete: "email", maxlength: "120" });
+      const photos = [];
+      const file = h("input", { type: "file", accept: "image/*", multiple: true, hidden: true, onchange: () => { for (const f of file.files) { if (photos.length >= 3) { toast("사진은 최대 3장까지 첨부할 수 있어요."); break; } if (f.size > 10 * 1024 * 1024) { toast("사진은 한 장에 10MB 이하로 올려 주세요."); continue; } photos.push({ f, url: URL.createObjectURL(f) }); } file.value = ""; drawPh(); } });
+      const ph = h("div", { class: "iq-photos" });
+      const drawPh = () => ph.replaceChildren(...photos.map((p, i) => h("span", { class: "iq-ph" }, h("img", { src: p.url, alt: `첨부 사진 ${i + 1}` }), h("button", { type: "button", "aria-label": "사진 빼기", onclick: () => { photos.splice(i, 1); drawPh(); } }, icon("close", 14)))),
+        photos.length < 3 ? h("button", { class: "iq-add", type: "button", "aria-label": "사진 첨부", onclick: () => file.click() }, icon("plus", 24)) : null, file);
+      drawPh();
+      return show("문의하기", h("form", { class: "sform iq", onsubmit: async (e) => { e.preventDefault();
+        if (!kind.value) return toast("문의 유형을 선택해 주세요.");
+        const fd = new FormData(); fd.append("kind", kind.value); fd.append("email", email.value.trim()); fd.append("body", body.value.trim()); photos.forEach((p) => fd.append("photos", p.f));
+        try { await api("/api/inquiries", { method: "POST", body: fd }); toast("문의를 보냈어요"); location.hash = "#/settings"; } catch (er) { toast(er.message); } } },
+        h("label", { for: "iqKind" }, "문의 유형"), h("span", { class: "iq-sel" }, kind, icon("chevronDown", 20)), h("label", { for: "iqBody" }, "문의 내용"), h("span", { class: "iq-ta" }, body, cnt),
+        h("label", { for: "iqMail" }, "답변 받을 이메일"), email, h("span", { class: "iq-lb" }, "사진 첨부 (선택)"), ph,
+        h("div", { class: "iq-foot" }, h("button", { class: "btn primary block", type: "submit" }, "보내기"))));
     }
     if (sub === "privacy" || sub === "terms") {
       const t = sub === "privacy" ? "개인정보 처리 방침" : "서비스 약관";
