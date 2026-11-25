@@ -359,8 +359,9 @@ $("#tabTag").onclick = () => showTab("tag");
 $("#tabPose").onclick = () => showTab("pose");
 $("#tabColor").onclick = () => showTab("color");
 /* 3D 포즈 (HOM_0202) — pose-search(MIT, github.com/x6ud/pose-search) 엔진.
-   마네킹 관절을 끌어 자세를 만들고 '포즈 적용하기'를 누르면 비슷한 자세의 '사진'만 찾는다 (실사용이라 일러스트는 보여 주지 않음).
-   결과: REFFY 사진 게시물 + pose-search 실사 데이터(Unsplash) */
+   마네킹 관절을 끌어 자세를 만들고 '포즈 적용하기'를 누르면 비슷한 자세의 일러스트 · 사진을 함께 찾는다.
+   관절: 일러스트는 YOLOX(사람 찾기) + RTMPose(관절), 사진은 MediaPipe(안 되면 YOLOX + RTMPose)로 뽑아 서버에 저장해 둠
+   결과: REFFY 일러스트 · 사진 게시물 + pose-search 실사 데이터 */
 const POSE = { ed: null, eng: null, part: "all", free: false, ds: null, built: false };
 const POSE_PARTS = [["all", "전체 자세"], ["Face", "얼굴"], ["Chest", "가슴"], ["Crotch", "골반"], ["Left Shoulder", "왼쪽 어깨"], ["Right Shoulder", "오른쪽 어깨"], ["Left Elbow", "왼쪽 팔꿈치"], ["Right Elbow", "오른쪽 팔꿈치"], ["Left Hip", "왼쪽 고관절"], ["Right Hip", "오른쪽 고관절"], ["Left Knee", "왼쪽 무릎"], ["Right Knee", "오른쪽 무릎"]];
 const POSE_KEYS = POSE_PARTS.slice(1).map((p) => p[0]);
@@ -448,30 +449,42 @@ function savePose() {
   store.set("reffy.poses", [...list, { name: `포즈 ${n}`, pose: POSE.ed.getPose() }].slice(-12));
   drawPoseSaved(); toast(`‘포즈 ${n}’으로 저장했어요`);
 }
-/* REFFY 사진 게시물 중 아직 관절을 안 뽑은 것을 몇 장씩 채워 넣음 (로그인한 브라우저에서, 사진만) */
-async function poseFill(max = 8, onlyIds) {
+/* YOLOX + RTMPose 로 뽑은 관절(17점)을 검색용 33점 { normalized(이미지 0~1), world } 로 */
+function rtmLm(k) {
+  const world = kpsToWorld(k.kps, k.W, k.H), { hip, s } = world;
+  const normalized = world.map((w) => ({ point: [(w.point[0] / s + hip.x) / k.W, (-w.point[1] / s + hip.y) / k.H, w.point[2]], visibility: w.visibility }));
+  return { normalized, world };
+}
+/* 이미지 한 장에서 검색용 관절 뽑기: 일러스트는 YOLOX + RTMPose 먼저, 사진은 MediaPipe 먼저 (못 찾으면 다른 쪽으로 한 번 더) */
+async function poseOf(img, kind, R) {
+  const viaRtm = async () => { const k = await loadRtm().then((M) => M.detect(img)).catch(() => null); return k ? rtmLm(k) : null; };
+  const viaMp = async () => { const r = await R.detect(img).catch(() => null); return r && r.normalized.length === 33 && r.world.filter((x) => x.visibility > 0.4).length >= 8 ? r : null; };
+  return kind === "photo" ? ((await viaMp()) || (await viaRtm())) : ((await viaRtm()) || (await viaMp()));
+}
+/* REFFY 게시물(일러스트 · 사진) 중 아직 관절을 안 뽑은 것을 몇 장씩 채워 넣음 (로그인한 브라우저에서) */
+async function poseFill(max = 8, onlyIds, kindOf) {
   if (!ME || POSE.filling) return; POSE.filling = true;
   try {
     const R = await loadPoseEngine();
-    const list = onlyIds ? onlyIds.map((id) => ({ id, src: `/img/${id}` })) : (await api(`/api/pose/missing?limit=${max}`)).items;
+    const list = onlyIds ? onlyIds.map((id) => ({ id, src: `/img/${id}`, kind: kindOf || "illust" })) : (await api(`/api/pose/missing?limit=${max}`)).items;
     for (const it of list) {
       const img = new Image(); img.crossOrigin = "anonymous"; img.src = it.src;
       try { await img.decode(); } catch { continue; }
-      let r = null; try { r = await R.detect(img); } catch { r = null; }
+      let r = null; try { r = await poseOf(img, it.kind, R); } catch { r = null; }
       const lm = r && r.normalized.length === 33 ? r.normalized.flatMap((n, i) => [n.point[0], n.point[1], n.point[2], r.world[i].point[0], r.world[i].point[1], r.world[i].point[2], n.visibility]) : null;
       await api(`/api/images/${it.id}/pose`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lm }) }).catch(() => {});
     }
   } catch { /* 다음에 다시 */ } finally { POSE.filling = false; }
 }
-/* '포즈 적용하기': 지금 마네킹 자세와 비슷한 사진을 찾아 피드에 보여 줌 */
+/* '포즈 적용하기': 지금 마네킹 자세와 비슷한 일러스트 · 사진을 찾아 피드에 보여 줌 */
 async function runPoseSearch() {
   if (!POSE.ed) return toast("마네킹을 불러오는 중이에요");
   const b = $("#apply"); b.disabled = true; const old = b.textContent; b.textContent = "포즈 찾는 중…";
   try {
     const R = await loadPoseEngine();
-    await poseFill(10);
+    await poseFill(12);
     if (!POSE.ds) POSE.ds = await R.loadDataset("pose/", "?v=coco1");
-    const idx = (await api("/api/pose/index")).items.filter((x) => x.kind === "photo");
+    const idx = (await api("/api/pose/index")).items;
     const mine = idx.map((x) => { const n = [], w = []; for (let k = 0; k < 33; k++) { const o = k * 7; n.push({ point: [x.lm[o], x.lm[o + 1], x.lm[o + 2]], visibility: x.lm[o + 6] }); w.push({ point: [x.lm[o + 3], x.lm[o + 4], x.lm[o + 5]], visibility: x.lm[o + 6] }); } return R.makePhoto("r" + x.id, n, w, { reffy: x.id }); });
     const run = (list) => POSE.part === "all" ? R.searchAll(POSE.ed.model, POSE_KEYS, list, { cameraFree: POSE.free, limit: 120 }) : R.search(POSE.ed.model, POSE.part, list, { cameraFree: POSE.free, limit: 120 });
     const rr = mine.length ? run(mine) : [];
@@ -823,7 +836,7 @@ function materialsSec(d) {
 /* 일러스트 포즈 인식 (pose/rtm.js · RTMPose) 불러오기 */
 function loadRtm() {
   if (window.RTM) return Promise.resolve(window.RTM);
-  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=4" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
+  return new Promise((ok, bad) => { const sc = h("script", { src: "pose/rtm.js?v=5" }); sc.onload = () => ok(window.RTM); sc.onerror = () => bad(new Error("포즈 인식을 불러오지 못했어요")); document.head.append(sc); });
 }
 /* RTMPose 관절 17개(COCO, 이미지 픽셀) -> 마네킹이 읽는 MediaPipe 월드 관절 33개 형식 { point:[x, y(위로 +), z(앞으로 +)], visibility }
    - 그림 밖이거나 확신이 낮은 관절(상반신 그림의 다리 등)은 '자연스럽게 내린 자세'로 채우고 visibility 를 낮춤 → 마네킹 다리가 옆으로 꺾이지 않음
@@ -870,6 +883,7 @@ function kpsToWorld(k, W, H) {
     else if (i === 29 || i === 30) { const a = q[i === 29 ? 15 : 16]; out.push(pt({ ...a, y: a.y + torso * 0.06 }, -0.03)); }   // 발뒤꿈치
     else { const a = q[i === 31 ? 15 : 16]; out.push(pt({ ...a, y: a.y + torso * 0.1 }, 0.14)); }                              // 발끝: 앞쪽
   }
+  out.hip = hip; out.s = s;   // 이미지 좌표로 되돌릴 때 씀 (rtmLm)
   return out;
 }
 async function pullPose(idArg) {
@@ -883,13 +897,10 @@ async function pullPose(idArg) {
     const R = await loadPoseEngine();
     const img = new Image(); img.crossOrigin = "anonymous"; img.src = `/img/${id}`; await img.decode();
     let kind = "illust"; try { kind = (await api(`/api/images/${id}`)).kind || "illust"; } catch { /* 모르면 일러스트로 */ }
-    // 일러스트: RTMPose(일러스트·SD 캐릭터도 꽤 잡음) 먼저, 사진: MediaPipe 먼저. 못 찾으면 다른 쪽으로 한 번 더
-    const viaRtm = async () => { const k = await loadRtm().then((M) => M.detect(img)).catch(() => null); return k ? { world: kpsToWorld(k.kps, k.W, k.H) } : null; };
-    const viaMp = async () => { const r = await R.detect(img).catch(() => null); return r && r.world.filter((x) => x.visibility > 0.4).length >= 8 ? r : null; };
-    const r = kind === "photo" ? ((await viaMp()) || (await viaRtm())) : ((await viaRtm()) || (await viaMp()));
+    const r = await poseOf(img, kind, R);
     if (!r) return toast("이 이미지에서 사람 자세를 찾지 못했어요. 마네킹을 직접 움직여 보세요.");
     if (POSE.ed) POSE.ed.setLandmarks(r.world); else POSE.pending = r.world;
-    toast("이미지 구도를 마네킹에 옮겼어요. ‘포즈 적용하기’로 비슷한 사진을 찾아보세요.");
+    toast("이미지 구도를 마네킹에 옮겼어요. ‘포즈 적용하기’로 비슷한 자세의 이미지를 찾아보세요.");
   } catch (e) { toast(e.message || "자세를 읽지 못했어요"); }
 }
 /* 게시물 수정 (MYP_0200 수정 모드): 제목 · 사용 소재 · 공개 설정. 태그는 상세 화면의 ‘태그 수정’에서 */
@@ -1266,7 +1277,7 @@ async function publish() {
   const b = $("#pub"); b.disabled = true; b.textContent = "게시하는 중…";
   try {
     const r = await api("/api/images", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: up.token, title: up.title || "", kind: up.kind || "illust", tags: [...up.tags.keys()], materials: up.materials || [], tools: up.tools || [], private: !!up.private }) });
-    if ((up.kind || "illust") === "photo") poseFill(1, [r.id]);   // 사진이면 3D 포즈 검색용 관절을 뽑아 둠
+    poseFill(1, [r.id], up.kind || "illust");   // 일러스트 · 사진 모두 3D 포즈 검색용 관절을 뽑아 둠
     store.set("reffy.draft", null); closeUpload(); toast(isM() ? "게시물을 등록했어요" : "게시했어요"); if (location.hash !== "#/") location.hash = "#/"; await reload(); loadVocab().catch(() => {}); openDetail(r.id);
   } catch (e) { b.disabled = false; b.textContent = isM() ? "등록하기" : "게시하기"; toast(e.message); }
 }
@@ -1394,7 +1405,7 @@ async function puPublish() {
         body: JSON.stringify({ token: it.token, title: pu.title || "", kind: pu.kind, tags: [...it.tags.keys()], materials: pu.materials, tools: pu.tools || [], private: !!pu.private }) });
       if (r && r.id) made.push(r.id);
     }
-    if (pu.kind === "photo" && made.length) poseFill(made.length, made);   // 사진이면 3D 포즈 검색용 관절을 뽑아 둠
+    if (made.length) poseFill(made.length, made, pu.kind);   // 일러스트 · 사진 모두 3D 포즈 검색용 관절을 뽑아 둠
     store.set("reffy.draft", null); await puClose(true); toast("게시물을 등록했어요");
     loadVocab().catch(() => {});
     if (location.hash.startsWith("#/me") || location.hash.startsWith("#/u/")) route(); else reload();
