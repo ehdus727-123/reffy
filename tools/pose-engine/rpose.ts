@@ -59,6 +59,8 @@ export type Editor = {
     getPose(): Record<string, { f: number[], u: number[] }>,
     setPose(p: Record<string, { f: number[], u: number[] }>): void,
     reset(): void,
+    zoomBy(k: number): void,
+    resetView(): void,
     destroy(): void,
 };
 
@@ -90,6 +92,9 @@ export function mountEditor(el: HTMLElement, opts: { onPart?: (key: string) => v
             model.update(camera.camera);
             state.highlights = state.highlights.slice();   // 다시 그리기
         },
+        /* 화면 오른쪽 위 확대 · 축소 · 시점 초기화 버튼 (모바일 Figma 2896:19825) */
+        zoomBy(k) { camera.zoom = Math.min(4, Math.max(-12, camera.zoom + k));  // 음수일수록 확대 camera.update(); model.update(camera.camera); state.highlights = state.highlights.slice(); },
+        resetView() { camera.zoom = 1; camera.rotateX = 0; camera.rotateY = 0; camera.target[0] = camera.target[1] = camera.target[2] = 0; camera.update(); model.update(camera.camera); state.highlights = state.highlights.slice(); },
         destroy() { app.unmount(); },
     };
 }

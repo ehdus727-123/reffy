@@ -28,7 +28,7 @@ const jsonOpt = (method, body) => ({ method, headers: { "Content-Type": "applica
 
 /* ---------------------------------------------------------------- 홈: 필터 버튼 · 검색 상태 */
 function mobileBar(hasQ) {
-  const any = hasQ || S.applied.length || S.colors.length || (S.kinds || []).length;
+  const any = hasQ || S.pose || S.applied.length || S.colors.length || (S.kinds || []).length;
   document.body.classList.toggle("searching", !!any);
   $("#mBack").hidden = !hasQ && !document.documentElement.classList.contains("m-search");
   if (!isM()) return;

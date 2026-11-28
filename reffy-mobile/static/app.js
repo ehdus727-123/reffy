@@ -403,16 +403,113 @@ function loadPoseEngine() {
   return (POSE.eng = new Promise((ok, bad) => {
     if (window.RPose) return ok(window.RPose);
     document.head.append(h("link", { rel: "stylesheet", href: "pose/pose-engine.css?v=2" }));
-    const sc = h("script", { src: "pose/pose-engine.js?v=4" });
+    const sc = h("script", { src: "pose/pose-engine.js?v=5" });
     sc.onload = () => (window.RPose ? ok(window.RPose) : bad(new Error("3D 포즈 엔진을 불러오지 못했어요")));
     sc.onerror = () => { POSE.eng = null; bad(new Error("3D 포즈 엔진을 불러오지 못했어요")); };
     document.head.append(sc);
   }));
 }
 const poseSaved = () => store.get("reffy.poses", []);
+/* ---- 모바일 3D 포즈 탭 (Figma 2833:107339 · 프로토타입 영상): 마네킹 + 오른쪽 위 시점 초기화 · 확대 · 축소
+   관절을 누르면 '관절 회전' 칸에 그 관절의 굽힘 · 회전 · 비틀기 슬라이더 · 관절 초기화 / 포즈 프리셋(서 있기 · 앉기 · 달리기 · 점프)
+   비교할 부위 · 저장한 포즈는 그 아래에 그대로 둠 */
+const JOINT_NODE = { Face: "head", Chest: "trunk", Crotch: "trunk", "Left Shoulder": "leftUpperArm", "Right Shoulder": "rightUpperArm", "Left Elbow": "leftLowerArm", "Right Elbow": "rightLowerArm",
+  "Left Hip": "leftThigh", "Right Hip": "rightThigh", "Left Knee": "leftCalf", "Right Knee": "rightCalf" };
+const JOINT_LABEL = { Face: "머리", Chest: "가슴", Crotch: "골반", "Left Shoulder": "왼쪽 어깨", "Right Shoulder": "오른쪽 어깨", "Left Elbow": "왼쪽 팔꿈치", "Right Elbow": "오른쪽 팔꿈치",
+  "Left Hip": "왼쪽 고관절", "Right Hip": "오른쪽 고관절", "Left Knee": "왼쪽 무릎", "Right Knee": "오른쪽 무릎" };
+/* 관절의 방향(앞 · 위 벡터, 부모 기준) ↔ 각도 세 개: 굽힘(X축) · 회전(Y축) · 비틀기(Z축), 순서 Y·X·Z */
+function jointAngles(f, u) {
+  const x = [u[1] * f[2] - u[2] * f[1], u[2] * f[0] - u[0] * f[2], u[0] * f[1] - u[1] * f[0]], D = 180 / Math.PI;
+  const a = Math.asin(Math.max(-1, Math.min(1, -f[1])));
+  const b = Math.abs(f[1]) < 0.9999 ? Math.atan2(f[0], f[2]) : Math.atan2(-x[2], x[0]);
+  const c = Math.abs(f[1]) < 0.9999 ? Math.atan2(x[1], u[1]) : 0;
+  return [Math.round(a * D), Math.round(b * D), Math.round(c * D)];
+}
+function jointFrame(bend, rot, twist) {
+  const R = Math.PI / 180, ax = bend * R, ay = rot * R, az = twist * R;
+  const rz = (v) => [v[0] * Math.cos(az) - v[1] * Math.sin(az), v[0] * Math.sin(az) + v[1] * Math.cos(az), v[2]];
+  const rx = (v) => [v[0], v[1] * Math.cos(ax) - v[2] * Math.sin(ax), v[1] * Math.sin(ax) + v[2] * Math.cos(ax)];
+  const ry = (v) => [v[0] * Math.cos(ay) + v[2] * Math.sin(ay), v[1], -v[0] * Math.sin(ay) + v[2] * Math.cos(ay)];
+  const go = (v) => ry(rx(rz(v)));
+  return { f: go([0, 0, 1]), u: go([0, 1, 0]) };
+}
+/* 포즈 프리셋: 관절 위치(골반 가운데 원점, 위 +y, 인물 왼쪽 +x, 앞 +z, 미터)로 만든 33점 → 마네킹 */
+function presetLandmarks(P) {
+  const v = (p) => ({ point: p, visibility: 0.99 }), add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const nose = P.nose || [0, 0.68, 0.08], out = [];
+  out[0] = v(nose); [1, 2, 3].forEach((i) => (out[i] = v(add(nose, [0.03, 0.03, -0.02])))); [4, 5, 6].forEach((i) => (out[i] = v(add(nose, [-0.03, 0.03, -0.02]))));
+  out[7] = v(add(nose, [0.07, 0.01, -0.08])); out[8] = v(add(nose, [-0.07, 0.01, -0.08])); out[9] = v(add(nose, [0.02, -0.04, -0.01])); out[10] = v(add(nose, [-0.02, -0.04, -0.01]));
+  const J = { 11: P.ls, 12: P.rs, 13: P.le, 14: P.re, 15: P.lw, 16: P.rw, 23: [0.1, 0, 0], 24: [-0.1, 0, 0], 25: P.lk, 26: P.rk, 27: P.la, 28: P.ra };
+  Object.entries(J).forEach(([i, p]) => (out[i] = v(p)));
+  const hand = (w, e, i) => { const d = [w[0] - e[0], w[1] - e[1], w[2] - e[2]], n = Math.hypot(...d) || 1, t = d.map((q) => (q / n) * 0.08); [i, i + 2, i + 4].forEach((k, j) => (out[k] = v(add(w, add(t, [j === 2 ? 0.02 * Math.sign(w[0]) : 0, 0, j === 1 ? 0.02 : 0]))))); };
+  hand(P.lw, P.le, 17); hand(P.rw, P.re, 18);
+  out[29] = v(add(P.la, [0, -0.05, -0.04])); out[30] = v(add(P.ra, [0, -0.05, -0.04])); out[31] = v(add(P.la, [0, -0.07, 0.12])); out[32] = v(add(P.ra, [0, -0.07, 0.12]));
+  return out;
+}
+const POSE_PRESETS = [
+  { k: "stand", label: "서 있기", svg: [["M25 26L22 38L21 50", 4, "b"], ["M28 48L27 62V76", 4.5, "b"], ["M32 22V48", 9, "a"], ["M36 48L37 62V76", 4.5, "a"], ["M39 26L42 38L43 50", 4, "a"]], head: [32, 14] },
+  { k: "sit", label: "앉기", svg: [["M20 34L22 46L32 52", 4, "b"], ["M24 56L42 58V74", 4.5, "b"], ["M26 30L27 56", 9, "a"], ["M30 56H46V74", 4.5, "a"], ["M33 34L36 46L44 50", 4, "a"]], head: [26, 22],
+    lm: { ls: [0.17, 0.5, -0.05], rs: [-0.17, 0.5, -0.05], le: [0.2, 0.25, 0.08], re: [-0.2, 0.25, 0.08], lw: [0.15, 0.08, 0.3], rw: [-0.15, 0.08, 0.3], lk: [0.11, 0.02, 0.42], rk: [-0.11, 0.02, 0.42], la: [0.11, -0.42, 0.44], ra: [-0.11, -0.42, 0.44], nose: [0, 0.68, 0.05] } },
+  { k: "run", label: "달리기", svg: [["M27 26L20 34L24 44", 4, "b"], ["M30 48L22 58L14 66", 4.5, "b"], ["M33 22V48", 9, "a"], ["M36 48L44 60L42 76", 4.5, "a"], ["M39 27L46 36L50 28", 4, "a"]], head: [34, 14],
+    lm: { ls: [0.17, 0.5, 0.03], rs: [-0.17, 0.5, -0.03], le: [0.2, 0.3, -0.2], re: [-0.2, 0.32, 0.16], lw: [0.19, 0.12, -0.24], rw: [-0.19, 0.42, 0.34], lk: [0.1, -0.28, 0.33], rk: [-0.1, -0.4, -0.16], la: [0.1, -0.68, 0.18], ra: [-0.1, -0.62, -0.5], nose: [0, 0.68, 0.12] } },
+  { k: "jump", label: "점프", svg: [["M25 24L18 16L14 6", 4, "b"], ["M28 46L20 58L26 70", 4.5, "b"], ["M32 20V46", 9, "a"], ["M36 46L44 58L38 70", 4.5, "a"], ["M39 24L46 16L50 6", 4, "a"]], head: [32, 12],
+    lm: { ls: [0.17, 0.5, 0], rs: [-0.17, 0.5, 0], le: [0.33, 0.75, 0.02], re: [-0.33, 0.75, 0.02], lw: [0.42, 1.0, 0.04], rw: [-0.42, 1.0, 0.04], lk: [0.13, -0.33, 0.2], rk: [-0.13, -0.33, 0.2], la: [0.12, -0.66, -0.1], ra: [-0.12, -0.66, -0.1] } },
+];
+const presetSvg = (p) => { const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"); sv.setAttribute("viewBox", "0 0 64 80"); sv.setAttribute("width", "64"); sv.setAttribute("height", "80"); sv.setAttribute("aria-hidden", "true");
+  p.svg.forEach(([d, w, c]) => { const e = document.createElementNS(NS, "path"); e.setAttribute("d", d); e.setAttribute("stroke-width", w); e.setAttribute("class", c); e.setAttribute("fill", "none"); e.setAttribute("stroke-linecap", "round"); e.setAttribute("stroke-linejoin", "round"); sv.append(e); });
+  const hd = document.createElementNS(NS, "ellipse"); hd.setAttribute("cx", p.head[0]); hd.setAttribute("cy", p.head[1]); hd.setAttribute("rx", "5.5"); hd.setAttribute("ry", "6"); hd.setAttribute("class", "hd"); sv.append(hd); return sv; };
+function drawJointCtl() {
+  const box = $("#poseJoint"); if (!box) return;
+  const key = POSE.joint || "Left Elbow", node = JOINT_NODE[key];
+  const cur = POSE.ed ? POSE.ed.getPose()[node] : null, ang = cur ? jointAngles(cur.f, cur.u) : [0, 0, 0];
+  const apply = () => { if (!POSE.ed) return; const fr = jointFrame(ang[0], ang[1], ang[2]); POSE.ed.setPose({ [node]: { f: fr.f, u: fr.u } }); POSE.preset = null; drawPresets(); };
+  const row = (i, label) => {
+    const out = h("span", { class: "pj-v" }, `${ang[i] > 0 ? "+" : ""}${ang[i]}°`);
+    const r = h("input", { type: "range", min: "-180", max: "180", step: "1", value: String(ang[i]), "aria-label": `${JOINT_LABEL[key]} ${label}`, style: `--p:${((ang[i] + 180) / 360) * 100}%`,
+      oninput: (e) => { ang[i] = +e.target.value; out.textContent = `${ang[i] > 0 ? "+" : ""}${ang[i]}°`; e.target.style.setProperty("--p", `${((ang[i] + 180) / 360) * 100}%`); apply(); } });
+    return h("div", { class: "pj-row" }, h("span", { class: "pj-l" }, label), r, out);
+  };
+  box.replaceChildren(h("div", { class: "pose-h" }, h("h3", {}, JOINT_LABEL[key]),
+      h("button", { class: "pj-reset", type: "button", onclick: () => { if (!POSE.ed) return; POSE.ed.setPose({ [node]: { f: [0, 0, 1], u: [0, 1, 0] } }); drawJointCtl(); } }, icon("reset", 16), "관절 초기화")),
+    h("div", { class: "pj-rows" }, row(0, "굽힘"), row(1, "회전"), row(2, "비틀기")));
+}
+function drawPresets() {
+  const box = $("#posePresets"); if (!box) return;
+  box.replaceChildren(...POSE_PRESETS.map((p) => h("button", { class: "pp-card" + (POSE.preset === p.k ? " on" : ""), type: "button", "aria-pressed": String(POSE.preset === p.k), onclick: () => {
+    if (!POSE.ed) return toast("마네킹을 불러오는 중이에요");
+    if (p.lm) POSE.ed.setLandmarks(presetLandmarks(p.lm));
+    else { const id = {}; Object.values(JOINT_NODE).concat(["leftHand", "rightHand", "leftFoot", "rightFoot"]).forEach((n) => (id[n] = { f: [0, 0, 1], u: [0, 1, 0] })); POSE.ed.setLandmarks(null); POSE.ed.setPose(id); }
+    POSE.preset = p.k; drawPresets(); requestAnimationFrame(drawJointCtl);
+  } }, presetSvg(p), h("span", {}, p.label))));
+}
+function drawPosePanelM(pp) {
+  const vp = h("div", { class: "pose-vp", role: "application", "aria-label": "3D 포즈 마네킹 — 관절을 끌거나 눌러 자세를 바꿔요" }, h("span", { class: "sk pose-load" }));
+  const fab = (ic, label, fn) => h("button", { class: "pv-fab", type: "button", "aria-label": label, title: label, onclick: fn }, icon(ic, 18));
+  POSE.joint = POSE.joint || "Left Elbow";
+  pp.replaceChildren(
+    h("div", { class: "pose-vpw" }, vp,
+      h("div", { class: "pv-ctl" }, fab("reset", "시점 초기화", () => POSE.ed && POSE.ed.resetView()), fab("plus", "확대", () => POSE.ed && POSE.ed.zoomBy(-1)), fab("minus", "축소", () => POSE.ed && POSE.ed.zoomBy(1))),
+      h("p", { class: "pv-hint" }, "드래그해서 회전 · 관절을 눌러 조정")),
+    h("div", { class: "pose-sec pj", id: "poseJoint" }),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "포즈 프리셋"), h("button", { class: "linkbtn pp-all", type: "button", onclick: () => toast("프리셋은 지금 4가지예요") }, "전체보기", icon("chevronRight", 16))), h("div", { class: "pp-row", id: "posePresets" })),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "비교할 부위")), h("div", { class: "pose-chips", id: "poseParts" })),
+    h("div", { class: "pose-sec" }, h("div", { class: "pose-h" }, h("h3", {}, "저장한 포즈"), h("button", { class: "linkbtn", type: "button", onclick: savePose }, "지금 포즈 저장")), h("div", { class: "pose-chips", id: "poseSaved" })),
+    h("p", { class: "pose-credit" }, "3D 포즈 검색: ", h("a", { href: "https://github.com/x6ud/pose-search", target: "_blank", rel: "noopener" }, "pose-search"), " (MIT)"));
+  drawPoseParts(); drawPoseSaved(); drawPresets(); drawJointCtl();
+  vp.addEventListener("pointerup", () => setTimeout(drawJointCtl, 30));   // 핀을 끌어 바꾼 각도를 슬라이더에 반영
+  loadPoseEngine().then((R) => requestAnimationFrame(() => {
+    vp.replaceChildren(); const box = h("div", { class: "pose-ed" }); vp.append(box);
+    // 모바일: 마네킹을 누르면 '관절 회전'에서 조정할 관절이 바뀜 (비교할 부위는 아래 칩으로 따로 고름)
+    POSE.ed = R.mountEditor(box, { onPart: (k) => { POSE.joint = k; POSE.ed.setPart(k); drawJointCtl(); } });
+    POSE.ed.setPart(POSE.joint);
+    if (POSE.pending) { POSE.ed.setLandmarks(POSE.pending); POSE.pending = null; }
+    drawJointCtl();
+  })).catch((e) => { vp.replaceChildren(h("p", { class: "pose-err" }, e.message)); });
+}
 function drawPosePanel() {
   const pp = $("#ppanel");
-  if (POSE.built) { drawPoseParts(); drawPoseSaved(); return; }
+  if (POSE.built) { drawPoseParts(); drawPoseSaved(); if (isM()) { drawPresets(); drawJointCtl(); } return; }
+  if (isM()) { POSE.built = true; return drawPosePanelM(pp); }
   POSE.built = true;
   const vp = h("div", { class: "pose-vp", role: "application", "aria-label": "3D 포즈 마네킹 — 관절 핀을 끌어 자세를 바꿔요" }, h("span", { class: "sk pose-load" }));
   const resetB = h("button", { class: "pill sm", type: "button", onclick: () => { if (POSE.ed) { POSE.ed.reset(); toast("마네킹 자세를 처음으로 돌렸어요"); } } }, "포즈 초기화");
@@ -432,8 +529,8 @@ function drawPosePanel() {
 }
 function drawPoseParts() {
   const box = $("#poseParts"); if (!box) return;
-  box.replaceChildren(...POSE_PARTS.map(([k, l]) => h("button", { class: "pill sm" + (POSE.part === k ? " on" : ""), type: "button", "aria-pressed": String(POSE.part === k), onclick: () => { POSE.part = k; if (POSE.ed) POSE.ed.setPart(k === "all" ? null : k); drawPoseParts(); } }, l)));
-  if (POSE.ed) POSE.ed.setPart(POSE.part === "all" ? null : POSE.part);
+  box.replaceChildren(...POSE_PARTS.map(([k, l]) => h("button", { class: "pill sm" + (POSE.part === k ? " on" : ""), type: "button", "aria-pressed": String(POSE.part === k), onclick: () => { POSE.part = k; if (POSE.ed && !isM()) POSE.ed.setPart(k === "all" ? null : k); drawPoseParts(); } }, l)));
+  if (POSE.ed && !isM()) POSE.ed.setPart(POSE.part === "all" ? null : POSE.part);  // 모바일은 마네킹 강조 = 조정 중인 관절
 }
 function drawPoseSaved() {
   const box = $("#poseSaved"); if (!box) return;
@@ -753,7 +850,7 @@ function drawBar(d) {
   curSort = d.sort; drawSort();
   const chips = $("#chips"); chips.replaceChildren();
   const seen = new Set();
-  if (S.pose) chips.append(h("span", { class: "chip dark" }, `3D 포즈 · ${S.pose.label}`, h("button", { type: "button", "aria-label": "3D 포즈 검색 지우기", onclick: () => { S.pose = null; reload(); } }, chipX())));
+  if (S.pose) chips.append(h("span", { class: "chip dark" }, isM() ? "3D 포즈" : `3D 포즈 · ${S.pose.label}`, h("button", { type: "button", "aria-label": "3D 포즈 검색 지우기", onclick: () => { S.pose = null; reload(); } }, chipX())));
   if (S.q) chips.append(h("span", { class: "chip dark" }, S.q, h("button", { type: "button", "aria-label": `검색어 ${S.q} 지우기`, onclick: () => runQuery("") }, chipX())));
   S.applied.map((k) => ({ ikey: k, label: S.labels[k]?.label || k, short: S.labels[k]?.short || S.labels[k]?.label || k })).forEach((m) => {
     if (seen.has(m.ikey)) return; seen.add(m.ikey);
